@@ -719,54 +719,26 @@ final class RidgitsFirebaseClient {
     }
 
     func listenCommunityQuizStats(onChange: @escaping (CommunityQuizStats) -> Void) -> ListenerRegistration {
-        db.collection("quizProgress")
-            .whereField("completed", isEqualTo: true)
+        db.collection("platformStats").document("community")
             .addSnapshotListener { snapshot, error in
-                guard error == nil, let snapshot else {
+                guard error == nil, let snapshot, snapshot.exists, let data = snapshot.data() else {
                     Task { @MainActor in
                         onChange(CommunityQuizStats())
                     }
                     return
                 }
 
-                let weekStart = Self.startOfWeek()
-                var completedThisWeek = 0
-
-                for document in snapshot.documents {
-                    guard let completedAt = Self.quizCompletionDate(from: document.data()) else { continue }
-                    if completedAt >= weekStart {
-                        completedThisWeek += 1
-                    }
-                }
+                let totalCompleted = data["totalCompleted"] as? Int ?? 0
+                let completedThisWeek = data["completedThisWeek"] as? Int ?? 0
 
                 Task { @MainActor in
                     onChange(
                         CommunityQuizStats(
-                            totalCompleted: snapshot.documents.count,
+                            totalCompleted: totalCompleted,
                             completedThisWeek: completedThisWeek
                         )
                     )
                 }
             }
-    }
-
-    private static func startOfWeek(for date: Date = Date()) -> Date {
-        var calendar = Calendar.current
-        calendar.timeZone = .current
-        let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
-        return calendar.date(from: components) ?? calendar.startOfDay(for: date)
-    }
-
-    private static func quizCompletionDate(from data: [String: Any]) -> Date? {
-        if let timestamp = data["completedAt"] as? Timestamp {
-            return timestamp.dateValue()
-        }
-        if let timestamp = data["updatedAt"] as? Timestamp {
-            return timestamp.dateValue()
-        }
-        if let lastUpdated = data["lastUpdated"] as? String {
-            return ISO8601DateFormatter().date(from: lastUpdated)
-        }
-        return nil
     }
 }
