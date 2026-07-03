@@ -1,62 +1,50 @@
 import SwiftUI
 import AuthenticationServices
 
+private enum RidgitsLegalURL {
+    static let privacy = URL(string: "https://ridgits.com/privacy-policy")!
+    static let terms = URL(string: "https://ridgits.com/terms-conditions")!
+}
+
 struct LoginView: View {
     let onAppleRequest: (ASAuthorizationAppleIDRequest) -> Void
     let onAppleCompletion: (Result<ASAuthorization, Error>) -> Void
     let onGoogleSignIn: () -> Void
-
-    @State private var bannerOffset: CGFloat = 0
+    let onEmailSignIn: () -> Void
 
     var body: some View {
-        ZStack(alignment: .top) {
-            RidgitsColors.surface.ignoresSafeArea()
-
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    Color.clear.frame(height: 112)
-
-                    heroSection
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 32)
-
-                    authSection
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 40)
-
-                    featuresPreview
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 48)
-                }
-            }
-
+        VStack(spacing: 0) {
             VStack(spacing: 0) {
                 landingNavBar
                 marqueeBanner
             }
+            .background {
+                RidgitsColors.surface
+                    .ignoresSafeArea(edges: .top)
+            }
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    heroSection
+                        .padding(.horizontal, 32)
+                        .padding(.top, 24)
+                        .padding(.bottom, 32)
+
+                    authSection
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 32)
+                }
+            }
+            .background(RidgitsColors.surface)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RidgitsColors.surface.ignoresSafeArea())
     }
 
     private var landingNavBar: some View {
-        HStack {
-            RidgitsLogoView.onLight(size: 28)
-
-            Spacer()
-
-            Text("LOG IN")
-                .font(RidgitsTypography.navLabel())
-                .foregroundStyle(RidgitsColors.textSecondary)
-                .tracking(1.2)
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 56)
-        .background(.ultraThinMaterial)
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(RidgitsColors.border.opacity(0.5)),
-            alignment: .bottom
-        )
+        RidgitsLogoView.onLight(size: 32)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
     }
 
     private var marqueeBanner: some View {
@@ -66,63 +54,76 @@ struct LoginView: View {
 
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            RidgitsHeroStack()
+            RidgitsHeroImageStack()
+                .padding(.bottom, 8)
 
             Text("Stop Wasting Time")
-                .font(RidgitsTypography.heroTitle())
+                .font(RidgitsTypography.heroTitle(36))
                 .foregroundStyle(RidgitsColors.textHeadline)
                 .tracking(-0.5)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("Discover your relationship patterns, vet smarter, and get meetup plans that actually work for how you connect.")
-                .font(RidgitsTypography.body(17))
-                .foregroundStyle(RidgitsColors.textSecondary)
-                .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var authSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
+            Text("Community quiz-based local matching and dating simulation tools.")
+                .font(RidgitsTypography.body(14))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .frame(maxWidth: 320)
+                .padding(.bottom, 8)
+
             SignInWithAppleButton(.signIn, onRequest: onAppleRequest, onCompletion: onAppleCompletion)
                 .signInWithAppleButtonStyle(.black)
-                .frame(height: 52)
-                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
+                .frame(height: 54)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
             GoogleSignInButton(action: onGoogleSignIn)
 
-            Text("By continuing you agree to our Privacy Policy and Terms and Conditions.")
-                .font(RidgitsTypography.caption(11))
-                .foregroundStyle(RidgitsColors.textMuted)
-                .multilineTextAlignment(.center)
-                .padding(.top, 8)
+            Button(action: onEmailSignIn) {
+                Text("Sign in with email")
+                    .font(RidgitsTypography.caption(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .underline()
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+
+            RidgitsLegalConsentView()
         }
+        .frame(maxWidth: 320)
+        .frame(maxWidth: .infinity)
     }
+}
 
-    private var featuresPreview: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Make more meaningful connections")
-                .font(RidgitsTypography.headline(22))
-                .foregroundStyle(RidgitsColors.textHeadline)
+private struct RidgitsLegalConsentView: View {
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("By continuing, you agree to our")
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(RidgitsColors.textMuted)
 
-            Text("Tools that make it easier to show up authentically—and find people who match that.")
-                .font(RidgitsTypography.body(14))
-                .foregroundStyle(RidgitsColors.textSecondary)
+            HStack(spacing: 4) {
+                Link("Privacy Policy", destination: RidgitsLegalURL.privacy)
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .underline()
 
-            VStack(spacing: 10) {
-                RidgitsFeatureRow(title: "Deep compatibility matching", icon: "heart.text.square")
-                RidgitsFeatureRow(title: "Five dimensions of fit", icon: "chart.radar")
-                RidgitsFeatureRow(title: "24-hour real conversations", icon: "clock")
+                Text("and")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textMuted)
+
+                Link("Terms and Conditions", destination: RidgitsLegalURL.terms)
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .underline()
             }
         }
-        .padding(20)
-        .background(RidgitsColors.feedBackground)
-        .overlay(
-            RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                .stroke(RidgitsColors.border, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+        .multilineTextAlignment(.center)
+        .padding(.top, 4)
     }
 }
 
@@ -133,29 +134,33 @@ private struct RidgitsMarqueeBanner: View {
         "OPEN-SOURCE APPROACH",
     ]
 
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30)) { timeline in
-            let elapsed = timeline.date.timeIntervalSinceReferenceDate
-            let shift = CGFloat(elapsed.truncatingRemainder(dividingBy: 24)) * -40
+    private let scrollDuration: TimeInterval = 40
 
-            HStack(spacing: 12) {
-                marqueeContent
-                marqueeContent
+    @State private var segmentWidth: CGFloat = 0
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 60)) { timeline in
+            let elapsed = timeline.date.timeIntervalSinceReferenceDate
+            let progress = elapsed.truncatingRemainder(dividingBy: scrollDuration) / scrollDuration
+            let shift = segmentWidth > 0 ? -segmentWidth * CGFloat(progress) : 0
+
+            HStack(spacing: 0) {
+                marqueeSegment
+                marqueeSegment
             }
             .offset(x: shift)
         }
         .frame(maxWidth: .infinity)
         .clipped()
-        .background(RidgitsColors.feedBackground)
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(RidgitsColors.border.opacity(0.6)),
-            alignment: .bottom
-        )
+        .background(RidgitsColors.surface)
+        .onPreferenceChange(MarqueeSegmentWidthKey.self) { width in
+            if width > 0 {
+                segmentWidth = width
+            }
+        }
     }
 
-    private var marqueeContent: some View {
+    private var marqueeSegment: some View {
         HStack(spacing: 12) {
             ForEach(items, id: \.self) { item in
                 Text(item)
@@ -168,72 +173,18 @@ private struct RidgitsMarqueeBanner: View {
             }
         }
         .fixedSize()
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(key: MarqueeSegmentWidthKey.self, value: proxy.size.width)
+            }
+        }
     }
 }
 
-private struct RidgitsHeroStack: View {
-    var body: some View {
-        ZStack {
-            heroCard(color: RidgitsColors.border, offset: CGSize(width: 72, height: 54), rotation: -10, opacity: 0.55)
-            heroCard(color: RidgitsColors.hoverSurface, offset: CGSize(width: 48, height: 36), rotation: -6, opacity: 0.75)
-            heroCard(color: RidgitsColors.contextBar, offset: CGSize(width: 24, height: 18), rotation: -3, opacity: 0.9)
-            heroCard(color: RidgitsColors.surface, offset: .zero, rotation: 0, opacity: 1)
-                .overlay(
-                    Circle()
-                        .fill(RidgitsColors.charcoal)
-                        .frame(width: 56, height: 56)
-                        .overlay(RidgitsLogoView.onDark(size: 32))
-                )
-        }
-        .frame(height: 220)
-        .frame(maxWidth: .infinity)
-        .padding(.trailing, 40)
-    }
+private struct MarqueeSegmentWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
 
-    private func heroCard(
-        color: Color,
-        offset: CGSize,
-        rotation: Double,
-        opacity: Double
-    ) -> some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(color)
-            .frame(width: 180, height: 180)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(RidgitsColors.border, lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.12), radius: 20, x: 0, y: 12)
-            .rotation3DEffect(.degrees(rotation), axis: (x: 0, y: 1, z: 0))
-            .offset(offset)
-            .opacity(opacity)
-    }
-}
-
-private struct RidgitsFeatureRow: View {
-    let title: String
-    let icon: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: RidgitsRadius.sm)
-                .fill(RidgitsColors.ctaBlack)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.white)
-                )
-            Text(title)
-                .font(RidgitsTypography.body(14))
-                .foregroundStyle(RidgitsColors.textHeadline)
-            Spacer()
-        }
-        .padding(12)
-        .background(RidgitsColors.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                .stroke(RidgitsColors.border, lineWidth: 1)
-        )
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }

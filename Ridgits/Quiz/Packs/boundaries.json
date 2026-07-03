@@ -1,0 +1,1253 @@
+{
+  "id": "boundaries",
+  "questions": [
+    {
+      "id": "bnd_000",
+      "category": "Emotional Boundaries",
+      "text": "When a friend is upset, you typically:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel their pain as if it's your own (absorb it)"
+        },
+        {
+          "value": 1,
+          "label": "Listen supportively but keep separation"
+        },
+        {
+          "value": 2,
+          "label": "Try to fix it immediately to stop the feelings"
+        },
+        {
+          "value": 3,
+          "label": "Feel overwhelmed and withdraw"
+        }
+      ]
+    },
+    {
+      "id": "bnd_001",
+      "category": "Emotional Boundaries",
+      "text": "How comfortable are you saying 'no' to a request?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very uncomfortable - I feel guilty"
+        },
+        {
+          "value": 1,
+          "label": "It depends on who asks"
+        },
+        {
+          "value": 2,
+          "label": "Reasonably comfortable"
+        },
+        {
+          "value": 3,
+          "label": "Very comfortable - I protect my time"
+        }
+      ]
+    },
+    {
+      "id": "bnd_002",
+      "category": "Emotional Boundaries",
+      "text": "If someone criticizes you, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Internalize it and feel terrible"
+        },
+        {
+          "value": 1,
+          "label": "Consider if it's true, then decide"
+        },
+        {
+          "value": 2,
+          "label": "Defend myself aggressively"
+        },
+        {
+          "value": 3,
+          "label": "Dismiss it completely"
+        }
+      ]
+    },
+    {
+      "id": "bnd_003",
+      "category": "Emotional Boundaries",
+      "text": "Do you feel responsible for your partner's happiness?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, if they are unhappy I failed"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat, I want to contribute to it"
+        },
+        {
+          "value": 2,
+          "label": "No, we are responsible for ourselves"
+        },
+        {
+          "value": 3,
+          "label": "Not at all, that's their job"
+        }
+      ]
+    },
+    {
+      "id": "bnd_004",
+      "category": "Emotional Boundaries",
+      "text": "When you need help, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Wait for someone to notice"
+        },
+        {
+          "value": 1,
+          "label": "Hint at it"
+        },
+        {
+          "value": 2,
+          "label": "Ask clearly and directly"
+        },
+        {
+          "value": 3,
+          "label": "Never ask, I do it myself"
+        }
+      ]
+    },
+    {
+      "id": "bnd_005",
+      "category": "Emotional Boundaries",
+      "text": "Sharing personal information early in dating:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I overshare to build intimacy fast"
+        },
+        {
+          "value": 1,
+          "label": "I share a balanced amount"
+        },
+        {
+          "value": 2,
+          "label": "I hold back significantly"
+        },
+        {
+          "value": 3,
+          "label": "I share nothing personal"
+        }
+      ]
+    },
+    {
+      "id": "bnd_006",
+      "category": "Emotional Boundaries",
+      "text": "If a plan changes last minute, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Accommodate them even if it hurts me"
+        },
+        {
+          "value": 1,
+          "label": "Feel annoyed but adapt"
+        },
+        {
+          "value": 2,
+          "label": "Express frustration"
+        },
+        {
+          "value": 3,
+          "label": "Cancel the whole thing"
+        }
+      ]
+    },
+    {
+      "id": "bnd_007",
+      "category": "Emotional Boundaries",
+      "text": "How much does others' approval matter?",
+      "options": [
+        {
+          "value": 0,
+          "label": "It defines my worth"
+        },
+        {
+          "value": 1,
+          "label": "It matters a lot"
+        },
+        {
+          "value": 2,
+          "label": "It's nice but not essential"
+        },
+        {
+          "value": 3,
+          "label": "I don't care at all"
+        }
+      ]
+    },
+    {
+      "id": "bnd_008",
+      "category": "Emotional Boundaries",
+      "text": "When someone crosses a line, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stay silent to keep peace"
+        },
+        {
+          "value": 1,
+          "label": "Make a joke about it"
+        },
+        {
+          "value": 2,
+          "label": "Tell them to stop"
+        },
+        {
+          "value": 3,
+          "label": "Cut them out immediately"
+        }
+      ]
+    },
+    {
+      "id": "bnd_009",
+      "category": "Emotional Boundaries",
+      "text": "Do you tend to fix or save people?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, I attract 'projects'"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes I help too much"
+        },
+        {
+          "value": 2,
+          "label": "I offer support but don't fix"
+        },
+        {
+          "value": 3,
+          "label": "No, sink or swim"
+        }
+      ]
+    },
+    {
+      "id": "bnd_010",
+      "category": "Emotional Boundaries",
+      "text": "After a conflict, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Apologize even if not wrong"
+        },
+        {
+          "value": 1,
+          "label": "Analyze what happened"
+        },
+        {
+          "value": 2,
+          "label": "Wait for them to apologize"
+        },
+        {
+          "value": 3,
+          "label": "Pretend it didn't happen"
+        }
+      ]
+    },
+    {
+      "id": "bnd_011",
+      "category": "Emotional Boundaries",
+      "text": "Your emotional walls are:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Non-existent (Open book)"
+        },
+        {
+          "value": 1,
+          "label": "Low fences (Gated access)"
+        },
+        {
+          "value": 2,
+          "label": "High walls (Hard to climb)"
+        },
+        {
+          "value": 3,
+          "label": "Fortress (Impenetrable)"
+        }
+      ]
+    },
+    {
+      "id": "bnd_012",
+      "category": "Emotional Boundaries",
+      "text": "Saying what you really think:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I adjust my opinion to fit in"
+        },
+        {
+          "value": 1,
+          "label": "I filter heavily"
+        },
+        {
+          "value": 2,
+          "label": "I speak my truth mostly"
+        },
+        {
+          "value": 3,
+          "label": "I'm brutally honest"
+        }
+      ]
+    },
+    {
+      "id": "bnd_013",
+      "category": "Time",
+      "text": "How often do you feel drained by others?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constantly"
+        },
+        {
+          "value": 1,
+          "label": "Often"
+        },
+        {
+          "value": 2,
+          "label": "Occasionally"
+        },
+        {
+          "value": 3,
+          "label": "Rarely"
+        }
+      ]
+    },
+    {
+      "id": "bnd_014",
+      "category": "Time",
+      "text": "If you're busy and a friend calls:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I answer anyway"
+        },
+        {
+          "value": 1,
+          "label": "I text 'can't talk'"
+        },
+        {
+          "value": 2,
+          "label": "I ignore it and call back later"
+        },
+        {
+          "value": 3,
+          "label": "I get irritated"
+        }
+      ]
+    },
+    {
+      "id": "bnd_015",
+      "category": "Time",
+      "text": "Your schedule is typically:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Overbooked with others' needs"
+        },
+        {
+          "value": 1,
+          "label": "Busy but manageable"
+        },
+        {
+          "value": 2,
+          "label": "Balanced with me-time"
+        },
+        {
+          "value": 3,
+          "label": "Rigidly protected"
+        }
+      ]
+    },
+    {
+      "id": "bnd_016",
+      "category": "Time",
+      "text": "Doing favors you don't want to do:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I do them often"
+        },
+        {
+          "value": 1,
+          "label": "I make excuses"
+        },
+        {
+          "value": 2,
+          "label": "I politely decline"
+        },
+        {
+          "value": 3,
+          "label": "I say no bluntly"
+        }
+      ]
+    },
+    {
+      "id": "bnd_017",
+      "category": "Time",
+      "text": "How much alone time do you get?",
+      "options": [
+        {
+          "value": 0,
+          "label": "None, I feel guilty taking it"
+        },
+        {
+          "value": 1,
+          "label": "Not enough"
+        },
+        {
+          "value": 2,
+          "label": "Enough to recharge"
+        },
+        {
+          "value": 3,
+          "label": "As much as I want"
+        }
+      ]
+    },
+    {
+      "id": "bnd_018",
+      "category": "Time",
+      "text": "When people are late:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I wait indefinitely without complaint"
+        },
+        {
+          "value": 1,
+          "label": "I wait but feel resentful"
+        },
+        {
+          "value": 2,
+          "label": "I set a limit (e.g. 15 mins)"
+        },
+        {
+          "value": 3,
+          "label": "I leave immediately"
+        }
+      ]
+    },
+    {
+      "id": "bnd_019",
+      "category": "Time",
+      "text": "Work/Life boundaries:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I work/respond at all hours"
+        },
+        {
+          "value": 1,
+          "label": "I try to separate but fail"
+        },
+        {
+          "value": 2,
+          "label": "I have clear off-hours"
+        },
+        {
+          "value": 3,
+          "label": "I am unreachable outside work"
+        }
+      ]
+    },
+    {
+      "id": "bnd_020",
+      "category": "Time",
+      "text": "Resting feels like:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Laziness / Wasted time"
+        },
+        {
+          "value": 1,
+          "label": "Something I earn after work"
+        },
+        {
+          "value": 2,
+          "label": "Necessary recharging"
+        },
+        {
+          "value": 3,
+          "label": "My priority"
+        }
+      ]
+    },
+    {
+      "id": "bnd_021",
+      "category": "Time",
+      "text": "Canceling plans for self-care:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I never do it"
+        },
+        {
+          "value": 1,
+          "label": "I lie about why"
+        },
+        {
+          "value": 2,
+          "label": "I do it honestly if needed"
+        },
+        {
+          "value": 3,
+          "label": "I do it frequently"
+        }
+      ]
+    },
+    {
+      "id": "bnd_022",
+      "category": "Time",
+      "text": "Availability availability:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always available to everyone"
+        },
+        {
+          "value": 1,
+          "label": "Available to close circle only"
+        },
+        {
+          "value": 2,
+          "label": "Selective availability"
+        },
+        {
+          "value": 3,
+          "label": "Hard to reach"
+        }
+      ]
+    },
+    {
+      "id": "bnd_023",
+      "category": "Time",
+      "text": "Hosting/Planning:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I do all the work"
+        },
+        {
+          "value": 1,
+          "label": "I do more than my share"
+        },
+        {
+          "value": 2,
+          "label": "I share the load"
+        },
+        {
+          "value": 3,
+          "label": "I show up as a guest"
+        }
+      ]
+    },
+    {
+      "id": "bnd_024",
+      "category": "Time",
+      "text": "When tired:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I push through for others"
+        },
+        {
+          "value": 1,
+          "label": "I complain but keep going"
+        },
+        {
+          "value": 2,
+          "label": "I stop and rest"
+        },
+        {
+          "value": 3,
+          "label": "I disappear"
+        }
+      ]
+    },
+    {
+      "id": "bnd_025",
+      "category": "Time",
+      "text": "Responding to crisis:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I drop everything immediately"
+        },
+        {
+          "value": 1,
+          "label": "I help as much as I can"
+        },
+        {
+          "value": 2,
+          "label": "I assess if I can help"
+        },
+        {
+          "value": 3,
+          "label": "I avoid getting involved"
+        }
+      ]
+    },
+    {
+      "id": "bnd_026",
+      "category": "Digital",
+      "text": "Phone access:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Partner has full access/passwords"
+        },
+        {
+          "value": 1,
+          "label": "I share if asked"
+        },
+        {
+          "value": 2,
+          "label": "Private unless specific reason"
+        },
+        {
+          "value": 3,
+          "label": "Strictly private"
+        }
+      ]
+    },
+    {
+      "id": "bnd_027",
+      "category": "Physical",
+      "text": "Personal space:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I prefer constant closeness"
+        },
+        {
+          "value": 1,
+          "label": "I adapt to them"
+        },
+        {
+          "value": 2,
+          "label": "I need my bubble"
+        },
+        {
+          "value": 3,
+          "label": "Don't touch me without asking"
+        }
+      ]
+    },
+    {
+      "id": "bnd_028",
+      "category": "Digital",
+      "text": "Social media interactions:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I tag/post them constantly"
+        },
+        {
+          "value": 1,
+          "label": "I engage regularly"
+        },
+        {
+          "value": 2,
+          "label": "Minimal interaction"
+        },
+        {
+          "value": 3,
+          "label": "I keep relationship offline"
+        }
+      ]
+    },
+    {
+      "id": "bnd_029",
+      "category": "Physical",
+      "text": "PDA (Public Displays of Affection):",
+      "options": [
+        {
+          "value": 0,
+          "label": "Anytime, anywhere"
+        },
+        {
+          "value": 1,
+          "label": "If they initiate it"
+        },
+        {
+          "value": 2,
+          "label": "Comfortable with limits"
+        },
+        {
+          "value": 3,
+          "label": "Uncomfortable generally"
+        }
+      ]
+    },
+    {
+      "id": "bnd_030",
+      "category": "Digital",
+      "text": "Tracking location:",
+      "options": [
+        {
+          "value": 0,
+          "label": "We share locations 24/7"
+        },
+        {
+          "value": 1,
+          "label": "Share for safety mostly"
+        },
+        {
+          "value": 2,
+          "label": "Only temporarily"
+        },
+        {
+          "value": 3,
+          "label": "Never, it's invasive"
+        }
+      ]
+    },
+    {
+      "id": "bnd_031",
+      "category": "Physical",
+      "text": "Borrowing items:",
+      "options": [
+        {
+          "value": 0,
+          "label": "What's mine is yours"
+        },
+        {
+          "value": 1,
+          "label": "Ask first but usually yes"
+        },
+        {
+          "value": 2,
+          "label": "Some things are off limits"
+        },
+        {
+          "value": 3,
+          "label": "I don't share personal items"
+        }
+      ]
+    },
+    {
+      "id": "bnd_032",
+      "category": "Digital",
+      "text": "Response expectations:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Immediate replies expected"
+        },
+        {
+          "value": 1,
+          "label": "Timely replies expected"
+        },
+        {
+          "value": 2,
+          "label": "Reply when convenient"
+        },
+        {
+          "value": 3,
+          "label": "No expectations"
+        }
+      ]
+    },
+    {
+      "id": "bnd_033",
+      "category": "Physical",
+      "text": "Sleep preferences:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Cuddling all night mandatory"
+        },
+        {
+          "value": 1,
+          "label": "Start cuddling, sleep separate"
+        },
+        {
+          "value": 2,
+          "label": "Need my own space to sleep"
+        },
+        {
+          "value": 3,
+          "label": "Separate beds/rooms preferred"
+        }
+      ]
+    },
+    {
+      "id": "bnd_034",
+      "category": "Digital",
+      "text": "Unfollowing/Blocking:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I rarely do it, feels mean"
+        },
+        {
+          "value": 1,
+          "label": "Only for toxicity"
+        },
+        {
+          "value": 2,
+          "label": "Curate feed liberally"
+        },
+        {
+          "value": 3,
+          "label": "Quick to block"
+        }
+      ]
+    },
+    {
+      "id": "bnd_035",
+      "category": "Physical",
+      "text": "Guests in your home:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Open door policy anytime"
+        },
+        {
+          "value": 1,
+          "label": "Welcome with short notice"
+        },
+        {
+          "value": 2,
+          "label": "Planned visits only"
+        },
+        {
+          "value": 3,
+          "label": "My home is my sanctuary (no guests)"
+        }
+      ]
+    },
+    {
+      "id": "bnd_036",
+      "category": "Digital",
+      "text": "Digital detox:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Impossible for me"
+        },
+        {
+          "value": 1,
+          "label": "Hard but I try"
+        },
+        {
+          "value": 2,
+          "label": "Regular practice"
+        },
+        {
+          "value": 3,
+          "label": "I'm barely online anyway"
+        }
+      ]
+    },
+    {
+      "id": "bnd_037",
+      "category": "Physical",
+      "text": "Sexual boundaries:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Hard for me to say no"
+        },
+        {
+          "value": 1,
+          "label": "Go with the flow"
+        },
+        {
+          "value": 2,
+          "label": "Communicated clearly"
+        },
+        {
+          "value": 3,
+          "label": "Strict and rigid"
+        }
+      ]
+    },
+    {
+      "id": "bnd_038",
+      "category": "Values",
+      "text": "Compromise in relationships:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I give up what I want for them"
+        },
+        {
+          "value": 1,
+          "label": "I compromise often"
+        },
+        {
+          "value": 2,
+          "label": "I meet halfway"
+        },
+        {
+          "value": 3,
+          "label": "My way or highway"
+        }
+      ]
+    },
+    {
+      "id": "bnd_039",
+      "category": "Values",
+      "text": "Dealbreakers:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ignore them if I like someone"
+        },
+        {
+          "value": 1,
+          "label": "I negotiate them"
+        },
+        {
+          "value": 2,
+          "label": "I hold firm on big ones"
+        },
+        {
+          "value": 3,
+          "label": "One strike and you're out"
+        }
+      ]
+    },
+    {
+      "id": "bnd_040",
+      "category": "Values",
+      "text": "Money lending:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I lend even if I can't afford it"
+        },
+        {
+          "value": 1,
+          "label": "I lend to help out"
+        },
+        {
+          "value": 2,
+          "label": "Only amounts I can lose"
+        },
+        {
+          "value": 3,
+          "label": "Never lend money"
+        }
+      ]
+    },
+    {
+      "id": "bnd_041",
+      "category": "Values",
+      "text": "Political/Religious differences:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I adopt their views"
+        },
+        {
+          "value": 1,
+          "label": "Avoid talking about it"
+        },
+        {
+          "value": 2,
+          "label": "Respectful disagreement"
+        },
+        {
+          "value": 3,
+          "label": "Must match mine perfectly"
+        }
+      ]
+    },
+    {
+      "id": "bnd_042",
+      "category": "Values",
+      "text": "Tolerating bad behavior:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I make excuses for them"
+        },
+        {
+          "value": 1,
+          "label": "I hope it changes"
+        },
+        {
+          "value": 2,
+          "label": "I address it once"
+        },
+        {
+          "value": 3,
+          "label": "Immediate exit"
+        }
+      ]
+    },
+    {
+      "id": "bnd_043",
+      "category": "Values",
+      "text": "Self-respect vs relationship:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Relationship comes first"
+        },
+        {
+          "value": 1,
+          "label": "It's a balance"
+        },
+        {
+          "value": 2,
+          "label": "Self-respect leads"
+        },
+        {
+          "value": 3,
+          "label": "Self-preservation above all"
+        }
+      ]
+    },
+    {
+      "id": "bnd_044",
+      "category": "Values",
+      "text": "Second chances:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unlimited chances"
+        },
+        {
+          "value": 1,
+          "label": "Many chances"
+        },
+        {
+          "value": 2,
+          "label": "One or two max"
+        },
+        {
+          "value": 3,
+          "label": "Zero tolerance"
+        }
+      ]
+    },
+    {
+      "id": "bnd_045",
+      "category": "Values",
+      "text": "Listening to intuition:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ignore red flags"
+        },
+        {
+          "value": 1,
+          "label": "I doubt my gut"
+        },
+        {
+          "value": 2,
+          "label": "I trust it mostly"
+        },
+        {
+          "value": 3,
+          "label": "I follow it blindly"
+        }
+      ]
+    },
+    {
+      "id": "bnd_046",
+      "category": "Values",
+      "text": "Peer pressure:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I cave easily"
+        },
+        {
+          "value": 1,
+          "label": "Hard to resist"
+        },
+        {
+          "value": 2,
+          "label": "I can stand my ground"
+        },
+        {
+          "value": 3,
+          "label": "Unaffected by it"
+        }
+      ]
+    },
+    {
+      "id": "bnd_047",
+      "category": "Values",
+      "text": "Changing for a partner:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I mold myself to them"
+        },
+        {
+          "value": 1,
+          "label": "I change to please them"
+        },
+        {
+          "value": 2,
+          "label": "I grow, but don't change core"
+        },
+        {
+          "value": 3,
+          "label": "I refuse to change"
+        }
+      ]
+    },
+    {
+      "id": "bnd_048",
+      "category": "Values",
+      "text": "Respecting others' boundaries:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I take them personally/feel rejected"
+        },
+        {
+          "value": 1,
+          "label": "I struggle but try"
+        },
+        {
+          "value": 2,
+          "label": "I respect them"
+        },
+        {
+          "value": 3,
+          "label": "I appreciate them"
+        }
+      ]
+    },
+    {
+      "id": "bnd_049",
+      "category": "Values",
+      "text": "Walking away:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Impossible until forced"
+        },
+        {
+          "value": 1,
+          "label": "Very difficult/dragged out"
+        },
+        {
+          "value": 2,
+          "label": "Doable when necessary"
+        },
+        {
+          "value": 3,
+          "label": "Easy and quick"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "bnd_arch_1",
+      "name": "The Open Door",
+      "description": "You have highly permeable boundaries. You are generous, empathetic, and often put others' needs before your own, risking burnout and resentment.",
+      "characteristics": [
+        "High empathy",
+        "Difficulty saying no",
+        "Fears rejection",
+        "Over-gives"
+      ],
+      "suggestions": [
+        "Practice small 'no's daily",
+        "Pause before agreeing to requests",
+        "Recognize that boundaries create respect"
+      ]
+    },
+    {
+      "id": "bnd_arch_2",
+      "name": "The Fortress",
+      "description": "You have rigid, impenetrable boundaries. You protect yourself fiercely, but may keep out connection and intimacy in the process.",
+      "characteristics": [
+        "Highly self-protective",
+        "Avoids vulnerability",
+        "Independent to a fault",
+        "Quick to cut ties"
+      ],
+      "suggestions": [
+        "Experiment with lowering the drawbridge",
+        "Distinguish between safe and unsafe vulnerability",
+        "Allow people to support you"
+      ]
+    },
+    {
+      "id": "bnd_arch_3",
+      "name": "The Chameleon",
+      "description": "Your boundaries shift depending on who you are with. You adapt to avoid conflict or gain approval, often losing sight of your own needs.",
+      "characteristics": [
+        "High adaptability",
+        "Conflict avoidant",
+        "Unclear sense of self",
+        "People-pleasing"
+      ],
+      "suggestions": [
+        "Identify your non-negotiables",
+        "Practice stating your preference first",
+        "Notice when you are performing"
+      ]
+    },
+    {
+      "id": "bnd_arch_4",
+      "name": "The Negotiator",
+      "description": "You have healthy, flexible boundaries. You communicate needs clearly but can adapt. You respect yourself and others simultaneously.",
+      "characteristics": [
+        "Clear communication",
+        "Self-respect",
+        "Flexibility",
+        "Resilience"
+      ],
+      "suggestions": [
+        "Continue modeling healthy limits",
+        "Teach others how to treat you",
+        "Maintain self-care routines"
+      ]
+    },
+    {
+      "id": "bnd_arch_5",
+      "name": "The Guardian",
+      "description": "You are protective of your time and energy but fair. You prioritize stability and clear rules in relationships.",
+      "characteristics": [
+        "Consistent limits",
+        "Predictable",
+        "Protective",
+        "Sometimes rigid"
+      ],
+      "suggestions": [
+        "Ensure rules don't stifle spontaneity",
+        "Check in if rules need updating",
+        "Communicate the 'why' behind limits"
+      ]
+    },
+    {
+      "id": "bnd_arch_6",
+      "name": "The Over-Giver",
+      "description": "You define your worth by how much you do for others. Your boundaries are non-existent when it comes to service and helping.",
+      "characteristics": [
+        "Service-oriented",
+        "Self-sacrificing",
+        "Resentful secretly",
+        "Needs to be needed"
+      ],
+      "suggestions": [
+        "Stop 'saving' people",
+        "Let others experience consequences",
+        "Give from overflow, not depletion"
+      ]
+    }
+  ]
+}

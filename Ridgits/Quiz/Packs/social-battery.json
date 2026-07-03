@@ -1,0 +1,1262 @@
+{
+  "id": "social-battery",
+  "questions": [
+    {
+      "id": "soc_000",
+      "category": "Energy",
+      "text": "After spending time with people, you typically feel:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Energized and wanting more social time"
+        },
+        {
+          "value": 1,
+          "label": "Content but ready for some alone time"
+        },
+        {
+          "value": 2,
+          "label": "Drained and need to recharge alone"
+        },
+        {
+          "value": 3,
+          "label": "Completely exhausted and depleted"
+        }
+      ]
+    },
+    {
+      "id": "soc_001",
+      "category": "Energy",
+      "text": "How do you recharge your social battery?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Being around people energizes me"
+        },
+        {
+          "value": 1,
+          "label": "Mix of social time and solo activities"
+        },
+        {
+          "value": 2,
+          "label": "Quiet alone time with minimal stimulation"
+        },
+        {
+          "value": 3,
+          "label": "Complete isolation and solitude"
+        }
+      ]
+    },
+    {
+      "id": "soc_002",
+      "category": "Energy",
+      "text": "How much alone time do you need daily?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very little - I thrive on social interaction"
+        },
+        {
+          "value": 1,
+          "label": "1-2 hours to decompress"
+        },
+        {
+          "value": 2,
+          "label": "3-4 hours to feel recharged"
+        },
+        {
+          "value": 3,
+          "label": "Most of my day - minimal social interaction"
+        }
+      ]
+    },
+    {
+      "id": "soc_003",
+      "category": "Energy",
+      "text": "After a full day of work/socializing, you prefer to:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Go out with friends or attend events"
+        },
+        {
+          "value": 1,
+          "label": "Have quiet dinner with close friend/partner"
+        },
+        {
+          "value": 2,
+          "label": "Be alone and do calming activities"
+        },
+        {
+          "value": 3,
+          "label": "Be completely alone in silence"
+        }
+      ]
+    },
+    {
+      "id": "soc_004",
+      "category": "Energy",
+      "text": "How do you feel about surprise visitors or calls?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excited! Always happy for unexpected connection"
+        },
+        {
+          "value": 1,
+          "label": "Depends on my mood and energy level"
+        },
+        {
+          "value": 2,
+          "label": "Usually not happy - I need advance notice"
+        },
+        {
+          "value": 3,
+          "label": "Extremely uncomfortable - major boundary violation"
+        }
+      ]
+    },
+    {
+      "id": "soc_005",
+      "category": "Energy",
+      "text": "Your ideal weekend includes:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Multiple social activities and events"
+        },
+        {
+          "value": 1,
+          "label": "Balance of social plans and downtime"
+        },
+        {
+          "value": 2,
+          "label": "Mostly alone with one social activity"
+        },
+        {
+          "value": 3,
+          "label": "Complete solitude and no social obligations"
+        }
+      ]
+    },
+    {
+      "id": "soc_006",
+      "category": "Energy",
+      "text": "How quickly does your social battery drain?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely drains - social time charges me"
+        },
+        {
+          "value": 1,
+          "label": "Gradually - can do several hours before needing break"
+        },
+        {
+          "value": 2,
+          "label": "Relatively quickly - 2-3 hours is my limit"
+        },
+        {
+          "value": 3,
+          "label": "Very quickly - I'm drained within an hour"
+        }
+      ]
+    },
+    {
+      "id": "soc_007",
+      "category": "Energy",
+      "text": "How do you feel about small talk?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I enjoy it - it's a way to connect"
+        },
+        {
+          "value": 1,
+          "label": "It's fine but I prefer deeper conversation"
+        },
+        {
+          "value": 2,
+          "label": "It drains me - I find it superficial"
+        },
+        {
+          "value": 3,
+          "label": "I actively avoid it - it's exhausting"
+        }
+      ]
+    },
+    {
+      "id": "soc_008",
+      "category": "Energy",
+      "text": "When your battery is low, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely happens - I thrive in social settings"
+        },
+        {
+          "value": 1,
+          "label": "Take a short break then return to socializing"
+        },
+        {
+          "value": 2,
+          "label": "Need several hours alone to recover"
+        },
+        {
+          "value": 3,
+          "label": "Need a full day or more of isolation"
+        }
+      ]
+    },
+    {
+      "id": "soc_009",
+      "category": "Energy",
+      "text": "How do you feel in large groups?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excited and energized"
+        },
+        {
+          "value": 1,
+          "label": "Okay if I can have smaller conversations"
+        },
+        {
+          "value": 2,
+          "label": "Uncomfortable and overwhelmed"
+        },
+        {
+          "value": 3,
+          "label": "Extremely anxious and depleted"
+        }
+      ]
+    },
+    {
+      "id": "soc_010",
+      "category": "Energy",
+      "text": "Your energy pattern throughout the day is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Builds with social interaction"
+        },
+        {
+          "value": 1,
+          "label": "Steady with social breaks"
+        },
+        {
+          "value": 2,
+          "label": "Depletes with social interaction"
+        },
+        {
+          "value": 3,
+          "label": "Rapidly depletes - protective of energy"
+        }
+      ]
+    },
+    {
+      "id": "soc_011",
+      "category": "Energy",
+      "text": "How do you recover from a social event that drained you?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Don't usually feel drained from social events"
+        },
+        {
+          "value": 1,
+          "label": "Quick rest then back to normal"
+        },
+        {
+          "value": 2,
+          "label": "Need several hours of quiet time"
+        },
+        {
+          "value": 3,
+          "label": "Need a full day or more to recover"
+        }
+      ]
+    },
+    {
+      "id": "soc_012",
+      "category": "Energy",
+      "text": "How do you feel about back-to-back social commitments?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it! More the merrier"
+        },
+        {
+          "value": 1,
+          "label": "Can handle it occasionally"
+        },
+        {
+          "value": 2,
+          "label": "Avoid it - need buffer time between"
+        },
+        {
+          "value": 3,
+          "label": "Never do it - would completely drain me"
+        }
+      ]
+    },
+    {
+      "id": "soc_013",
+      "category": "Energy",
+      "text": "When you're low energy, social interaction feels:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Helpful - it lifts my mood"
+        },
+        {
+          "value": 1,
+          "label": "Neutral - depends on the interaction"
+        },
+        {
+          "value": 2,
+          "label": "Challenging - I push through"
+        },
+        {
+          "value": 3,
+          "label": "Impossible - I avoid it entirely"
+        }
+      ]
+    },
+    {
+      "id": "soc_014",
+      "category": "Energy",
+      "text": "How do you feel about being alone for extended periods?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Lonely and restless"
+        },
+        {
+          "value": 1,
+          "label": "Fine for a while, then miss people"
+        },
+        {
+          "value": 2,
+          "label": "Comfortable and peaceful"
+        },
+        {
+          "value": 3,
+          "label": "Ideal - I thrive in solitude"
+        }
+      ]
+    },
+    {
+      "id": "soc_015",
+      "category": "Preferences",
+      "text": "Your ideal social gathering size is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Large party or event (20+ people)"
+        },
+        {
+          "value": 1,
+          "label": "Medium gathering (8-15 people)"
+        },
+        {
+          "value": 2,
+          "label": "Small group (3-5 people)"
+        },
+        {
+          "value": 3,
+          "label": "One-on-one only"
+        }
+      ]
+    },
+    {
+      "id": "soc_016",
+      "category": "Preferences",
+      "text": "How do you prefer to socialize?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Frequent, varied social activities"
+        },
+        {
+          "value": 1,
+          "label": "Regular meetups with established friends"
+        },
+        {
+          "value": 2,
+          "label": "Infrequent but meaningful gatherings"
+        },
+        {
+          "value": 3,
+          "label": "Very rare, carefully selected interactions"
+        }
+      ]
+    },
+    {
+      "id": "soc_017",
+      "category": "Preferences",
+      "text": "How do you feel about phone calls?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love them - prefer talking to texting"
+        },
+        {
+          "value": 1,
+          "label": "Fine for close friends/family"
+        },
+        {
+          "value": 2,
+          "label": "Avoid when possible - prefer text"
+        },
+        {
+          "value": 3,
+          "label": "Rarely answer - cause anxiety"
+        }
+      ]
+    },
+    {
+      "id": "soc_018",
+      "category": "Preferences",
+      "text": "Your stance on last-minute plans:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love spontaneity - usually say yes"
+        },
+        {
+          "value": 1,
+          "label": "Open to it if I have energy"
+        },
+        {
+          "value": 2,
+          "label": "Prefer advance notice - usually decline"
+        },
+        {
+          "value": 3,
+          "label": "Almost never accept - need mental preparation"
+        }
+      ]
+    },
+    {
+      "id": "soc_019",
+      "category": "Preferences",
+      "text": "How many close friends do you need?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Many - I have a large social circle"
+        },
+        {
+          "value": 1,
+          "label": "Several close friends (5-8)"
+        },
+        {
+          "value": 2,
+          "label": "Few close friends (2-4)"
+        },
+        {
+          "value": 3,
+          "label": "1-2 very close friends is enough"
+        }
+      ]
+    },
+    {
+      "id": "soc_020",
+      "category": "Preferences",
+      "text": "How do you handle social obligations you don't want to attend?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Usually go and end up enjoying it"
+        },
+        {
+          "value": 1,
+          "label": "Assess my energy and decide"
+        },
+        {
+          "value": 2,
+          "label": "Often cancel or decline"
+        },
+        {
+          "value": 3,
+          "label": "Avoid committing in the first place"
+        }
+      ]
+    },
+    {
+      "id": "soc_021",
+      "category": "Preferences",
+      "text": "Your preferred way to spend time with friends:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Active outings and events"
+        },
+        {
+          "value": 1,
+          "label": "Mix of going out and staying in"
+        },
+        {
+          "value": 2,
+          "label": "Quiet activities at home"
+        },
+        {
+          "value": 3,
+          "label": "Parallel activities with minimal interaction"
+        }
+      ]
+    },
+    {
+      "id": "soc_022",
+      "category": "Preferences",
+      "text": "How comfortable are you saying no to social invitations?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely say no - I love socializing"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat comfortable - I prioritize energy"
+        },
+        {
+          "value": 2,
+          "label": "Very comfortable - I protect my energy"
+        },
+        {
+          "value": 3,
+          "label": "I default to no unless very motivated"
+        }
+      ]
+    },
+    {
+      "id": "soc_023",
+      "category": "Preferences",
+      "text": "How do you feel about being the center of attention?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it - I thrive on it"
+        },
+        {
+          "value": 1,
+          "label": "Don't mind it occasionally"
+        },
+        {
+          "value": 2,
+          "label": "Uncomfortable - I prefer supporting role"
+        },
+        {
+          "value": 3,
+          "label": "Terrible - I avoid it at all costs"
+        }
+      ]
+    },
+    {
+      "id": "soc_024",
+      "category": "Preferences",
+      "text": "Your ideal vacation with friends/partner includes:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constant together time and activities"
+        },
+        {
+          "value": 1,
+          "label": "Mix of together time and independent activities"
+        },
+        {
+          "value": 2,
+          "label": "Significant alone time built in"
+        },
+        {
+          "value": 3,
+          "label": "Separate accommodations or solo vacation preferred"
+        }
+      ]
+    },
+    {
+      "id": "soc_025",
+      "category": "Preferences",
+      "text": "How do you handle networking or meeting new people?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excited - love meeting new people"
+        },
+        {
+          "value": 1,
+          "label": "Can do it when needed"
+        },
+        {
+          "value": 2,
+          "label": "Draining but I manage"
+        },
+        {
+          "value": 3,
+          "label": "Extremely difficult and exhausting"
+        }
+      ]
+    },
+    {
+      "id": "soc_026",
+      "category": "Preferences",
+      "text": "How many social activities per week feels right?",
+      "options": [
+        {
+          "value": 0,
+          "label": "5+ times a week"
+        },
+        {
+          "value": 1,
+          "label": "3-4 times a week"
+        },
+        {
+          "value": 2,
+          "label": "1-2 times a week"
+        },
+        {
+          "value": 3,
+          "label": "Once a week or less"
+        }
+      ]
+    },
+    {
+      "id": "soc_027",
+      "category": "Preferences",
+      "text": "Your relationship with social media interaction:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Actively engage - it's energizing"
+        },
+        {
+          "value": 1,
+          "label": "Moderate use - enjoy but need breaks"
+        },
+        {
+          "value": 2,
+          "label": "Minimal use - find it draining"
+        },
+        {
+          "value": 3,
+          "label": "Rarely engage - it depletes me"
+        }
+      ]
+    },
+    {
+      "id": "soc_028",
+      "category": "Relationships",
+      "text": "In a relationship, how much together time do you need?",
+      "options": [
+        {
+          "value": 0,
+          "label": "As much as possible - love being together"
+        },
+        {
+          "value": 1,
+          "label": "Several times a week"
+        },
+        {
+          "value": 2,
+          "label": "A few times a week with space between"
+        },
+        {
+          "value": 3,
+          "label": "Limited time - need lots of independence"
+        }
+      ]
+    },
+    {
+      "id": "soc_029",
+      "category": "Relationships",
+      "text": "How do you feel when a partner needs a lot of social time?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Great - I do too!"
+        },
+        {
+          "value": 1,
+          "label": "Fine - I'll join sometimes"
+        },
+        {
+          "value": 2,
+          "label": "Challenging - we need compromise"
+        },
+        {
+          "value": 3,
+          "label": "Incompatible - major source of conflict"
+        }
+      ]
+    },
+    {
+      "id": "soc_030",
+      "category": "Relationships",
+      "text": "How important is it that your partner understands your social battery?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not very - I'm socially flexible"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat - helps avoid misunderstandings"
+        },
+        {
+          "value": 2,
+          "label": "Very important - crucial for compatibility"
+        },
+        {
+          "value": 3,
+          "label": "Essential - deal-breaker if they don't get it"
+        }
+      ]
+    },
+    {
+      "id": "soc_031",
+      "category": "Relationships",
+      "text": "When dating, how quickly do you need alone time after dates?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I don't - could spend days together"
+        },
+        {
+          "value": 1,
+          "label": "Not immediately but eventually"
+        },
+        {
+          "value": 2,
+          "label": "Pretty soon - within hours"
+        },
+        {
+          "value": 3,
+          "label": "Immediately - I need to decompress"
+        }
+      ]
+    },
+    {
+      "id": "soc_032",
+      "category": "Relationships",
+      "text": "How do you handle a partner who wants constant communication?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it - I want that too"
+        },
+        {
+          "value": 1,
+          "label": "Can handle regular check-ins"
+        },
+        {
+          "value": 2,
+          "label": "Feels overwhelming - need boundaries"
+        },
+        {
+          "value": 3,
+          "label": "Suffocating - major red flag"
+        }
+      ]
+    },
+    {
+      "id": "soc_033",
+      "category": "Relationships",
+      "text": "Your ideal living situation with a partner:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Together all the time - shared space"
+        },
+        {
+          "value": 1,
+          "label": "Together but with personal spaces"
+        },
+        {
+          "value": 2,
+          "label": "Separate rooms/spaces within home"
+        },
+        {
+          "value": 3,
+          "label": "Separate homes - visit regularly"
+        }
+      ]
+    },
+    {
+      "id": "soc_034",
+      "category": "Relationships",
+      "text": "How do you feel about spending holidays with partner's family?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excited - love big family gatherings"
+        },
+        {
+          "value": 1,
+          "label": "Happy to participate in moderation"
+        },
+        {
+          "value": 2,
+          "label": "Tolerate but need breaks"
+        },
+        {
+          "value": 3,
+          "label": "Extremely draining - avoid when possible"
+        }
+      ]
+    },
+    {
+      "id": "soc_035",
+      "category": "Relationships",
+      "text": "When you need alone time, your partner should:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I rarely need alone time in relationships"
+        },
+        {
+          "value": 1,
+          "label": "Give me an hour or two"
+        },
+        {
+          "value": 2,
+          "label": "Give me several hours or a day"
+        },
+        {
+          "value": 3,
+          "label": "Understand I need regular extended time alone"
+        }
+      ]
+    },
+    {
+      "id": "soc_036",
+      "category": "Relationships",
+      "text": "How do you balance friend time vs partner time?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love doing both - very social"
+        },
+        {
+          "value": 1,
+          "label": "Naturally balance both"
+        },
+        {
+          "value": 2,
+          "label": "Struggle - limited social energy"
+        },
+        {
+          "value": 3,
+          "label": "Barely manage partner time - little left for friends"
+        }
+      ]
+    },
+    {
+      "id": "soc_037",
+      "category": "Relationships",
+      "text": "Your feelings about couples who spend all their time together:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Admire it - relationship goals"
+        },
+        {
+          "value": 1,
+          "label": "To each their own"
+        },
+        {
+          "value": 2,
+          "label": "Seems codependent"
+        },
+        {
+          "value": 3,
+          "label": "Sounds suffocating and unhealthy"
+        }
+      ]
+    },
+    {
+      "id": "soc_038",
+      "category": "Relationships",
+      "text": "How much do you text/call your partner during the day?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constantly - love staying connected"
+        },
+        {
+          "value": 1,
+          "label": "A few times with meaningful updates"
+        },
+        {
+          "value": 2,
+          "label": "Minimal - mostly logistics"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - prefer face-to-face time"
+        }
+      ]
+    },
+    {
+      "id": "soc_039",
+      "category": "Relationships",
+      "text": "Past relationship conflicts often involved:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not enough shared social activities"
+        },
+        {
+          "value": 1,
+          "label": "Balancing different social needs"
+        },
+        {
+          "value": 2,
+          "label": "Me needing more space than partner liked"
+        },
+        {
+          "value": 3,
+          "label": "Partners feeling neglected by my need for alone time"
+        }
+      ]
+    },
+    {
+      "id": "soc_040",
+      "category": "Awareness",
+      "text": "How aware are you of your current social battery level?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very aware - I track it actively"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat aware - notice when low"
+        },
+        {
+          "value": 2,
+          "label": "Limited awareness - often run on empty"
+        },
+        {
+          "value": 3,
+          "label": "Not aware until I crash"
+        }
+      ]
+    },
+    {
+      "id": "soc_041",
+      "category": "Awareness",
+      "text": "How well do you communicate your social needs?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very clearly and proactively"
+        },
+        {
+          "value": 1,
+          "label": "Pretty well when asked"
+        },
+        {
+          "value": 2,
+          "label": "Struggle to articulate them"
+        },
+        {
+          "value": 3,
+          "label": "Hide them to avoid seeming antisocial"
+        }
+      ]
+    },
+    {
+      "id": "soc_042",
+      "category": "Awareness",
+      "text": "How do you feel about your social battery needs?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Fully accepting and comfortable"
+        },
+        {
+          "value": 1,
+          "label": "Mostly accepting"
+        },
+        {
+          "value": 2,
+          "label": "Wish I needed less alone time"
+        },
+        {
+          "value": 3,
+          "label": "Ashamed or frustrated by my limits"
+        }
+      ]
+    },
+    {
+      "id": "soc_043",
+      "category": "Awareness",
+      "text": "How good are you at honoring your social limits?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excellent - I protect my energy"
+        },
+        {
+          "value": 1,
+          "label": "Pretty good - occasional overextension"
+        },
+        {
+          "value": 2,
+          "label": "Poor - often push beyond limits"
+        },
+        {
+          "value": 3,
+          "label": "Very poor - regularly burn out"
+        }
+      ]
+    },
+    {
+      "id": "soc_044",
+      "category": "Awareness",
+      "text": "Do you feel guilty about needing alone time?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not at all - it's self-care"
+        },
+        {
+          "value": 1,
+          "label": "Occasionally feel guilty"
+        },
+        {
+          "value": 2,
+          "label": "Often feel guilty"
+        },
+        {
+          "value": 3,
+          "label": "Constantly feel guilty and selfish"
+        }
+      ]
+    },
+    {
+      "id": "soc_045",
+      "category": "Awareness",
+      "text": "How well do others understand your social battery?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very well - I've communicated it clearly"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat - close people get it"
+        },
+        {
+          "value": 2,
+          "label": "Poorly - often misunderstood"
+        },
+        {
+          "value": 3,
+          "label": "Not at all - they think I'm being rude/distant"
+        }
+      ]
+    },
+    {
+      "id": "soc_046",
+      "category": "Awareness",
+      "text": "What happens when you ignore your social battery needs?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely happens - I'm attuned to them"
+        },
+        {
+          "value": 1,
+          "label": "Get tired but recover quickly"
+        },
+        {
+          "value": 2,
+          "label": "Become irritable and withdrawn"
+        },
+        {
+          "value": 3,
+          "label": "Completely burn out or shut down"
+        }
+      ]
+    },
+    {
+      "id": "soc_047",
+      "category": "Awareness",
+      "text": "How do you prevent social burnout?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not an issue - socializing energizes me"
+        },
+        {
+          "value": 1,
+          "label": "Balance social time with rest"
+        },
+        {
+          "value": 2,
+          "label": "Carefully manage and limit social commitments"
+        },
+        {
+          "value": 3,
+          "label": "Avoid most social situations preventatively"
+        }
+      ]
+    },
+    {
+      "id": "soc_048",
+      "category": "Awareness",
+      "text": "How has your awareness of your social battery evolved?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always been naturally social"
+        },
+        {
+          "value": 1,
+          "label": "Learned to understand and manage it"
+        },
+        {
+          "value": 2,
+          "label": "Still learning - improving"
+        },
+        {
+          "value": 3,
+          "label": "Struggle to understand or accept it"
+        }
+      ]
+    },
+    {
+      "id": "soc_049",
+      "category": "Awareness",
+      "text": "How satisfied are you with your social life?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very satisfied - it matches my needs"
+        },
+        {
+          "value": 1,
+          "label": "Mostly satisfied with minor adjustments needed"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat unsatisfied - working on changes"
+        },
+        {
+          "value": 3,
+          "label": "Very unsatisfied - major disconnect"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Social Energizer",
+      "description": "You gain energy from social interaction and thrive in group settings. Being alone for too long drains you. You're the connector who brings people together and creates vibrant social circles.",
+      "characteristics": [
+        "Energized by social interaction",
+        "Large social circle",
+        "Enjoys frequent gatherings",
+        "Feels lonely when alone too long"
+      ],
+      "suggestions": [
+        "Build in some quiet time to prevent burnout",
+        "Practice being comfortable with solitude",
+        "Be mindful that others may need more alone time",
+        "Ensure social activities are meaningful, not just frequent",
+        "Find partners/friends who match your social energy"
+      ]
+    },
+    {
+      "name": "The Balanced Ambivert",
+      "description": "You thrive on a healthy balance of social time and solitude. You can adapt to different social situations but need to recharge appropriately. You're comfortable both in groups and alone.",
+      "characteristics": [
+        "Flexible social energy",
+        "Adapts to situations well",
+        "Needs balance of social/alone time",
+        "Good at self-regulation"
+      ],
+      "suggestions": [
+        "Continue honoring your need for balance",
+        "Communicate your needs clearly to others",
+        "Don't over-schedule social commitments",
+        "Check in with yourself regularly about energy levels",
+        "Model healthy boundaries for others"
+      ]
+    },
+    {
+      "name": "The Selective Socializer",
+      "description": "You enjoy meaningful social connections but in limited doses. Quality over quantity is your motto. You prefer small groups and one-on-one time. Frequent socializing drains you significantly.",
+      "characteristics": [
+        "Prefers quality over quantity",
+        "Small social circle",
+        "Enjoys deep conversations",
+        "Needs significant recharge time"
+      ],
+      "suggestions": [
+        "Honor your social limits without guilt",
+        "Choose quality interactions over obligation",
+        "Communicate your needs to friends/partners",
+        "Build in recovery time after social events",
+        "Find friends who respect your boundaries"
+      ]
+    },
+    {
+      "name": "The Introverted Recharger",
+      "description": "Social interaction significantly drains your energy, even when you enjoy it. You need substantial alone time to recharge and function well. You're highly sensitive to stimulation and prefer calm, quiet environments.",
+      "characteristics": [
+        "Drains quickly in social settings",
+        "Needs extended alone time",
+        "Sensitive to overstimulation",
+        "Values solitude highly"
+      ],
+      "suggestions": [
+        "Protect your alone time fiercely",
+        "Schedule recovery time after social events",
+        "Educate partners/friends about your needs",
+        "Choose low-stimulation social activities",
+        "Don't apologize for your energy needs",
+        "Consider careers/lifestyles that honor your nature"
+      ]
+    },
+    {
+      "name": "The Social Anxiety Manager",
+      "description": "Your low social battery may be driven more by anxiety than natural temperament. Social situations trigger stress responses that drain you. With support and strategies, your tolerance could expand.",
+      "characteristics": [
+        "Anxiety in social situations",
+        "Avoids social interaction",
+        "Drains quickly from stress",
+        "May want more connection but feels blocked"
+      ],
+      "suggestions": [
+        "Consider therapy for social anxiety",
+        "Practice gradual exposure to social situations",
+        "Develop coping strategies for anxiety",
+        "Distinguish anxiety from natural introversion",
+        "Join supportive groups or communities",
+        "Be compassionate with yourself during growth"
+      ]
+    },
+    {
+      "name": "The Highly Sensitive Hermit",
+      "description": "You're extremely sensitive to social stimulation and prefer extensive solitude. Large amounts of alone time are essential for your wellbeing. You may have just 1-2 close relationships that feel manageable.",
+      "characteristics": [
+        "Highly sensitive to stimulation",
+        "Prefers extensive solitude",
+        "Very limited social needs",
+        "Deep need for quiet and peace"
+      ],
+      "suggestions": [
+        "Honor your unique needs without shame",
+        "Create a life that supports your nature",
+        "Find understanding friends/partners",
+        "Set very clear boundaries early",
+        "Ensure you have meaningful connection even if limited",
+        "Consider whether trauma or other factors need addressing"
+      ]
+    }
+  ]
+}

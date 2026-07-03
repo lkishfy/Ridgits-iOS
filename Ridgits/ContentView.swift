@@ -5,6 +5,7 @@ import FirebaseAuth
 struct ContentView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var ridgitsStore: RidgitsStore
+    @EnvironmentObject private var referralStore: RidgitsReferralStore
 
     @State private var currentAppleNonce: String?
     @State private var showError = false
@@ -12,6 +13,10 @@ struct ContentView: View {
     @State private var quizCompleted = false
     @State private var profileComplete = false
     @State private var isBootstrapping = false
+    @State private var showEmailAuthSheet = false
+    @State private var sessionReady = false
+    @State private var needsBirthYear = false
+    @State private var needsReferralWelcome = false
 
     var body: some View {
         Group {
@@ -19,10 +24,18 @@ struct ContentView: View {
                 RidgitsLoadingView()
             } else if !authManager.userIsLoggedIn {
                 loginView
-            } else if ridgitsStore.isLoadingAccess {
+            } else if ridgitsStore.isLoadingAccess && !sessionReady {
                 RidgitsLoadingView()
+            } else if needsReferralWelcome {
+                ReferralWelcomeView {
+                    needsReferralWelcome = false
+                }
+            } else if needsBirthYear {
+                BirthYearPromptView {
+                    needsBirthYear = false
+                }
             } else if !quizCompleted {
-                QuizView {
+                QuizView(mode: .onboarding) {
                     quizCompleted = true
                 }
             } else if !profileComplete {
@@ -39,7 +52,10 @@ struct ContentView: View {
             } else {
                 quizCompleted = false
                 profileComplete = false
+                sessionReady = false
+                needsReferralWelcome = false
                 ridgitsStore.reset()
+                referralStore.reset()
             }
         }
         .alert("Error", isPresented: $showError) {
@@ -47,25 +63,56 @@ struct ContentView: View {
         } message: {
             Text(errorMessage ?? "Something went wrong.")
         }
+        .sheet(isPresented: $showEmailAuthSheet) {
+            EmailAuthSheet(
+                onSignIn: { email, password in
+                    try await authManager.signInWithEmail(email: email, password: password)
+                },
+                onSignUp: { email, password, birthYear in
+                    try await authManager.createAccountWithEmail(
+                        email: email,
+                        password: password,
+                        birthYear: birthYear
+                    )
+                }
+            )
+        }
     }
 
     private var loginView: some View {
         LoginView(
             onAppleRequest: configureAppleRequest,
             onAppleCompletion: handleAppleSignIn,
-            onGoogleSignIn: signInWithGoogle
+            onGoogleSignIn: signInWithGoogle,
+            onEmailSignIn: { showEmailAuthSheet = true }
         )
     }
 
     private func bootstrapSession() async {
         isBootstrapping = true
-        defer { isBootstrapping = false }
+        defer {
+            isBootstrapping = false
+            sessionReady = true
+        }
         await ridgitsStore.bootstrap()
         guard let uid = authManager.currentUser?.uid else { return }
+
+        if let anonymousCode = UserDefaults.standard.string(forKey: "ridgits_pending_referral_code_anonymous"),
+           !anonymousCode.isEmpty {
+            RidgitsReferralStorage.savePendingCode(anonymousCode, firebaseUid: uid)
+            UserDefaults.standard.removeObject(forKey: "ridgits_pending_referral_code_anonymous")
+        }
+
+        await referralStore.loadReferral()
+
         let quizDone = (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) ?? false
         quizCompleted = authManager.onboardingCompleted || quizDone
         let profile = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)
         profileComplete = profile?.isCompleteForMatching ?? false
+        needsBirthYear = await authManager.needsBirthYear()
+        needsReferralWelcome = !quizCompleted
+            && !RidgitsReferralStorage.hasSeenWelcome(firebaseUid: uid)
+            && !referralStore.hasRedeemedReferralCode
     }
 
     private func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
@@ -105,18 +152,14 @@ struct ContentView: View {
     }
 
     private func signInWithGoogle() {
-        guard let root = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap(\.windows)
-            .first(where: \.isKeyWindow)?
-            .rootViewController else {
+        guard let presenter = RidgitsPresentation.topViewController() else {
             errorMessage = "Unable to present Google Sign-In"
             showError = true
             return
         }
         Task {
             do {
-                try await authManager.signInWithGoogle(presenting: root)
+                try await authManager.signInWithGoogle(presenting: presenter)
             } catch {
                 errorMessage = error.localizedDescription
                 showError = true

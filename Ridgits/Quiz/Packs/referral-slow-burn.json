@@ -1,0 +1,141 @@
+{
+  "id": "referral-slow-burn",
+  "questions": [
+    {
+      "id": "rsb_001",
+      "category": "Pace",
+      "text": "Your ideal timeline from first date to exclusivity is:",
+      "options": [
+        { "value": 0, "label": "A few weeks if it's right" },
+        { "value": 1, "label": "1–2 months of consistent dating" },
+        { "value": 2, "label": "3+ months — I need time" },
+        { "value": 3, "label": "No fixed timeline — it depends on trust" }
+      ]
+    },
+    {
+      "id": "rsb_002",
+      "category": "Pace",
+      "text": "When someone wants to define the relationship quickly, you:",
+      "options": [
+        { "value": 0, "label": "Appreciate the clarity" },
+        { "value": 1, "label": "Discuss it but won't rush" },
+        { "value": 2, "label": "Feel pressured and pull back" },
+        { "value": 3, "label": "Need much more time before labels" }
+      ]
+    },
+    {
+      "id": "rsb_003",
+      "category": "Depth",
+      "text": "You prefer early dating to feel:",
+      "options": [
+        { "value": 0, "label": "Fun and light — labels later" },
+        { "value": 1, "label": "Steady — consistent plans each week" },
+        { "value": 2, "label": "Deep — meaningful talks early" },
+        { "value": 3, "label": "Flexible — let it unfold naturally" }
+      ]
+    },
+    {
+      "id": "rsb_004",
+      "category": "Depth",
+      "text": "How often do you want to see someone you're excited about?",
+      "options": [
+        { "value": 0, "label": "Multiple times a week quickly" },
+        { "value": 1, "label": "Once or twice a week at first" },
+        { "value": 2, "label": "Every other week until it's official" },
+        { "value": 3, "label": "Depends on my bandwidth" }
+      ]
+    },
+    {
+      "id": "rsb_005",
+      "category": "Pace",
+      "text": "If they're great but travel a lot early on, you:",
+      "options": [
+        { "value": 0, "label": "Make it work — chemistry is worth it" },
+        { "value": 1, "label": "Stay open if communication is strong" },
+        { "value": 2, "label": "Worry momentum will die" },
+        { "value": 3, "label": "Usually lose interest without consistency" }
+      ]
+    },
+    {
+      "id": "rsb_006",
+      "category": "Depth",
+      "text": "You're most comfortable escalating intimacy when:",
+      "options": [
+        { "value": 0, "label": "Attraction is obvious and mutual" },
+        { "value": 1, "label": "We've had several great dates" },
+        { "value": 2, "label": "Emotional trust is established" },
+        { "value": 3, "label": "We're clearly aligned on intentions" }
+      ]
+    },
+    {
+      "id": "rsb_007",
+      "category": "Pace",
+      "text": "Mixed signals after three good dates make you:",
+      "options": [
+        { "value": 0, "label": "Ask directly what's up" },
+        { "value": 1, "label": "Give one more week of consistency" },
+        { "value": 2, "label": "Step back and protect your energy" },
+        { "value": 3, "label": "Move on — pace tells the story" }
+      ]
+    },
+    {
+      "id": "rsb_008",
+      "category": "Depth",
+      "text": "Your texting pace when you're interested is:",
+      "options": [
+        { "value": 0, "label": "Frequent — I like ongoing contact" },
+        { "value": 1, "label": "Daily check-ins feel right" },
+        { "value": 2, "label": "A few thoughtful messages" },
+        { "value": 3, "label": "Minimal until we're in person again" }
+      ]
+    },
+    {
+      "id": "rsb_009",
+      "category": "Pace",
+      "text": "You feel most secure when someone:",
+      "options": [
+        { "value": 0, "label": "Matches your speed without games" },
+        { "value": 1, "label": "Plans ahead and follows through" },
+        { "value": 2, "label": "Communicates when they're busy" },
+        { "value": 3, "label": "Doesn't rush labels before trust" }
+      ]
+    },
+    {
+      "id": "rsb_010",
+      "category": "Depth",
+      "text": "A connection that builds slowly but steadily feels:",
+      "options": [
+        { "value": 0, "label": "Ideal — that's how trust forms" },
+        { "value": 1, "label": "Good if there's still spark" },
+        { "value": 2, "label": "Frustrating — I need momentum" },
+        { "value": 3, "label": "Fine for friendship, harder for romance" }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Fast Flame",
+      "description": "You build connection quickly when it's right. Momentum, frequency, and clear intent keep you engaged.",
+      "characteristics": ["Prefers rapid escalation", "High contact frequency", "Values clarity early", "Low patience for drift"],
+      "suggestions": ["Check that speed isn't avoiding deeper compatibility", "Give slow-burn matches one explicit chance", "Watch for love-bombing disguised as pace"]
+    },
+    {
+      "name": "The Steady Builder",
+      "description": "You want consistent rhythm — regular dates, reliable texting, and progress you can feel without pressure.",
+      "characteristics": ["Consistent cadence", "Plans ahead", "Balanced depth", "Moderate label timeline"],
+      "suggestions": ["Name your preferred cadence early", "Don't mistake busy for disinterest", "Escalate intentionally, not by default"]
+    },
+    {
+      "name": "The Slow Burn",
+      "description": "Trust and emotional safety come before labels or intensity. You need time to know someone is real.",
+      "characteristics": ["Long runway to exclusivity", "Depth before speed", "Protective of energy", "Consistency over fireworks"],
+      "suggestions": ["Tell matches your pace upfront", "Look for consistency, not grand gestures", "Don't apologize for needing time"]
+    },
+    {
+      "name": "The Intentional Drifter",
+      "description": "You resist rigid timelines but still want alignment. You move when it feels mutual, not when a script says so.",
+      "characteristics": ["Flexible pacing", "Context-dependent", "Values mutual initiation", "Anti-pressure"],
+      "suggestions": ["Communicate non-negotiables even if timeline is flexible", "Avoid ambiguous situationships", "Check in before assuming you're aligned"]
+    }
+  ]
+}

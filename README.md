@@ -6,10 +6,16 @@ Native SwiftUI app for Ridgits — OkCupid-style matching questions, Geists-styl
 
 - **Auth** — Apple Sign In + Google (Firebase Auth), copied from Geists-iOS / Seen-iOS patterns
 - **Quiz** — OkCupid-style flow: your answer → acceptable answers → importance → optional dealbreaker (includes intimacy/spicy questions from Ridgits quiz packs)
-- **Dashboard** — Home hub with nationwide match preview, paywall CTA, messaging rules
+- **Dashboard** — Home hub with Ridgits Assistant, Quick Tools, archetypes, **Additional Archetype packs**, community invite, nationwide match preview, paywall CTA
 - **Matches** — Nationwide preview free; **nearby radius locked** behind IAP
-- **Messages** — Pending / awaiting / active sections; **24-hour timer + 16-message cap** after approval (matches Ridgits web)
-- **IAP** — `RidgitsNearbyYear2999` — $29.99 for 12 months of nearby access (configure as non-renewing subscription in App Store Connect)
+- **Messages** — Pending / awaiting / active sections; **24-hour timer + 16-message cap** after approval
+- **Profile** — View/edit profile with square web styling; onboarding uses `ProfileSetupView`
+- **Ridgit** — Create custom quiz challenges free on web (1 without subscription); on iOS: 1 (free/+), 3 (Premium), 10 (Ultra)
+- **Nearby pings** — Bluetooth/local-network discovery (MultipeerConnectivity) alerts when another Ridgits member is close (requires nearby access)
+- **IAP (StoreKit 2)** — Auto-renewable memberships: **Ridgits+** ($7.99/mo · $29.99/yr), **Premium** ($12.99/mo · $49.99/yr), **Ultra** ($19.99/mo · $79.99/yr). Upgrades only in-app; cancel via Apple. Plus nearby access ($29.99/yr) and archetype packs.
+
+See **[PAYMENTS_SETUP.md](./PAYMENTS_SETUP.md)** for App Store Connect, webhooks, and sandbox testing.
+- **Push engagement** — FCM remote notifications for pokes, messages, expiring chats, reminders; see **[NOTIFICATIONS_SETUP.md](./NOTIFICATIONS_SETUP.md)**
 
 ## Setup
 
@@ -21,7 +27,13 @@ Native SwiftUI app for Ridgits — OkCupid-style matching questions, Geists-styl
 6. Copy `Secrets.example.plist` → `Secrets.plist` and add to target **Copy Bundle Resources**
 7. Update `Info.plist` URL scheme with reversed Google client ID from Firebase
 8. Enable **Sign in with Apple** capability (entitlements already included)
-9. Create IAP product `RidgitsNearbyYear2999` — Non-Renewing Subscription, 1 year, $29.99 USD
+9. Create IAP products in App Store Connect:
+   - **Subscription group** `ridgits_membership` (ranked: Plus < Premium < Ultra):
+     - `RidgitsPlusMonthly999` $7.99/mo · `RidgitsPlusYearly6000` $49.99/yr
+     - `RidgitsPremiumMonthly1499` $12.99/mo · `RidgitsPremiumYearly9900` $49.99/yr
+     - `RidgitsUltraMonthly1999` $19.99/mo · `RidgitsUltraYearly9900` $79.99/yr · `RidgitsUltraYearly14900` $149/yr (legacy)
+   - `RidgitsNearbyYear2999` — Non-Renewing Subscription, 1 year, $29.99
+   - Archetype pack non-consumables + `RidgitsArchetypeBundle5000`
 
 ## Backend (Vercel + Firebase today, Supabase later)
 

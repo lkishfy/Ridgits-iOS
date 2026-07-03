@@ -1,0 +1,379 @@
+{
+  "questions": [
+    {
+      "id": "ll_comm_017",
+      "category": "Communication",
+      "text": "You're about to sleep with someone for the first time. Do you leave the lights on?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "All the way on"
+        },
+        {
+          "value": 1,
+          "label": "Dimmed or candles"
+        },
+        {
+          "value": 2,
+          "label": "Off completely"
+        },
+        {
+          "value": 3,
+          "label": "Whatever they prefer"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_003",
+      "category": "Intimacy",
+      "text": "How do you feel about public displays of affection?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it – I'm naturally affectionate"
+        },
+        {
+          "value": 1,
+          "label": "Enjoy it in moderation (hand-holding, light kisses)"
+        },
+        {
+          "value": 2,
+          "label": "Prefer to keep it minimal in public"
+        },
+        {
+          "value": 3,
+          "label": "Uncomfortable with PDA, prefer private affection"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_006",
+      "category": "Intimacy",
+      "text": "Would you be willing to try role-playing in bed?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, sounds fun!"
+        },
+        {
+          "value": 1,
+          "label": "Maybe with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Probably not my thing"
+        },
+        {
+          "value": 3,
+          "label": "No, I'd feel too awkward"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_008",
+      "category": "Intimacy",
+      "text": "How do you feel about morning breath kisses?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Totally fine, comes with the territory"
+        },
+        {
+          "value": 1,
+          "label": "Okay once we're really comfortable"
+        },
+        {
+          "value": 2,
+          "label": "Please brush your teeth first"
+        },
+        {
+          "value": 3,
+          "label": "Absolutely not"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_010",
+      "category": "Intimacy",
+      "text": "Would you date someone who was in a committed non-monogamous relationship?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, I'm open to that"
+        },
+        {
+          "value": 1,
+          "label": "Maybe, depending on the situation"
+        },
+        {
+          "value": 2,
+          "label": "Probably not, but I'm not judging"
+        },
+        {
+          "value": 3,
+          "label": "No, I need monogamy"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_012",
+      "category": "Intimacy",
+      "text": "How would you feel if your partner wanted to shower together regularly?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it, sounds intimate"
+        },
+        {
+          "value": 1,
+          "label": "Sure, occasionally"
+        },
+        {
+          "value": 2,
+          "label": "I need my shower time alone"
+        },
+        {
+          "value": 3,
+          "label": "Logistically impractical"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_014",
+      "category": "Intimacy",
+      "text": "How important is it that you and your partner have similar sex drives?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Extremely important – dealbreaker level"
+        },
+        {
+          "value": 1,
+          "label": "Very important but we can compromise"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat important"
+        },
+        {
+          "value": 3,
+          "label": "Not that important"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_015",
+      "category": "Intimacy",
+      "text": "Would you rather:",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Have amazing sex with someone you barely know"
+        },
+        {
+          "value": 1,
+          "label": "Have okay sex with someone you deeply love"
+        },
+        {
+          "value": 2,
+          "label": "These aren't mutually exclusive"
+        },
+        {
+          "value": 3,
+          "label": "I refuse to choose"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_016",
+      "category": "Intimacy",
+      "text": "You're getting intimate and your partner says 'I love you' for the first time. You don't feel the same yet. You:",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Say it back to make them feel good"
+        },
+        {
+          "value": 1,
+          "label": "Say something like 'that means so much'"
+        },
+        {
+          "value": 2,
+          "label": "Be honest that I'm not there yet"
+        },
+        {
+          "value": 3,
+          "label": "This scenario is my nightmare"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_017",
+      "category": "Intimacy",
+      "text": "How do you feel about farting in front of your partner?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Natural and funny, no big deal"
+        },
+        {
+          "value": 1,
+          "label": "Eventually it happens"
+        },
+        {
+          "value": 2,
+          "label": "I'd be mortified"
+        },
+        {
+          "value": 3,
+          "label": "Never. Some mystery is good."
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_023",
+      "category": "Intimacy",
+      "text": "For you personally, is sex one of the most important parts of a relationship?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, it's essential for connection"
+        },
+        {
+          "value": 1,
+          "label": "Very important but not the most important"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat important"
+        },
+        {
+          "value": 3,
+          "label": "Not very important"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_014b",
+      "category": "Intimacy",
+      "text": "Are you dominant or submissive in the bedroom?",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Dominant"
+        },
+        {
+          "value": 1,
+          "label": "Submissive"
+        },
+        {
+          "value": 2,
+          "label": "Switch / depends on mood"
+        },
+        {
+          "value": 3,
+          "label": "Prefer not to label it"
+        }
+      ]
+    },
+    {
+      "id": "msg_sext",
+      "category": "Communication",
+      "text": "Sexting / risqué texts:",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "Love them – great foreplay"
+        },
+        {
+          "value": 1,
+          "label": "Fine once we're established"
+        },
+        {
+          "value": 2,
+          "label": "Only if they initiate first"
+        },
+        {
+          "value": 3,
+          "label": "Not my thing"
+        }
+      ]
+    },
+    {
+      "id": "bnd_sex",
+      "category": "Values",
+      "text": "Sexual boundaries:",
+      "multiSelect": false,
+      "isSpicy": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "I need to discuss everything upfront"
+        },
+        {
+          "value": 1,
+          "label": "We figure it out as we go"
+        },
+        {
+          "value": 2,
+          "label": "Actions speak louder than words"
+        },
+        {
+          "value": 3,
+          "label": "I prefer keeping things spontaneous"
+        }
+      ]
+    },
+    {
+      "id": "spicy_comm_political",
+      "category": "Communication",
+      "text": "Would you consider dating someone who has significantly different political views?",
+      "multiSelect": false,
+      "isSpicy": false,
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, love a good debate"
+        },
+        {
+          "value": 1,
+          "label": "Maybe if we avoid politics"
+        },
+        {
+          "value": 2,
+          "label": "Unlikely – values matter too much"
+        },
+        {
+          "value": 3,
+          "label": "Hard no"
+        }
+      ]
+    }
+  ]
+}

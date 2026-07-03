@@ -1,0 +1,141 @@
+{
+  "id": "referral-trust-line",
+  "questions": [
+    {
+      "id": "rtl_001",
+      "category": "Trust",
+      "text": "You usually start trusting someone new when they:",
+      "options": [
+        { "value": 0, "label": "Are consistent over a few weeks" },
+        { "value": 1, "label": "Follow through on small promises" },
+        { "value": 2, "label": "Are vulnerable with me first" },
+        { "value": 3, "label": "Respect my boundaries without pushback" }
+      ]
+    },
+    {
+      "id": "rtl_002",
+      "category": "Trust",
+      "text": "If someone love-bombs you early, you:",
+      "options": [
+        { "value": 0, "label": "Enjoy it — finally someone matches my energy" },
+        { "value": 1, "label": "Appreciate it but stay observant" },
+        { "value": 2, "label": "Get suspicious — it's too much" },
+        { "value": 3, "label": "Pull back immediately" }
+      ]
+    },
+    {
+      "id": "rtl_003",
+      "category": "Boundary",
+      "text": "When a match cancels last minute twice, you:",
+      "options": [
+        { "value": 0, "label": "Assume life happens — no big deal" },
+        { "value": 1, "label": "Ask if timing is hard for them" },
+        { "value": 2, "label": "Lower investment until they show up" },
+        { "value": 3, "label": "Consider it a compatibility flag" }
+      ]
+    },
+    {
+      "id": "rtl_004",
+      "category": "Boundary",
+      "text": "You're most likely to open up emotionally after:",
+      "options": [
+        { "value": 0, "label": "One great deep conversation" },
+        { "value": 1, "label": "Several dates of steady behavior" },
+        { "value": 2, "label": "Clear exclusivity" },
+        { "value": 3, "label": "Months of proven consistency" }
+      ]
+    },
+    {
+      "id": "rtl_005",
+      "category": "Trust",
+      "text": "Secrets or vague answers about their past make you:",
+      "options": [
+        { "value": 0, "label": "Curious — everyone has privacy" },
+        { "value": 1, "label": "Ask gently once" },
+        { "value": 2, "label": "Uneasy until it's clearer" },
+        { "value": 3, "label": "Done — trust needs transparency" }
+      ]
+    },
+    {
+      "id": "rtl_006",
+      "category": "Boundary",
+      "text": "Your phone and privacy boundaries early in dating are:",
+      "options": [
+        { "value": 0, "label": "Open — I don't mind sharing" },
+        { "value": 1, "label": "Mostly open with a few private areas" },
+        { "value": 2, "label": "Private until we're committed" },
+        { "value": 3, "label": "Firm — trust is earned slowly" }
+      ]
+    },
+    {
+      "id": "rtl_007",
+      "category": "Trust",
+      "text": "When someone gets jealous early, you interpret it as:",
+      "options": [
+        { "value": 0, "label": "They really like me" },
+        { "value": 1, "label": "Insecurity I can talk through" },
+        { "value": 2, "label": "A yellow flag to watch" },
+        { "value": 3, "label": "A red flag — trust issue" }
+      ]
+    },
+    {
+      "id": "rtl_008",
+      "category": "Boundary",
+      "text": "You feel safest sharing your location or plans when:",
+      "options": [
+        { "value": 0, "label": "I'm excited about them" },
+        { "value": 1, "label": "We've met several times" },
+        { "value": 2, "label": "We're exclusive" },
+        { "value": 3, "label": "I fully trust their intentions" }
+      ]
+    },
+    {
+      "id": "rtl_009",
+      "category": "Trust",
+      "text": "Apologies without changed behavior make you:",
+      "options": [
+        { "value": 0, "label": "Willing to keep giving chances" },
+        { "value": 1, "label": "Hopeful but cautious" },
+        { "value": 2, "label": "Require proof next time" },
+        { "value": 3, "label": "Lose trust quickly" }
+      ]
+    },
+    {
+      "id": "rtl_010",
+      "category": "Boundary",
+      "text": "Your non-negotiable for building trust is:",
+      "options": [
+        { "value": 0, "label": "Honesty even when it's awkward" },
+        { "value": 1, "label": "Reliability on plans and words" },
+        { "value": 2, "label": "Respect when I say no" },
+        { "value": 3, "label": "Transparency about intentions" }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Open Trust",
+      "description": "You extend trust generously and repair quickly when someone shows good intent. You believe people are mostly trying.",
+      "characteristics": ["Fast trust grant", "Forgiving early slips", "Optimistic read on people", "Values honesty when named"],
+      "suggestions": ["Watch for consistency, not just apologies", "Keep boundaries even when you like someone", "Don't confuse charisma with integrity"]
+    },
+    {
+      "name": "The Proof Seeker",
+      "description": "Trust is built through repeated follow-through. You need behavior over words and time over promises.",
+      "characteristics": ["Behavior-based trust", "Steady escalation", "Observes patterns", "Moderate boundary setting"],
+      "suggestions": ["Communicate what proof looks like for you", "Avoid testing people with games", "Celebrate small consistent wins"]
+    },
+    {
+      "name": "The Guarded Heart",
+      "description": "You protect access until safety is clear. Early intensity reads as risk, not romance.",
+      "characteristics": ["Slow vulnerability", "High boundary awareness", "Skeptical of intensity", "Trust after exclusivity"],
+      "suggestions": ["Share your timeline so good matches don't bounce", "Distinguish past hurt from present data", "Let micro-trust build in layers"]
+    },
+    {
+      "name": "The Boundary First",
+      "description": "Respect is your trust prerequisite. How someone handles 'no' tells you everything about whether they're safe.",
+      "characteristics": ["Boundary-led trust", "Low tolerance for pressure", "Clear non-negotiables", "Integrity over charm"],
+      "suggestions": ["State boundaries early without over-explaining", "Don't negotiate core safety needs", "Notice who gets defensive vs curious"]
+    }
+  ]
+}

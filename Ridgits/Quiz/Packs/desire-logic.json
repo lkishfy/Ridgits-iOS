@@ -1,0 +1,1253 @@
+{
+  "id": "desire-logic",
+  "questions": [
+    {
+      "id": "des_000",
+      "category": "Mental",
+      "text": "You're most attracted to someone who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Challenges your intellect"
+        },
+        {
+          "value": 1,
+          "label": "Shares your worldview"
+        },
+        {
+          "value": 2,
+          "label": "Has a different perspective"
+        },
+        {
+          "value": 3,
+          "label": "Is easy to understand"
+        }
+      ]
+    },
+    {
+      "id": "des_001",
+      "category": "Mental",
+      "text": "When someone corrects you in conversation, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Get excited - I love mental sparring"
+        },
+        {
+          "value": 1,
+          "label": "Feel respected that they're honest"
+        },
+        {
+          "value": 2,
+          "label": "Feel slightly defensive"
+        },
+        {
+          "value": 3,
+          "label": "Feel embarrassed or annoyed"
+        }
+      ]
+    },
+    {
+      "id": "des_002",
+      "category": "Mental",
+      "text": "Intellectual curiosity is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Essential - non-negotiable"
+        },
+        {
+          "value": 1,
+          "label": "Very attractive"
+        },
+        {
+          "value": 2,
+          "label": "Nice to have"
+        },
+        {
+          "value": 3,
+          "label": "Not important"
+        }
+      ]
+    },
+    {
+      "id": "des_003",
+      "category": "Mental",
+      "text": "You're drawn to people who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Know more than you about something"
+        },
+        {
+          "value": 1,
+          "label": "Are teachable and curious"
+        },
+        {
+          "value": 2,
+          "label": "Match your knowledge level"
+        },
+        {
+          "value": 3,
+          "label": "Don't overthink things"
+        }
+      ]
+    },
+    {
+      "id": "des_004",
+      "category": "Mental",
+      "text": "A conversation that makes you feel attracted is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Debating philosophy until 3am"
+        },
+        {
+          "value": 1,
+          "label": "Sharing ideas and learning together"
+        },
+        {
+          "value": 2,
+          "label": "Light banter and jokes"
+        },
+        {
+          "value": 3,
+          "label": "Comfortable silence"
+        }
+      ]
+    },
+    {
+      "id": "des_005",
+      "category": "Mental",
+      "text": "When someone uses big words or references you don't know:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ask them to explain - I'm intrigued"
+        },
+        {
+          "value": 1,
+          "label": "I look it up later"
+        },
+        {
+          "value": 2,
+          "label": "I feel a bit intimidated"
+        },
+        {
+          "value": 3,
+          "label": "I tune out or feel put off"
+        }
+      ]
+    },
+    {
+      "id": "des_006",
+      "category": "Mental",
+      "text": "Your ideal partner's education level:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Advanced degree or equivalent knowledge"
+        },
+        {
+          "value": 1,
+          "label": "College educated"
+        },
+        {
+          "value": 2,
+          "label": "Self-taught with life experience"
+        },
+        {
+          "value": 3,
+          "label": "Doesn't matter to me"
+        }
+      ]
+    },
+    {
+      "id": "des_007",
+      "category": "Mental",
+      "text": "You lose attraction when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Can't hold an intellectual conversation"
+        },
+        {
+          "value": 1,
+          "label": "Doesn't question anything"
+        },
+        {
+          "value": 2,
+          "label": "Is too serious all the time"
+        },
+        {
+          "value": 3,
+          "label": "Talks too much about ideas"
+        }
+      ]
+    },
+    {
+      "id": "des_008",
+      "category": "Mental",
+      "text": "You're most intrigued by someone who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Has expertise in something niche"
+        },
+        {
+          "value": 1,
+          "label": "Asks thoughtful questions"
+        },
+        {
+          "value": 2,
+          "label": "Keeps conversations light"
+        },
+        {
+          "value": 3,
+          "label": "Doesn't overthink"
+        }
+      ]
+    },
+    {
+      "id": "des_009",
+      "category": "Mental",
+      "text": "The way someone thinks affects your attraction:",
+      "options": [
+        {
+          "value": 0,
+          "label": "More than anything else"
+        },
+        {
+          "value": 1,
+          "label": "Significantly"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat"
+        },
+        {
+          "value": 3,
+          "label": "Not really"
+        }
+      ]
+    },
+    {
+      "id": "des_010",
+      "category": "Mental",
+      "text": "When someone explains their complex job or hobby:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm fascinated and ask follow-ups"
+        },
+        {
+          "value": 1,
+          "label": "I listen with interest"
+        },
+        {
+          "value": 2,
+          "label": "I try to understand but get lost"
+        },
+        {
+          "value": 3,
+          "label": "I zone out"
+        }
+      ]
+    },
+    {
+      "id": "des_011",
+      "category": "Mental",
+      "text": "A turn-on for you is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Watching them solve a problem"
+        },
+        {
+          "value": 1,
+          "label": "Hearing them explain something"
+        },
+        {
+          "value": 2,
+          "label": "Their sense of humor"
+        },
+        {
+          "value": 3,
+          "label": "Their physical presence"
+        }
+      ]
+    },
+    {
+      "id": "des_012",
+      "category": "Mental",
+      "text": "You pursue people who make you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Think in new ways"
+        },
+        {
+          "value": 1,
+          "label": "Feel understood"
+        },
+        {
+          "value": 2,
+          "label": "Feel comfortable"
+        },
+        {
+          "value": 3,
+          "label": "Feel desired"
+        }
+      ]
+    },
+    {
+      "id": "des_013",
+      "category": "Emotional Desire",
+      "text": "Your attraction is triggered when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Shows vulnerability first"
+        },
+        {
+          "value": 1,
+          "label": "Makes you feel safe"
+        },
+        {
+          "value": 2,
+          "label": "Creates emotional intensity"
+        },
+        {
+          "value": 3,
+          "label": "Keeps things surface level"
+        }
+      ]
+    },
+    {
+      "id": "des_014",
+      "category": "Emotional Desire",
+      "text": "You're most drawn to people who are:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Emotionally available and open"
+        },
+        {
+          "value": 1,
+          "label": "Mysterious and hard to read"
+        },
+        {
+          "value": 2,
+          "label": "Emotionally independent"
+        },
+        {
+          "value": 3,
+          "label": "Low-drama and steady"
+        }
+      ]
+    },
+    {
+      "id": "des_015",
+      "category": "Emotional Desire",
+      "text": "When someone cries in front of you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I feel deeply connected"
+        },
+        {
+          "value": 1,
+          "label": "I feel trusted and close"
+        },
+        {
+          "value": 2,
+          "label": "I feel uncomfortable"
+        },
+        {
+          "value": 3,
+          "label": "I feel overwhelmed"
+        }
+      ]
+    },
+    {
+      "id": "des_016",
+      "category": "Emotional Desire",
+      "text": "You pursue people who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Need you emotionally"
+        },
+        {
+          "value": 1,
+          "label": "Balance your emotional needs"
+        },
+        {
+          "value": 2,
+          "label": "Are emotionally self-sufficient"
+        },
+        {
+          "value": 3,
+          "label": "Keep emotions to themselves"
+        }
+      ]
+    },
+    {
+      "id": "des_017",
+      "category": "Emotional Desire",
+      "text": "Emotional intensity is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Essential for attraction"
+        },
+        {
+          "value": 1,
+          "label": "Very appealing"
+        },
+        {
+          "value": 2,
+          "label": "Nice in moderation"
+        },
+        {
+          "value": 3,
+          "label": "A red flag"
+        }
+      ]
+    },
+    {
+      "id": "des_018",
+      "category": "Emotional Desire",
+      "text": "You're attracted to partners who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Mirror your emotions"
+        },
+        {
+          "value": 1,
+          "label": "Validate your feelings"
+        },
+        {
+          "value": 2,
+          "label": "Challenge your emotional patterns"
+        },
+        {
+          "value": 3,
+          "label": "Don't get too emotional"
+        }
+      ]
+    },
+    {
+      "id": "des_019",
+      "category": "Emotional Desire",
+      "text": "When someone shares a deep fear with you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm immediately more attracted"
+        },
+        {
+          "value": 1,
+          "label": "I feel honored and closer"
+        },
+        {
+          "value": 2,
+          "label": "I feel the weight of responsibility"
+        },
+        {
+          "value": 3,
+          "label": "I feel uneasy"
+        }
+      ]
+    },
+    {
+      "id": "des_020",
+      "category": "Emotional Desire",
+      "text": "Your attraction grows when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Depends on you for support"
+        },
+        {
+          "value": 1,
+          "label": "Opens up gradually"
+        },
+        {
+          "value": 2,
+          "label": "Maintains healthy boundaries"
+        },
+        {
+          "value": 3,
+          "label": "Handles everything themselves"
+        }
+      ]
+    },
+    {
+      "id": "des_021",
+      "category": "Emotional Desire",
+      "text": "You lose attraction when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Is emotionally closed off"
+        },
+        {
+          "value": 1,
+          "label": "Is too needy"
+        },
+        {
+          "value": 2,
+          "label": "Doesn't understand your feelings"
+        },
+        {
+          "value": 3,
+          "label": "Is too emotional"
+        }
+      ]
+    },
+    {
+      "id": "des_022",
+      "category": "Emotional Desire",
+      "text": "Emotional chemistry is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "The foundation of attraction"
+        },
+        {
+          "value": 1,
+          "label": "Very important"
+        },
+        {
+          "value": 2,
+          "label": "Important but not everything"
+        },
+        {
+          "value": 3,
+          "label": "Secondary to other factors"
+        }
+      ]
+    },
+    {
+      "id": "des_023",
+      "category": "Emotional Desire",
+      "text": "You're most attracted when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Seeks your emotional validation"
+        },
+        {
+          "value": 1,
+          "label": "Creates emotional safety"
+        },
+        {
+          "value": 2,
+          "label": "Is emotionally independent"
+        },
+        {
+          "value": 3,
+          "label": "Keeps emotions private"
+        }
+      ]
+    },
+    {
+      "id": "des_024",
+      "category": "Emotional Desire",
+      "text": "When someone is having a hard time, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel more connected to them"
+        },
+        {
+          "value": 1,
+          "label": "Want to help and support"
+        },
+        {
+          "value": 2,
+          "label": "Feel like they need space"
+        },
+        {
+          "value": 3,
+          "label": "Feel drained or overwhelmed"
+        }
+      ]
+    },
+    {
+      "id": "des_025",
+      "category": "Emotional Desire",
+      "text": "You pursue people who make you feel:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Needed and essential"
+        },
+        {
+          "value": 1,
+          "label": "Understood and seen"
+        },
+        {
+          "value": 2,
+          "label": "Calm and stable"
+        },
+        {
+          "value": 3,
+          "label": "Excited and alive"
+        }
+      ]
+    },
+    {
+      "id": "des_026",
+      "category": "Social",
+      "text": "You're most attracted to someone who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Is popular and well-liked"
+        },
+        {
+          "value": 1,
+          "label": "Has a tight-knit friend group"
+        },
+        {
+          "value": 2,
+          "label": "Is more of a loner"
+        },
+        {
+          "value": 3,
+          "label": "Social status doesn't matter"
+        }
+      ]
+    },
+    {
+      "id": "des_027",
+      "category": "Social",
+      "text": "When someone is the center of attention:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm very attracted"
+        },
+        {
+          "value": 1,
+          "label": "I'm intrigued"
+        },
+        {
+          "value": 2,
+          "label": "I'm neutral"
+        },
+        {
+          "value": 3,
+          "label": "I'm turned off"
+        }
+      ]
+    },
+    {
+      "id": "des_028",
+      "category": "Social",
+      "text": "You're drawn to people who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Have high social status"
+        },
+        {
+          "value": 1,
+          "label": "Are respected in their community"
+        },
+        {
+          "value": 2,
+          "label": "Don't care about status"
+        },
+        {
+          "value": 3,
+          "label": "Are authentic regardless of status"
+        }
+      ]
+    },
+    {
+      "id": "des_029",
+      "category": "Social",
+      "text": "A turn-on is when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Introduces you to important people"
+        },
+        {
+          "value": 1,
+          "label": "Includes you in their social circle"
+        },
+        {
+          "value": 2,
+          "label": "Prefers one-on-one time"
+        },
+        {
+          "value": 3,
+          "label": "Doesn't mix social and romantic"
+        }
+      ]
+    },
+    {
+      "id": "des_030",
+      "category": "Social",
+      "text": "You lose attraction when someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Is a social outcast"
+        },
+        {
+          "value": 1,
+          "label": "Can't hold conversations at parties"
+        },
+        {
+          "value": 2,
+          "label": "Is too social and never alone"
+        },
+        {
+          "value": 3,
+          "label": "Social factors don't affect me"
+        }
+      ]
+    },
+    {
+      "id": "des_031",
+      "category": "Social",
+      "text": "You pursue people who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Elevate your social standing"
+        },
+        {
+          "value": 1,
+          "label": "Fit into your social world"
+        },
+        {
+          "value": 2,
+          "label": "Have their own social life"
+        },
+        {
+          "value": 3,
+          "label": "Match your social preferences"
+        }
+      ]
+    },
+    {
+      "id": "des_032",
+      "category": "Social",
+      "text": "When you see how someone interacts in a group:",
+      "options": [
+        {
+          "value": 0,
+          "label": "It significantly affects my attraction"
+        },
+        {
+          "value": 1,
+          "label": "It gives me useful information"
+        },
+        {
+          "value": 2,
+          "label": "It doesn't change much"
+        },
+        {
+          "value": 3,
+          "label": "I prefer to see them one-on-one"
+        }
+      ]
+    },
+    {
+      "id": "des_033",
+      "category": "Social",
+      "text": "You're attracted to people who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Everyone wants to be around"
+        },
+        {
+          "value": 1,
+          "label": "Have genuine connections"
+        },
+        {
+          "value": 2,
+          "label": "Are selective about friends"
+        },
+        {
+          "value": 3,
+          "label": "Are independent"
+        }
+      ]
+    },
+    {
+      "id": "des_034",
+      "category": "Social",
+      "text": "Social proof affects your attraction:",
+      "options": [
+        {
+          "value": 0,
+          "label": "A lot - if others want them, I do too"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat"
+        },
+        {
+          "value": 2,
+          "label": "A little"
+        },
+        {
+          "value": 3,
+          "label": "Not at all"
+        }
+      ]
+    },
+    {
+      "id": "des_035",
+      "category": "Social",
+      "text": "You're most intrigued by someone who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Is sought after by others"
+        },
+        {
+          "value": 1,
+          "label": "Is well-respected"
+        },
+        {
+          "value": 2,
+          "label": "Doesn't follow social norms"
+        },
+        {
+          "value": 3,
+          "label": "Is genuine regardless of popularity"
+        }
+      ]
+    },
+    {
+      "id": "des_036",
+      "category": "Social",
+      "text": "When someone is a social butterfly:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm very attracted"
+        },
+        {
+          "value": 1,
+          "label": "I'm interested"
+        },
+        {
+          "value": 2,
+          "label": "I'm neutral"
+        },
+        {
+          "value": 3,
+          "label": "I prefer more reserved people"
+        }
+      ]
+    },
+    {
+      "id": "des_037",
+      "category": "Social",
+      "text": "Your attraction is influenced by:",
+      "options": [
+        {
+          "value": 0,
+          "label": "How others see them"
+        },
+        {
+          "value": 1,
+          "label": "Their social skills"
+        },
+        {
+          "value": 2,
+          "label": "Their independence from groups"
+        },
+        {
+          "value": 3,
+          "label": "Only their individual qualities"
+        }
+      ]
+    },
+    {
+      "id": "des_038",
+      "category": "Instinct",
+      "text": "You know you're attracted when you feel:",
+      "options": [
+        {
+          "value": 0,
+          "label": "An immediate physical pull"
+        },
+        {
+          "value": 1,
+          "label": "Curiosity and intrigue"
+        },
+        {
+          "value": 2,
+          "label": "Comfort and ease"
+        },
+        {
+          "value": 3,
+          "label": "A challenge to pursue"
+        }
+      ]
+    },
+    {
+      "id": "des_039",
+      "category": "Instinct",
+      "text": "Your gut feeling about attraction is usually:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Accurate - I trust it completely"
+        },
+        {
+          "value": 1,
+          "label": "Usually right"
+        },
+        {
+          "value": 2,
+          "label": "Mixed results"
+        },
+        {
+          "value": 3,
+          "label": "Often wrong - I overthink"
+        }
+      ]
+    },
+    {
+      "id": "des_040",
+      "category": "Instinct",
+      "text": "You pursue people who:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel familiar somehow"
+        },
+        {
+          "value": 1,
+          "label": "Feel like a good match"
+        },
+        {
+          "value": 2,
+          "label": "Feel new and different"
+        },
+        {
+          "value": 3,
+          "label": "Feel safe and predictable"
+        }
+      ]
+    },
+    {
+      "id": "des_041",
+      "category": "Instinct",
+      "text": "When attraction doesn't make logical sense:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I follow it anyway"
+        },
+        {
+          "value": 1,
+          "label": "I explore why I feel it"
+        },
+        {
+          "value": 2,
+          "label": "I question it"
+        },
+        {
+          "value": 3,
+          "label": "I ignore it"
+        }
+      ]
+    },
+    {
+      "id": "des_042",
+      "category": "Instinct",
+      "text": "You're most drawn to people who remind you of:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Past partners (good or bad)"
+        },
+        {
+          "value": 1,
+          "label": "A parent or caregiver"
+        },
+        {
+          "value": 2,
+          "label": "An ideal you've imagined"
+        },
+        {
+          "value": 3,
+          "label": "No one - they're unique"
+        }
+      ]
+    },
+    {
+      "id": "des_043",
+      "category": "Instinct",
+      "text": "Your attraction patterns tend to be:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very consistent - same type"
+        },
+        {
+          "value": 1,
+          "label": "Similar but evolving"
+        },
+        {
+          "value": 2,
+          "label": "All over the place"
+        },
+        {
+          "value": 3,
+          "label": "Hard to identify a pattern"
+        }
+      ]
+    },
+    {
+      "id": "des_044",
+      "category": "Instinct",
+      "text": "You pursue people who trigger:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Old emotional patterns"
+        },
+        {
+          "value": 1,
+          "label": "New possibilities"
+        },
+        {
+          "value": 2,
+          "label": "A sense of completion"
+        },
+        {
+          "value": 3,
+          "label": "Logic over feeling"
+        }
+      ]
+    },
+    {
+      "id": "des_045",
+      "category": "Instinct",
+      "text": "When someone feels 'off' but checks all boxes:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I trust the feeling and avoid them"
+        },
+        {
+          "value": 1,
+          "label": "I give them a chance"
+        },
+        {
+          "value": 2,
+          "label": "I rationalize the feeling away"
+        },
+        {
+          "value": 3,
+          "label": "I ignore my instincts"
+        }
+      ]
+    },
+    {
+      "id": "des_046",
+      "category": "Instinct",
+      "text": "Your attraction is influenced by subconscious patterns:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Definitely - I see the patterns now"
+        },
+        {
+          "value": 1,
+          "label": "Probably - I'm aware of some"
+        },
+        {
+          "value": 2,
+          "label": "Maybe - hard to tell"
+        },
+        {
+          "value": 3,
+          "label": "No - I make conscious choices"
+        }
+      ]
+    },
+    {
+      "id": "des_047",
+      "category": "Instinct",
+      "text": "You're most attracted when you sense:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Danger or uncertainty"
+        },
+        {
+          "value": 1,
+          "label": "Potential and growth"
+        },
+        {
+          "value": 2,
+          "label": "Stability and safety"
+        },
+        {
+          "value": 3,
+          "label": "Familiarity"
+        }
+      ]
+    },
+    {
+      "id": "des_048",
+      "category": "Instinct",
+      "text": "Your attraction blueprint is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unconscious and drives me"
+        },
+        {
+          "value": 1,
+          "label": "Partially aware, partially instinct"
+        },
+        {
+          "value": 2,
+          "label": "Mostly conscious"
+        },
+        {
+          "value": 3,
+          "label": "Fully intentional"
+        }
+      ]
+    },
+    {
+      "id": "des_049",
+      "category": "Instinct",
+      "text": "You pursue certain people because:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Something in me recognizes them"
+        },
+        {
+          "value": 1,
+          "label": "They align with my values"
+        },
+        {
+          "value": 2,
+          "label": "They're a good match logically"
+        },
+        {
+          "value": 3,
+          "label": "I don't know - it just happens"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "des_arch_0",
+      "name": "The Intellectual Pursuit",
+      "description": "Your attraction is primarily mental. You're drawn to intelligence, curiosity, and the ability to engage in deep, challenging conversations. You lose interest quickly if someone can't keep up intellectually.",
+      "characteristics": [
+        "Drawn to expertise and knowledge",
+        "Needs mental stimulation",
+        "Values intellectual debates",
+        "Loses attraction to simple minds"
+      ],
+      "suggestions": [
+        "Notice if you're using intellect as an avoidance strategy",
+        "Explore emotional attraction alongside mental",
+        "Allow space for different types of intelligence"
+      ]
+    },
+    {
+      "id": "des_arch_1",
+      "name": "The Emotional Magnet",
+      "description": "You're pulled toward emotional intensity, vulnerability, and depth. You're most attracted when someone opens up to you or needs your emotional support. You pursue people you can heal or who can heal you.",
+      "characteristics": [
+        "Attracted to emotional vulnerability",
+        "Seeks intensity and connection",
+        "Drawn to people who need you",
+        "Loses interest if too independent"
+      ],
+      "suggestions": [
+        "Notice if you're drawn to fixable people",
+        "Balance giving with receiving",
+        "Check if intensity equals compatibility"
+      ]
+    },
+    {
+      "id": "des_arch_2",
+      "name": "The Social Climber",
+      "description": "Your attraction is tied to social status, popularity, and how others perceive your partner. You're drawn to people who elevate your social standing or who are sought after by others. Social proof significantly influences you.",
+      "characteristics": [
+        "Influenced by social proof",
+        "Drawn to status and popularity",
+        "Wants to be with the 'it' person",
+        "Loses attraction if socially rejected"
+      ],
+      "suggestions": [
+        "Question if attraction is real or social validation",
+        "Focus on individual connection over status",
+        "Notice if you're competing for attention"
+      ]
+    },
+    {
+      "id": "des_arch_3",
+      "name": "The Pattern Repeater",
+      "description": "You're unconsciously drawn to familiar emotional patterns, even unhealthy ones. You pursue people who remind you of past partners or family dynamics. Your attraction blueprint is driven by unresolved patterns.",
+      "characteristics": [
+        "Repeats relationship patterns",
+        "Drawn to familiar dynamics",
+        "Unconscious attraction triggers",
+        "Ignores red flags if pattern matches"
+      ],
+      "suggestions": [
+        "Identify the pattern you're repeating",
+        "Notice who you're drawn to and why",
+        "Break the cycle with conscious choice"
+      ]
+    },
+    {
+      "id": "des_arch_4",
+      "name": "The Balanced Pursuer",
+      "description": "Your attraction comes from a mix of mental, emotional, and social factors. You're flexible and drawn to different types of people. You pursue based on genuine connection rather than a single trigger.",
+      "characteristics": [
+        "Balanced attraction triggers",
+        "Flexible and open-minded",
+        "Seeks genuine connection",
+        "Less influenced by patterns"
+      ],
+      "suggestions": [
+        "Continue being intentional about choices",
+        "Trust your balanced instincts",
+        "Maintain awareness of unconscious patterns"
+      ]
+    },
+    {
+      "id": "des_arch_5",
+      "name": "The Instinctual Chaser",
+      "description": "You follow your gut feeling completely, even when it doesn't make logical sense. You're drawn to people who feel familiar or trigger something deep inside. Your attraction is driven by instincts you can't always explain.",
+      "characteristics": [
+        "Trusts gut feelings completely",
+        "Drawn to familiar energy",
+        "Attraction feels instinctual",
+        "May ignore logical red flags"
+      ],
+      "suggestions": [
+        "Balance instinct with self-awareness",
+        "Explore why certain people feel familiar",
+        "Notice if instincts serve your highest good"
+      ]
+    }
+  ]
+}

@@ -20,6 +20,10 @@ targets:
     resources:
       - Ridgits/GoogleService-Info.plist
       - Ridgits/Secrets.example.plist
+      - Ridgits/Quiz/quiz_questions.json
+      - Ridgits/Quiz/quiz_spicy_questions.json
+      - path: Ridgits/Quiz/Packs
+        type: folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ridgits.app
@@ -28,12 +32,21 @@ targets:
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_CFBundleIconName: AppIcon
     dependencies:
       - package: Firebase
         product: FirebaseAuth
       - package: Firebase
+        product: FirebaseAppCheck
+      - package: Firebase
         product: FirebaseCore
       - package: Firebase
         product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseMessaging
+      - package: Firebase
+        product: FirebaseFunctions
+      - package: Firebase
+        product: FirebaseStorage
       - package: GoogleSignIn
         product: GoogleSignIn

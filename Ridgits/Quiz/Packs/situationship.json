@@ -1,0 +1,1259 @@
+{
+  "id": "situationship",
+  "questions": [
+    {
+      "id": "sit_000",
+      "category": "Attachment",
+      "text": "How do you typically feel when someone starts showing serious interest in you?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excited and ready to explore where it goes"
+        },
+        {
+          "value": 1,
+          "label": "Cautiously optimistic but a bit nervous"
+        },
+        {
+          "value": 2,
+          "label": "Anxious about getting hurt or disappointed"
+        },
+        {
+          "value": 3,
+          "label": "Suddenly less interested or feeling trapped"
+        }
+      ]
+    },
+    {
+      "id": "sit_001",
+      "category": "Attachment",
+      "text": "When do you prefer to define the relationship?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Early on - I need clarity about where things stand"
+        },
+        {
+          "value": 1,
+          "label": "After a few months when we know each other better"
+        },
+        {
+          "value": 2,
+          "label": "I wait for them to bring it up first"
+        },
+        {
+          "value": 3,
+          "label": "I prefer to keep things undefined and organic"
+        }
+      ]
+    },
+    {
+      "id": "sit_002",
+      "category": "Attachment",
+      "text": "How do you respond when someone you're dating becomes emotionally available?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I feel more connected and want to deepen things"
+        },
+        {
+          "value": 1,
+          "label": "I appreciate it but take time to reciprocate"
+        },
+        {
+          "value": 2,
+          "label": "I feel pressure to match their emotional intensity"
+        },
+        {
+          "value": 3,
+          "label": "I start to pull back or question the relationship"
+        }
+      ]
+    },
+    {
+      "id": "sit_003",
+      "category": "Attachment",
+      "text": "What usually happens to your past undefined relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "They eventually become defined or end clearly"
+        },
+        {
+          "value": 1,
+          "label": "They naturally evolve or fade out peacefully"
+        },
+        {
+          "value": 2,
+          "label": "They drag on longer than they should"
+        },
+        {
+          "value": 3,
+          "label": "They end abruptly or with confusion"
+        }
+      ]
+    },
+    {
+      "id": "sit_004",
+      "category": "Attachment",
+      "text": "How comfortable are you with relationship labels?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very comfortable - labels provide helpful clarity"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat comfortable - depends on the situation"
+        },
+        {
+          "value": 2,
+          "label": "Uncomfortable - they feel restrictive"
+        },
+        {
+          "value": 3,
+          "label": "Very uncomfortable - I actively avoid them"
+        }
+      ]
+    },
+    {
+      "id": "sit_005",
+      "category": "Attachment",
+      "text": "What's your pattern with emotionally unavailable people?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I recognize it early and move on"
+        },
+        {
+          "value": 1,
+          "label": "I give them time but have clear boundaries"
+        },
+        {
+          "value": 2,
+          "label": "I try to help them open up"
+        },
+        {
+          "value": 3,
+          "label": "I'm often attracted to unavailable people"
+        }
+      ]
+    },
+    {
+      "id": "sit_006",
+      "category": "Attachment",
+      "text": "How do you feel about introducing someone you're dating to friends/family?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Excited - it's a natural step forward"
+        },
+        {
+          "value": 1,
+          "label": "Open to it when timing feels right"
+        },
+        {
+          "value": 2,
+          "label": "Hesitant - it feels like a big commitment"
+        },
+        {
+          "value": 3,
+          "label": "Resistant - I keep dating life very separate"
+        }
+      ]
+    },
+    {
+      "id": "sit_007",
+      "category": "Attachment",
+      "text": "What happens when you start developing deeper feelings?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I communicate them openly"
+        },
+        {
+          "value": 1,
+          "label": "I show them through actions gradually"
+        },
+        {
+          "value": 2,
+          "label": "I hide them until I know they feel the same"
+        },
+        {
+          "value": 3,
+          "label": "I distance myself or sabotage the connection"
+        }
+      ]
+    },
+    {
+      "id": "sit_008",
+      "category": "Attachment",
+      "text": "How do you handle someone asking 'What are we?'",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm grateful they brought it up and answer honestly"
+        },
+        {
+          "value": 1,
+          "label": "I engage in the conversation thoughtfully"
+        },
+        {
+          "value": 2,
+          "label": "I deflect or say I need more time"
+        },
+        {
+          "value": 3,
+          "label": "I feel panicked or trapped by the question"
+        }
+      ]
+    },
+    {
+      "id": "sit_009",
+      "category": "Attachment",
+      "text": "What's your relationship with being 'exclusive' but not 'official'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I see them as basically the same thing"
+        },
+        {
+          "value": 1,
+          "label": "Exclusive is a natural step toward official"
+        },
+        {
+          "value": 2,
+          "label": "I prefer the exclusive-but-not-official phase"
+        },
+        {
+          "value": 3,
+          "label": "I resist both equally"
+        }
+      ]
+    },
+    {
+      "id": "sit_010",
+      "category": "Attachment",
+      "text": "How do you typically end situationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Direct conversation about incompatibility"
+        },
+        {
+          "value": 1,
+          "label": "Gradual honest communication about needs"
+        },
+        {
+          "value": 2,
+          "label": "Slow fade - less contact over time"
+        },
+        {
+          "value": 3,
+          "label": "Ghosting or sudden disappearance"
+        }
+      ]
+    },
+    {
+      "id": "sit_011",
+      "category": "Attachment",
+      "text": "What attracts you most in early dating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Emotional availability and clear communication"
+        },
+        {
+          "value": 1,
+          "label": "Balanced interest with mutual effort"
+        },
+        {
+          "value": 2,
+          "label": "Mystery and chase - not knowing where I stand"
+        },
+        {
+          "value": 3,
+          "label": "Physical chemistry above all else"
+        }
+      ]
+    },
+    {
+      "id": "sit_012",
+      "category": "Attachment",
+      "text": "How do you feel about future planning with someone you're dating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I naturally include them in future thoughts"
+        },
+        {
+          "value": 1,
+          "label": "I'm open to making plans a few weeks out"
+        },
+        {
+          "value": 2,
+          "label": "I prefer staying present and spontaneous"
+        },
+        {
+          "value": 3,
+          "label": "Future talk makes me want to run"
+        }
+      ]
+    },
+    {
+      "id": "sit_013",
+      "category": "Attachment",
+      "text": "What's your experience with commitment anxiety?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I rarely experience it"
+        },
+        {
+          "value": 1,
+          "label": "I feel it sometimes but work through it"
+        },
+        {
+          "value": 2,
+          "label": "It's a consistent pattern for me"
+        },
+        {
+          "value": 3,
+          "label": "It controls most of my relationship decisions"
+        }
+      ]
+    },
+    {
+      "id": "sit_014",
+      "category": "Attachment",
+      "text": "How do you handle jealousy in undefined relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I communicate my feelings and seek clarity"
+        },
+        {
+          "value": 1,
+          "label": "I reflect on whether I want exclusivity"
+        },
+        {
+          "value": 2,
+          "label": "I suffer silently since we're not official"
+        },
+        {
+          "value": 3,
+          "label": "I date other people to avoid feeling jealous"
+        }
+      ]
+    },
+    {
+      "id": "sit_015",
+      "category": "Communication",
+      "text": "How clearly do you express your relationship expectations?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very clearly from early on"
+        },
+        {
+          "value": 1,
+          "label": "I communicate them as they become relevant"
+        },
+        {
+          "value": 2,
+          "label": "I hint at them but avoid direct conversation"
+        },
+        {
+          "value": 3,
+          "label": "I keep expectations vague to avoid conflict"
+        }
+      ]
+    },
+    {
+      "id": "sit_016",
+      "category": "Communication",
+      "text": "When you feel confused about where things stand, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Ask directly for clarification"
+        },
+        {
+          "value": 1,
+          "label": "Wait for the right moment to bring it up"
+        },
+        {
+          "value": 2,
+          "label": "Look for hints and clues instead of asking"
+        },
+        {
+          "value": 3,
+          "label": "Assume the worst and protect yourself emotionally"
+        }
+      ]
+    },
+    {
+      "id": "sit_017",
+      "category": "Communication",
+      "text": "How do you respond to mixed signals?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I address them directly and seek clarity"
+        },
+        {
+          "value": 1,
+          "label": "I observe patterns before deciding to talk"
+        },
+        {
+          "value": 2,
+          "label": "I overthink them and feel anxious"
+        },
+        {
+          "value": 3,
+          "label": "I mirror the mixed signals back"
+        }
+      ]
+    },
+    {
+      "id": "sit_018",
+      "category": "Communication",
+      "text": "How comfortable are you saying 'I need more from this relationship'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very comfortable - my needs matter"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat comfortable with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Uncomfortable - worried about their reaction"
+        },
+        {
+          "value": 3,
+          "label": "Very uncomfortable - I'd rather just leave"
+        }
+      ]
+    },
+    {
+      "id": "sit_019",
+      "category": "Communication",
+      "text": "What's your texting pattern in situationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Consistent and genuine communication"
+        },
+        {
+          "value": 1,
+          "label": "Responsive but not always initiating"
+        },
+        {
+          "value": 2,
+          "label": "Strategic - careful about frequency and timing"
+        },
+        {
+          "value": 3,
+          "label": "Hot and cold - varies by mood/interest level"
+        }
+      ]
+    },
+    {
+      "id": "sit_020",
+      "category": "Communication",
+      "text": "How do you set boundaries in undefined relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Clearly and directly from the start"
+        },
+        {
+          "value": 1,
+          "label": "I communicate them as situations arise"
+        },
+        {
+          "value": 2,
+          "label": "I struggle to set boundaries without labels"
+        },
+        {
+          "value": 3,
+          "label": "I avoid setting boundaries to keep things casual"
+        }
+      ]
+    },
+    {
+      "id": "sit_021",
+      "category": "Communication",
+      "text": "How do you handle disagreements in situationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Address them directly like any relationship"
+        },
+        {
+          "value": 1,
+          "label": "Discuss them if they're important"
+        },
+        {
+          "value": 2,
+          "label": "Minimize them since we're 'not official'"
+        },
+        {
+          "value": 3,
+          "label": "Avoid conflict entirely or end things"
+        }
+      ]
+    },
+    {
+      "id": "sit_022",
+      "category": "Communication",
+      "text": "What's your approach to emotional vulnerability in early dating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm open and authentic from the beginning"
+        },
+        {
+          "value": 1,
+          "label": "I gradually share as trust builds"
+        },
+        {
+          "value": 2,
+          "label": "I hold back until they're vulnerable first"
+        },
+        {
+          "value": 3,
+          "label": "I keep things surface-level to protect myself"
+        }
+      ]
+    },
+    {
+      "id": "sit_023",
+      "category": "Communication",
+      "text": "How do you communicate your availability and interest level?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Directly through words and consistent actions"
+        },
+        {
+          "value": 1,
+          "label": "Through actions more than words"
+        },
+        {
+          "value": 2,
+          "label": "Subtly - letting them figure it out"
+        },
+        {
+          "value": 3,
+          "label": "Ambiguously - keeping options open"
+        }
+      ]
+    },
+    {
+      "id": "sit_024",
+      "category": "Communication",
+      "text": "What happens when someone asks about your past relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I share openly and honestly"
+        },
+        {
+          "value": 1,
+          "label": "I share highlights and key lessons"
+        },
+        {
+          "value": 2,
+          "label": "I give vague answers"
+        },
+        {
+          "value": 3,
+          "label": "I deflect or change the subject"
+        }
+      ]
+    },
+    {
+      "id": "sit_025",
+      "category": "Communication",
+      "text": "How do you handle 'the talk' about exclusivity?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I initiate it when I'm ready"
+        },
+        {
+          "value": 1,
+          "label": "I participate openly if they bring it up"
+        },
+        {
+          "value": 2,
+          "label": "I'm hesitant and need time to decide"
+        },
+        {
+          "value": 3,
+          "label": "I avoid it or end things rather than have it"
+        }
+      ]
+    },
+    {
+      "id": "sit_026",
+      "category": "Communication",
+      "text": "How do you handle someone who's breadcrumbing you?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I call it out and set clear expectations"
+        },
+        {
+          "value": 1,
+          "label": "I match their energy and see if it improves"
+        },
+        {
+          "value": 2,
+          "label": "I keep hoping they'll change"
+        },
+        {
+          "value": 3,
+          "label": "I'm often the one breadcrumbing"
+        }
+      ]
+    },
+    {
+      "id": "sit_027",
+      "category": "Self-Awareness",
+      "text": "How aware are you of your relationship patterns?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very aware - I actively reflect on them"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat aware - I notice some patterns"
+        },
+        {
+          "value": 2,
+          "label": "Limited awareness - just starting to notice"
+        },
+        {
+          "value": 3,
+          "label": "Not very aware - patterns surprise me"
+        }
+      ]
+    },
+    {
+      "id": "sit_028",
+      "category": "Self-Awareness",
+      "text": "What role does fear play in your relationship choices?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Minimal - I make choices from desire, not fear"
+        },
+        {
+          "value": 1,
+          "label": "Some - I notice it but work through it"
+        },
+        {
+          "value": 2,
+          "label": "Significant - fear often influences my choices"
+        },
+        {
+          "value": 3,
+          "label": "Major - fear drives most relationship decisions"
+        }
+      ]
+    },
+    {
+      "id": "sit_029",
+      "category": "Self-Awareness",
+      "text": "How do you typically feel after a situationship ends?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Clear about what I learned and ready to move forward"
+        },
+        {
+          "value": 1,
+          "label": "Disappointed but understanding it wasn't right"
+        },
+        {
+          "value": 2,
+          "label": "Confused about what went wrong"
+        },
+        {
+          "value": 3,
+          "label": "Stuck ruminating for a long time"
+        }
+      ]
+    },
+    {
+      "id": "sit_030",
+      "category": "Self-Awareness",
+      "text": "What draws you to undefined relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Nothing - they're not my preference"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes they just happen naturally"
+        },
+        {
+          "value": 2,
+          "label": "The freedom and lack of pressure"
+        },
+        {
+          "value": 3,
+          "label": "Fear of commitment or being fully known"
+        }
+      ]
+    },
+    {
+      "id": "sit_031",
+      "category": "Self-Awareness",
+      "text": "How do you handle being alone between relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I enjoy it and use it for growth"
+        },
+        {
+          "value": 1,
+          "label": "I'm comfortable but miss partnership"
+        },
+        {
+          "value": 2,
+          "label": "I'm uncomfortable and quickly seek connection"
+        },
+        {
+          "value": 3,
+          "label": "I immediately look for the next person"
+        }
+      ]
+    },
+    {
+      "id": "sit_032",
+      "category": "Self-Awareness",
+      "text": "What patterns do you notice in who you're attracted to?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Emotionally available people who communicate well"
+        },
+        {
+          "value": 1,
+          "label": "Varied - no clear pattern"
+        },
+        {
+          "value": 2,
+          "label": "People who are inconsistent or hard to read"
+        },
+        {
+          "value": 3,
+          "label": "Emotionally unavailable or avoidant people"
+        }
+      ]
+    },
+    {
+      "id": "sit_033",
+      "category": "Self-Awareness",
+      "text": "How do you define a successful relationship?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Deep emotional connection and commitment"
+        },
+        {
+          "value": 1,
+          "label": "Mutual respect and healthy communication"
+        },
+        {
+          "value": 2,
+          "label": "Having fun and chemistry without drama"
+        },
+        {
+          "value": 3,
+          "label": "I'm not sure what success looks like"
+        }
+      ]
+    },
+    {
+      "id": "sit_034",
+      "category": "Self-Awareness",
+      "text": "How much do your past experiences influence current dating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I've processed them and moved forward"
+        },
+        {
+          "value": 1,
+          "label": "Some influence but I'm aware of it"
+        },
+        {
+          "value": 2,
+          "label": "Significant influence - still healing"
+        },
+        {
+          "value": 3,
+          "label": "Heavy influence - patterns keep repeating"
+        }
+      ]
+    },
+    {
+      "id": "sit_035",
+      "category": "Self-Awareness",
+      "text": "What's your biggest fear in relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not finding the right person"
+        },
+        {
+          "value": 1,
+          "label": "Being hurt or disappointed"
+        },
+        {
+          "value": 2,
+          "label": "Losing myself or my independence"
+        },
+        {
+          "value": 3,
+          "label": "Being trapped or controlled"
+        }
+      ]
+    },
+    {
+      "id": "sit_036",
+      "category": "Self-Awareness",
+      "text": "How do you react when someone mirrors your unavailability?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I don't tend to be unavailable"
+        },
+        {
+          "value": 1,
+          "label": "I appreciate the space but stay connected"
+        },
+        {
+          "value": 2,
+          "label": "It bothers me - I want them to pursue"
+        },
+        {
+          "value": 3,
+          "label": "I suddenly become more interested"
+        }
+      ]
+    },
+    {
+      "id": "sit_037",
+      "category": "Self-Awareness",
+      "text": "What role does self-esteem play in your relationship choices?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I have healthy self-esteem that guides good choices"
+        },
+        {
+          "value": 1,
+          "label": "Generally positive but occasionally doubt myself"
+        },
+        {
+          "value": 2,
+          "label": "Low self-esteem affects my choices often"
+        },
+        {
+          "value": 3,
+          "label": "I accept less than I deserve regularly"
+        }
+      ]
+    },
+    {
+      "id": "sit_038",
+      "category": "Self-Awareness",
+      "text": "How do you feel about someone who's 'too available'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I appreciate their interest and consistency"
+        },
+        {
+          "value": 1,
+          "label": "It's nice but I need them to have their own life"
+        },
+        {
+          "value": 2,
+          "label": "It makes me less interested"
+        },
+        {
+          "value": 3,
+          "label": "It's a major turn-off"
+        }
+      ]
+    },
+    {
+      "id": "sit_039",
+      "category": "Emotional",
+      "text": "How emotionally available are you right now?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very available - ready for real connection"
+        },
+        {
+          "value": 1,
+          "label": "Mostly available - working through minor blocks"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat unavailable - still processing past hurt"
+        },
+        {
+          "value": 3,
+          "label": "Emotionally unavailable - not ready for serious connection"
+        }
+      ]
+    },
+    {
+      "id": "sit_040",
+      "category": "Emotional",
+      "text": "What happens when things start getting 'real'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I lean in and embrace deeper connection"
+        },
+        {
+          "value": 1,
+          "label": "I proceed cautiously but stay present"
+        },
+        {
+          "value": 2,
+          "label": "I feel scared and need space"
+        },
+        {
+          "value": 3,
+          "label": "I find reasons why it won't work"
+        }
+      ]
+    },
+    {
+      "id": "sit_041",
+      "category": "Emotional",
+      "text": "How do you show care in early dating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Openly through words and thoughtful actions"
+        },
+        {
+          "value": 1,
+          "label": "Primarily through actions and presence"
+        },
+        {
+          "value": 2,
+          "label": "Subtly - afraid of seeming too interested"
+        },
+        {
+          "value": 3,
+          "label": "I hold back to protect myself"
+        }
+      ]
+    },
+    {
+      "id": "sit_042",
+      "category": "Emotional",
+      "text": "How comfortable are you receiving emotional support?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very comfortable - I can be vulnerable"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat comfortable with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Uncomfortable - I prefer being self-sufficient"
+        },
+        {
+          "value": 3,
+          "label": "Very uncomfortable - I avoid it"
+        }
+      ]
+    },
+    {
+      "id": "sit_043",
+      "category": "Emotional",
+      "text": "What's your relationship with emotional intimacy?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I crave and pursue deep emotional connection"
+        },
+        {
+          "value": 1,
+          "label": "I value it but need time to build it"
+        },
+        {
+          "value": 2,
+          "label": "It makes me uncomfortable or vulnerable"
+        },
+        {
+          "value": 3,
+          "label": "I actively avoid it"
+        }
+      ]
+    },
+    {
+      "id": "sit_044",
+      "category": "Emotional",
+      "text": "How do you handle someone being emotionally needy?",
+      "options": [
+        {
+          "value": 0,
+          "label": "With patience and clear communication about balance"
+        },
+        {
+          "value": 1,
+          "label": "I try to meet their needs while maintaining boundaries"
+        },
+        {
+          "value": 2,
+          "label": "I feel overwhelmed and withdraw"
+        },
+        {
+          "value": 3,
+          "label": "I immediately distance myself"
+        }
+      ]
+    },
+    {
+      "id": "sit_045",
+      "category": "Emotional",
+      "text": "How do you process feelings about someone you're dating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I acknowledge them and communicate openly"
+        },
+        {
+          "value": 1,
+          "label": "I reflect privately then share when ready"
+        },
+        {
+          "value": 2,
+          "label": "I suppress them to avoid vulnerability"
+        },
+        {
+          "value": 3,
+          "label": "I distract myself or deny them"
+        }
+      ]
+    },
+    {
+      "id": "sit_046",
+      "category": "Emotional",
+      "text": "What's your capacity for sustained emotional presence?",
+      "options": [
+        {
+          "value": 0,
+          "label": "High - I can maintain connection consistently"
+        },
+        {
+          "value": 1,
+          "label": "Good - with occasional need for space"
+        },
+        {
+          "value": 2,
+          "label": "Limited - I need frequent breaks"
+        },
+        {
+          "value": 3,
+          "label": "Low - I struggle with sustained connection"
+        }
+      ]
+    },
+    {
+      "id": "sit_047",
+      "category": "Emotional",
+      "text": "How do you respond to someone crying or being very emotional?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I move toward them and provide comfort"
+        },
+        {
+          "value": 1,
+          "label": "I stay present and ask how I can help"
+        },
+        {
+          "value": 2,
+          "label": "I feel awkward but try to be supportive"
+        },
+        {
+          "value": 3,
+          "label": "I feel uncomfortable and don't know what to do"
+        }
+      ]
+    },
+    {
+      "id": "sit_048",
+      "category": "Emotional",
+      "text": "What's your pattern with vulnerability?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I share openly and invite reciprocal vulnerability"
+        },
+        {
+          "value": 1,
+          "label": "I'm vulnerable when it feels safe"
+        },
+        {
+          "value": 2,
+          "label": "I'm vulnerable only after they are"
+        },
+        {
+          "value": 3,
+          "label": "I avoid vulnerability at all costs"
+        }
+      ]
+    },
+    {
+      "id": "sit_049",
+      "category": "Emotional",
+      "text": "How ready are you for a committed relationship right now?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very ready - actively seeking commitment"
+        },
+        {
+          "value": 1,
+          "label": "Open to it with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Uncertain - says yes but acts unsure"
+        },
+        {
+          "value": 3,
+          "label": "Not ready - prefer keeping things casual"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Conscious Dater",
+      "description": "You have strong self-awareness and clear boundaries. You're emotionally available and communicate your needs effectively. Situationships aren't your pattern - you naturally move toward defined relationships or move on.",
+      "characteristics": [
+        "Emotionally available and aware",
+        "Sets clear boundaries early",
+        "Communicates needs directly",
+        "Recognizes incompatibility quickly"
+      ],
+      "suggestions": [
+        "Continue trusting your instincts about what you need",
+        "Help potential partners understand your communication style",
+        "Be patient with those who need more time to open up",
+        "Remember that your clarity is a strength, not a flaw"
+      ]
+    },
+    {
+      "name": "The Anxious Attacher",
+      "description": "You crave connection but fear rejection, often staying in undefined situations hoping they'll evolve. You're highly attuned to others' emotions but may neglect your own needs. Your relationships lack clarity because you're afraid to rock the boat.",
+      "characteristics": [
+        "Highly relationship-focused",
+        "Difficulty setting boundaries",
+        "Seeks reassurance frequently",
+        "Stays in situations hoping for change"
+      ],
+      "suggestions": [
+        "Practice stating your needs without apologizing",
+        "Build self-worth independent of relationship status",
+        "Notice when you're pursuing emotionally unavailable people",
+        "Set a timeline for clarity and honor it",
+        "Work on self-soothing anxiety rather than seeking reassurance"
+      ]
+    },
+    {
+      "name": "The Avoidant Attacher",
+      "description": "You value independence and feel trapped by commitment. When things get serious, you pull away or find flaws. Situationships feel safer because they don't require full vulnerability or merging of lives.",
+      "characteristics": [
+        "Values independence highly",
+        "Uncomfortable with emotional intimacy",
+        "Withdraws when things deepen",
+        "Keeps dating life compartmentalized"
+      ],
+      "suggestions": [
+        "Explore what commitment means to you (it doesn't mean losing yourself)",
+        "Practice small acts of vulnerability regularly",
+        "Notice when you're self-sabotaging good connections",
+        "Work on communicating needs instead of disappearing",
+        "Consider whether past hurts are blocking present opportunities"
+      ]
+    },
+    {
+      "name": "The Healer/Fixer",
+      "description": "You're drawn to potential rather than reality. You stay in undefined relationships trying to help someone become emotionally available. Your empathy is a gift, but you often give more than you receive.",
+      "characteristics": [
+        "Highly empathetic",
+        "Sees potential in partners",
+        "Stays in hope of change",
+        "Neglects own needs while helping others"
+      ],
+      "suggestions": [
+        "Date people for who they are now, not who they could be",
+        "Notice the pattern of choosing emotionally unavailable people",
+        "Practice receiving as much as you give",
+        "Set boundaries around emotional labor",
+        "Redirect helping energy toward yourself and your growth"
+      ]
+    },
+    {
+      "name": "The Serial Situationshipper",
+      "description": "Multiple undefined relationships is your comfort zone. You might be avoiding deeper work, staying busy with surface connections. You're excellent at starting things but struggle with deepening them.",
+      "characteristics": [
+        "Keeps multiple connections going",
+        "Avoids depth and definition",
+        "Excellent at surface-level dating",
+        "Difficulty sustaining deeper connection"
+      ],
+      "suggestions": [
+        "Explore what you're avoiding by keeping things surface",
+        "Try being single for a period to understand yourself",
+        "Practice staying through discomfort instead of moving on",
+        "Build emotional capacity through therapy or self-work",
+        "Date with intention rather than distraction"
+      ]
+    },
+    {
+      "name": "The Fearful Attacher",
+      "description": "You want connection but fear getting hurt. You send mixed signals because you're genuinely conflicted. You pursue then withdraw, creating the chaos you're trying to avoid. Situationships match your internal ambivalence.",
+      "characteristics": [
+        "Wants closeness but fears it",
+        "Sends mixed signals",
+        "Inconsistent behavior patterns",
+        "Struggles with trust"
+      ],
+      "suggestions": [
+        "Work on healing past relationship trauma",
+        "Practice consistent behavior even when scared",
+        "Communicate your fears instead of acting them out",
+        "Build secure friendships as a foundation",
+        "Consider therapy to process attachment wounds",
+        "Be honest when you're not ready for relationship"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1447 @@
+{
+  "id": "love-language",
+  "questions": [
+    {
+      "id": "ll_comm_007",
+      "category": "Romantic Communication",
+      "text": "How comfortable are you saying 'I love you' first?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very – I say it when I feel it"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat – if the moment feels right"
+        },
+        {
+          "value": 2,
+          "label": "Prefer to wait for them to say it first"
+        },
+        {
+          "value": 3,
+          "label": "Very cautious – need to be absolutely sure"
+        }
+      ]
+    },
+    {
+      "id": "ll_comm_017",
+      "category": "Romantic Communication",
+      "text": "You're about to sleep with someone for the first time. Do you leave the lights on?",
+      "options": [
+        {
+          "value": 0,
+          "label": "All the way on"
+        },
+        {
+          "value": 1,
+          "label": "Dimmed or candles"
+        },
+        {
+          "value": 2,
+          "label": "Off completely"
+        },
+        {
+          "value": 3,
+          "label": "Whatever they prefer"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_000",
+      "category": "Intimacy",
+      "text": "How important is physical chemistry on a first date?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Crucial – I need to feel that spark immediately"
+        },
+        {
+          "value": 1,
+          "label": "Important, but can develop over time"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat important, but personality matters more"
+        },
+        {
+          "value": 3,
+          "label": "Not very – I need emotional connection first"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_001",
+      "category": "Intimacy",
+      "text": "When do you typically feel ready for physical intimacy?",
+      "options": [
+        {
+          "value": 0,
+          "label": "When there's strong mutual attraction"
+        },
+        {
+          "value": 1,
+          "label": "After a few great dates and conversations"
+        },
+        {
+          "value": 2,
+          "label": "Once emotional connection is established"
+        },
+        {
+          "value": 3,
+          "label": "Within a committed, exclusive relationship"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_002",
+      "category": "Intimacy",
+      "text": "How do you feel about sleeping over on the first date?",
+      "options": [
+        {
+          "value": 0,
+          "label": "If the vibe is right, why not?"
+        },
+        {
+          "value": 1,
+          "label": "Open to it but no expectations"
+        },
+        {
+          "value": 2,
+          "label": "Prefer to wait a bit"
+        },
+        {
+          "value": 3,
+          "label": "Definitely not – too soon"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_003",
+      "category": "Intimacy",
+      "text": "How do you feel about public displays of affection?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it – I'm naturally affectionate"
+        },
+        {
+          "value": 1,
+          "label": "Enjoy it in moderation (hand-holding, light kisses)"
+        },
+        {
+          "value": 2,
+          "label": "Prefer to keep it minimal in public"
+        },
+        {
+          "value": 3,
+          "label": "Uncomfortable with PDA, prefer private affection"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_004",
+      "category": "Intimacy",
+      "text": "Do you prefer to be the big spoon or little spoon?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Big spoon"
+        },
+        {
+          "value": 1,
+          "label": "Little spoon"
+        },
+        {
+          "value": 2,
+          "label": "Switch it up"
+        },
+        {
+          "value": 3,
+          "label": "I need my space when I sleep"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_006",
+      "category": "Intimacy",
+      "text": "Would you be willing to try role-playing in bed?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, sounds fun!"
+        },
+        {
+          "value": 1,
+          "label": "Maybe with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Probably not my thing"
+        },
+        {
+          "value": 3,
+          "label": "No, I'd feel too awkward"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_008",
+      "category": "Intimacy",
+      "text": "How do you feel about morning breath kisses?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Totally fine, comes with the territory"
+        },
+        {
+          "value": 1,
+          "label": "Okay once we're really comfortable"
+        },
+        {
+          "value": 2,
+          "label": "Please brush your teeth first"
+        },
+        {
+          "value": 3,
+          "label": "Absolutely not"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_010",
+      "category": "Intimacy",
+      "text": "Would you date someone who was in a committed non-monogamous relationship?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, I'm open to that"
+        },
+        {
+          "value": 1,
+          "label": "Maybe, depending on the situation"
+        },
+        {
+          "value": 2,
+          "label": "Probably not, but I'm not judging"
+        },
+        {
+          "value": 3,
+          "label": "No, I need monogamy"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_011",
+      "category": "Intimacy",
+      "text": "Should your partner be your best friend?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Absolutely yes"
+        },
+        {
+          "value": 1,
+          "label": "Ideally, but not required"
+        },
+        {
+          "value": 2,
+          "label": "No, I keep friendship and romance separate"
+        },
+        {
+          "value": 3,
+          "label": "I'm not sure"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_012",
+      "category": "Intimacy",
+      "text": "How would you feel if your partner wanted to shower together regularly?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love it, sounds intimate"
+        },
+        {
+          "value": 1,
+          "label": "Sure, occasionally"
+        },
+        {
+          "value": 2,
+          "label": "I need my shower time alone"
+        },
+        {
+          "value": 3,
+          "label": "Logistically impractical"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_014",
+      "category": "Intimacy",
+      "text": "How important is it that you and your partner have similar sex drives?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Extremely important – dealbreaker level"
+        },
+        {
+          "value": 1,
+          "label": "Very important but we can compromise"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat important"
+        },
+        {
+          "value": 3,
+          "label": "Not that important"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_015",
+      "category": "Intimacy",
+      "text": "Would you rather:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Have amazing sex with someone you barely know"
+        },
+        {
+          "value": 1,
+          "label": "Have okay sex with someone you deeply love"
+        },
+        {
+          "value": 2,
+          "label": "These aren't mutually exclusive"
+        },
+        {
+          "value": 3,
+          "label": "I refuse to choose"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_016",
+      "category": "Intimacy",
+      "text": "You're getting intimate and your partner says 'I love you' for the first time. You don't feel the same yet. You:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Say it back to make them feel good"
+        },
+        {
+          "value": 1,
+          "label": "Say something like 'that means so much'"
+        },
+        {
+          "value": 2,
+          "label": "Be honest that I'm not there yet"
+        },
+        {
+          "value": 3,
+          "label": "This scenario is my nightmare"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_017",
+      "category": "Intimacy",
+      "text": "How do you feel about farting in front of your partner?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Natural and funny, no big deal"
+        },
+        {
+          "value": 1,
+          "label": "Eventually it happens"
+        },
+        {
+          "value": 2,
+          "label": "I'd be mortified"
+        },
+        {
+          "value": 3,
+          "label": "Never. Some mystery is good."
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_018",
+      "category": "Intimacy",
+      "text": "Your ideal date night involves:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Adventure and trying something new together"
+        },
+        {
+          "value": 1,
+          "label": "Romantic dinner and intimate conversation"
+        },
+        {
+          "value": 2,
+          "label": "Cozy night in with movies or cooking"
+        },
+        {
+          "value": 3,
+          "label": "Cultural experience like a concert or museum"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_019",
+      "category": "Intimacy",
+      "text": "What does intimacy mean to you beyond physical connection?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Complete emotional vulnerability and openness"
+        },
+        {
+          "value": 1,
+          "label": "Deep understanding of each other's inner worlds"
+        },
+        {
+          "value": 2,
+          "label": "Unwavering trust and reliability"
+        },
+        {
+          "value": 3,
+          "label": "Accepting each other fully, flaws and all"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_020",
+      "category": "Intimacy",
+      "text": "Would you ask for a brief back massage on your second date (shirt on)?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, absolutely – physical touch builds connection"
+        },
+        {
+          "value": 1,
+          "label": "Maybe, if the vibe feels right"
+        },
+        {
+          "value": 2,
+          "label": "Probably not – too forward for a second date"
+        },
+        {
+          "value": 3,
+          "label": "No – I'd wait until we're more comfortable"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_023",
+      "category": "Intimacy",
+      "text": "For you personally, is sex one of the most important parts of a relationship?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, it's essential for connection"
+        },
+        {
+          "value": 1,
+          "label": "Very important but not the most important"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat important"
+        },
+        {
+          "value": 3,
+          "label": "Not very important"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_024",
+      "category": "Intimacy",
+      "text": "Are you dominant or submissive in the bedroom?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I am vanilla"
+        },
+        {
+          "value": 1,
+          "label": "I am submissive"
+        },
+        {
+          "value": 2,
+          "label": "I am a switch"
+        },
+        {
+          "value": 3,
+          "label": "I am dominant"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_025",
+      "category": "Intimacy",
+      "text": "It would bother me if my partner consumed porn.",
+      "options": [
+        {
+          "value": 0,
+          "label": "Strongly agree – it would bother me a lot"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat agree – I'd prefer they didn't"
+        },
+        {
+          "value": 2,
+          "label": "Neutral – it depends on the context"
+        },
+        {
+          "value": 3,
+          "label": "Somewhat disagree – doesn't bother me much"
+        },
+        {
+          "value": 4,
+          "label": "Strongly disagree – doesn't bother me at all"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_002",
+      "category": "Dating Values",
+      "text": "What's your stance on wanting children?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Definitely want children"
+        },
+        {
+          "value": 1,
+          "label": "Open to it with the right partner"
+        },
+        {
+          "value": 2,
+          "label": "Unsure – could go either way"
+        },
+        {
+          "value": 3,
+          "label": "Have kid(s) already but don't want more"
+        },
+        {
+          "value": 4,
+          "label": "Definitely don't want children"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_003",
+      "category": "Dating Values",
+      "text": "Would you date someone who has a kid?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, no problem"
+        },
+        {
+          "value": 1,
+          "label": "Depends on the situation"
+        },
+        {
+          "value": 2,
+          "label": "Probably not"
+        },
+        {
+          "value": 3,
+          "label": "Definitely not"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_004",
+      "category": "Dating Values",
+      "text": "Are you willing to date someone with a disability?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, absolutely"
+        },
+        {
+          "value": 1,
+          "label": "Yes, it depends on the disability and our compatibility"
+        },
+        {
+          "value": 2,
+          "label": "I'm not sure / I'd have to think about it"
+        },
+        {
+          "value": 3,
+          "label": "Probably not"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_005",
+      "category": "Dating Values",
+      "text": "How do you approach finances in a relationship?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Completely joint – what's mine is ours"
+        },
+        {
+          "value": 1,
+          "label": "Mostly shared with some personal accounts"
+        },
+        {
+          "value": 2,
+          "label": "Split expenses but keep finances separate"
+        },
+        {
+          "value": 3,
+          "label": "Completely independent financial lives"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_006",
+      "category": "Dating Values",
+      "text": "Should the man always pay on dates?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, traditionally"
+        },
+        {
+          "value": 1,
+          "label": "On the first date, then split"
+        },
+        {
+          "value": 2,
+          "label": "Split everything equally"
+        },
+        {
+          "value": 3,
+          "label": "Whoever asks should pay, regardless of gender"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_008",
+      "category": "Dating Values",
+      "text": "Would you consider relocating for a partner's job?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Absolutely, if we're serious"
+        },
+        {
+          "value": 1,
+          "label": "Yes, depending on the circumstances"
+        },
+        {
+          "value": 2,
+          "label": "Maybe if we're married or engaged"
+        },
+        {
+          "value": 3,
+          "label": "No, my career/location is too important"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_010",
+      "category": "Dating Values",
+      "text": "How do you feel about living together before marriage?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Absolutely necessary to test compatibility"
+        },
+        {
+          "value": 1,
+          "label": "Prefer it but not required"
+        },
+        {
+          "value": 2,
+          "label": "Open to it but would rather wait"
+        },
+        {
+          "value": 3,
+          "label": "Prefer to wait until marriage"
+        }
+      ]
+    },
+    {
+      "id": "ll_socl_004",
+      "category": "Relationship Dynamics",
+      "text": "How do you feel about your partner having close friends of the opposite sex?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Totally fine – trust is everything"
+        },
+        {
+          "value": 1,
+          "label": "Okay with it but appreciate transparency"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat uncomfortable but willing to work through it"
+        },
+        {
+          "value": 3,
+          "label": "Prefer clear boundaries in this area"
+        }
+      ]
+    },
+    {
+      "id": "ll_socl_005",
+      "category": "Relationship Dynamics",
+      "text": "How do you handle jealousy in relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I don't really get jealous – I trust easily"
+        },
+        {
+          "value": 1,
+          "label": "Occasional jealousy but I communicate about it"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes struggle with it but work on it"
+        },
+        {
+          "value": 3,
+          "label": "Tend to be protective of relationships"
+        }
+      ]
+    },
+    {
+      "id": "ll_socl_006",
+      "category": "Relationship Dynamics",
+      "text": "How many people have you slept with?",
+      "options": [
+        {
+          "value": 0,
+          "label": "0-2"
+        },
+        {
+          "value": 1,
+          "label": "3-10"
+        },
+        {
+          "value": 2,
+          "label": "11-25"
+        },
+        {
+          "value": 3,
+          "label": "More than 25 / None of your business"
+        }
+      ]
+    },
+    {
+      "id": "ll_socl_014",
+      "category": "Relationship Dynamics",
+      "text": "Would you ever do a threesome?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, I'd be interested"
+        },
+        {
+          "value": 1,
+          "label": "Maybe with the right people"
+        },
+        {
+          "value": 2,
+          "label": "Probably not but never say never"
+        },
+        {
+          "value": 3,
+          "label": "Definitely not my thing"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_000",
+      "category": "Commitment",
+      "text": "What are you ultimately looking for?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Life partner and eventual marriage"
+        },
+        {
+          "value": 1,
+          "label": "Long-term committed relationship"
+        },
+        {
+          "value": 2,
+          "label": "Open to seeing where things go naturally"
+        },
+        {
+          "value": 3,
+          "label": "Casual dating and companionship"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_001",
+      "category": "Commitment",
+      "text": "How long do you typically date before becoming exclusive?",
+      "options": [
+        {
+          "value": 0,
+          "label": "1-2 dates if there's strong chemistry"
+        },
+        {
+          "value": 1,
+          "label": "A few weeks to a month"
+        },
+        {
+          "value": 2,
+          "label": "2-3 months of consistent dating"
+        },
+        {
+          "value": 3,
+          "label": "Several months – I take my time"
+        },
+        {
+          "value": 4,
+          "label": "I don't want to be in an exclusive relationship"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_002",
+      "category": "Commitment",
+      "text": "How do you feel about marriage?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Definitely want to get married"
+        },
+        {
+          "value": 1,
+          "label": "Open to it with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Unsure – don't need marriage to commit"
+        },
+        {
+          "value": 3,
+          "label": "Don't believe in marriage"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_003",
+      "category": "Commitment",
+      "text": "Would you stay in a relationship if you were no longer in love?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never – love is essential"
+        },
+        {
+          "value": 1,
+          "label": "Maybe if there were other factors (kids, etc.)"
+        },
+        {
+          "value": 2,
+          "label": "Yes, love changes over time"
+        },
+        {
+          "value": 3,
+          "label": "I'm not sure"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_013",
+      "category": "Commitment",
+      "text": "Could you forgive infidelity?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never – immediate dealbreaker"
+        },
+        {
+          "value": 1,
+          "label": "Probably not but depends on circumstances"
+        },
+        {
+          "value": 2,
+          "label": "Maybe with couples therapy"
+        },
+        {
+          "value": 3,
+          "label": "Yes, people make mistakes"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_014",
+      "category": "Commitment",
+      "text": "How long was your longest relationship?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never been in a relationship"
+        },
+        {
+          "value": 1,
+          "label": "Less than 6 months"
+        },
+        {
+          "value": 2,
+          "label": "6 months to 2 years"
+        },
+        {
+          "value": 3,
+          "label": "2-5 years"
+        },
+        {
+          "value": 4,
+          "label": "More than 5 years"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_021",
+      "category": "Commitment",
+      "text": "What relationship style are you most interested in?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Monogamy – exclusive with one person"
+        },
+        {
+          "value": 1,
+          "label": "Open relationship – committed but sexually open"
+        },
+        {
+          "value": 2,
+          "label": "Polyamory – multiple romantic relationships"
+        },
+        {
+          "value": 3,
+          "label": "Relationship anarchy – no hierarchies or rules"
+        },
+        {
+          "value": 4,
+          "label": "Exploring/Not sure yet"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_022",
+      "category": "Commitment",
+      "text": "How do you feel about non-monogamy?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not for me – I prefer exclusive relationships"
+        },
+        {
+          "value": 1,
+          "label": "Open to discussing with the right person"
+        },
+        {
+          "value": 2,
+          "label": "Interested but haven't explored it"
+        },
+        {
+          "value": 3,
+          "label": "Experienced and prefer ethical non-monogamy"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_023",
+      "category": "Commitment",
+      "text": "Would you be comfortable with your partner having other romantic connections?",
+      "options": [
+        {
+          "value": 0,
+          "label": "No – I need complete romantic exclusivity"
+        },
+        {
+          "value": 1,
+          "label": "Maybe sexual but not romantic connections"
+        },
+        {
+          "value": 2,
+          "label": "Yes, with clear communication and boundaries"
+        },
+        {
+          "value": 3,
+          "label": "Yes, and I prefer relationship autonomy"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_025",
+      "category": "Commitment",
+      "text": "How do you feel about long distance relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Open to it – distance doesn't matter with the right person"
+        },
+        {
+          "value": 1,
+          "label": "Maybe for the right person, temporarily"
+        },
+        {
+          "value": 2,
+          "label": "Prefer not to but would consider it"
+        },
+        {
+          "value": 3,
+          "label": "Absolutely not – need physical proximity"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_026",
+      "category": "Commitment",
+      "text": "Does emotional entanglement count as cheating?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, absolutely – emotional cheating is still cheating"
+        },
+        {
+          "value": 1,
+          "label": "It depends on the situation and context"
+        },
+        {
+          "value": 2,
+          "label": "Not really – cheating is only physical"
+        },
+        {
+          "value": 3,
+          "label": "I'm not sure what counts as emotional entanglement"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_026",
+      "category": "Intimacy",
+      "text": "How do you feel about kissing on a first date?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Absolutely – if the chemistry is there, go for it"
+        },
+        {
+          "value": 1,
+          "label": "Maybe a quick kiss if it feels right"
+        },
+        {
+          "value": 2,
+          "label": "Prefer to wait until the second or third date"
+        },
+        {
+          "value": 3,
+          "label": "I'd rather wait until we're more serious"
+        }
+      ]
+    },
+    {
+      "id": "ll_intim_027",
+      "category": "Intimacy",
+      "text": "How important is it that your partner initiates intimacy?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very – I prefer when they make the first move"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat – I like a balance of both initiating"
+        },
+        {
+          "value": 2,
+          "label": "Not very – I'm usually the one to initiate"
+        },
+        {
+          "value": 3,
+          "label": "Doesn't matter – either way works for me"
+        }
+      ]
+    },
+    {
+      "id": "ll_comm_022",
+      "category": "Romantic Communication",
+      "text": "How do you prefer to have 'the talk' about becoming official?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Direct conversation – I bring it up clearly"
+        },
+        {
+          "value": 1,
+          "label": "Wait for the other person to bring it up"
+        },
+        {
+          "value": 2,
+          "label": "Let it happen naturally without a formal talk"
+        },
+        {
+          "value": 3,
+          "label": "I avoid defining relationships if possible"
+        }
+      ]
+    },
+    {
+      "id": "ll_vals_021",
+      "category": "Dating Values",
+      "text": "How do you feel about dating apps?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love them – it's how I meet most people"
+        },
+        {
+          "value": 1,
+          "label": "Useful but I prefer meeting people organically"
+        },
+        {
+          "value": 2,
+          "label": "Only use them occasionally"
+        },
+        {
+          "value": 3,
+          "label": "Avoid them – I prefer real-life connections"
+        }
+      ]
+    },
+    {
+      "id": "ll_socl_020",
+      "category": "Relationship Dynamics",
+      "text": "How do you feel about your partner following their ex on social media?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Totally fine – the past is the past"
+        },
+        {
+          "value": 1,
+          "label": "Okay but I'd want to know about it"
+        },
+        {
+          "value": 2,
+          "label": "Would prefer they didn't but won't demand it"
+        },
+        {
+          "value": 3,
+          "label": "Uncomfortable with it – I'd want them to unfollow"
+        }
+      ]
+    },
+    {
+      "id": "ll_comt_027",
+      "category": "Commitment",
+      "text": "How do you feel about getting engaged before living together?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Traditional and romantic – I like the idea"
+        },
+        {
+          "value": 1,
+          "label": "Either way is fine with me"
+        },
+        {
+          "value": 2,
+          "label": "Prefer to live together first"
+        },
+        {
+          "value": 3,
+          "label": "Absolutely must live together before engagement"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Hopeless Romantic",
+      "description": "You believe in love at first sight and aren't afraid to dive in headfirst. You're affectionate, expressive, and view relationships as the center of a fulfilling life.",
+      "characteristics": [
+        "Emotionally expressive",
+        "Relationship-focused",
+        "Romantic gestures",
+        "Fast-moving"
+      ],
+      "suggestions": [
+        "Balance romantic ideals with realistic expectations",
+        "Allow relationships time to develop naturally",
+        "Find a partner who matches your enthusiasm and isn't scared by intensity"
+      ]
+    },
+    {
+      "name": "The Thoughtful Partner",
+      "description": "You approach relationships with intention and care. You value deep connection, open communication, and building something meaningful over time.",
+      "characteristics": [
+        "Emotionally intelligent",
+        "Patient",
+        "Great communicator",
+        "Relationship-oriented"
+      ],
+      "suggestions": [
+        "Don't overthink – sometimes it's okay to just enjoy the moment",
+        "Trust your instincts alongside your analysis",
+        "Find someone who appreciates depth and is ready for emotional intimacy"
+      ]
+    },
+    {
+      "name": "The Independent Spirit",
+      "description": "You value your autonomy and bring a sense of self to your relationships. You're looking for a partner who enhances your life without defining it.",
+      "characteristics": [
+        "Self-sufficient",
+        "Balanced",
+        "Respects boundaries",
+        "Takes time to commit"
+      ],
+      "suggestions": [
+        "Remember to make time for vulnerability and intimacy",
+        "Let your partner in when it feels right",
+        "Find someone confident who has their own full life"
+      ]
+    },
+    {
+      "name": "The Adventure Seeker",
+      "description": "You want a partner to explore life with. You value spontaneity, new experiences, and a relationship that feels exciting and dynamic.",
+      "characteristics": [
+        "Spontaneous",
+        "Energetic",
+        "Experience-focused",
+        "Fun-loving"
+      ],
+      "suggestions": [
+        "Don't forget to create stability amidst the excitement",
+        "Build deeper roots while staying adventurous",
+        "Find someone who's up for anything and shares your zest for life"
+      ]
+    },
+    {
+      "name": "The Slow Burn",
+      "description": "You believe the best relationships develop gradually. You need time to build trust and prefer friendship as the foundation of romance.",
+      "characteristics": [
+        "Cautious",
+        "Friendship-first",
+        "Loyal",
+        "Values trust deeply"
+      ],
+      "suggestions": [
+        "Be open to unexpected connections that don't fit your timeline",
+        "Sometimes chemistry arrives before comfort",
+        "Find someone patient who understands that good things take time"
+      ]
+    },
+    {
+      "name": "The Practical Partner",
+      "description": "You approach relationships with your head and your heart. You value compatibility, shared goals, and building a life together that makes sense.",
+      "characteristics": [
+        "Logical",
+        "Goal-oriented",
+        "Stable",
+        "Values compatibility"
+      ],
+      "suggestions": [
+        "Leave room for passion and spontaneity",
+        "Sometimes the heart knows what the head can't calculate",
+        "Find someone who shares your life vision and values"
+      ]
+    },
+    {
+      "name": "The Free Spirit",
+      "description": "You're open to wherever life takes you. You don't believe in forcing relationships and prefer to let things unfold naturally without pressure.",
+      "characteristics": [
+        "Go-with-the-flow",
+        "Non-traditional",
+        "Present-focused",
+        "Open-minded"
+      ],
+      "suggestions": [
+        "Communicate your needs even when going with the flow",
+        "Be clear about what you're looking for to avoid mismatched expectations",
+        "Find someone who doesn't need labels or timelines"
+      ]
+    },
+    {
+      "name": "The Balanced One",
+      "description": "You've found equilibrium between independence and partnership, passion and stability, planning and spontaneity. You bring well-rounded energy to relationships.",
+      "characteristics": [
+        "Adaptable",
+        "Well-balanced",
+        "Emotionally mature",
+        "Stable yet fun"
+      ],
+      "suggestions": [
+        "Don't be afraid to lean into your preferences more strongly",
+        "Your balance is a strength – use it to navigate relationship challenges",
+        "Find someone who appreciates your balanced approach"
+      ]
+    },
+    {
+      "name": "The Protector",
+      "description": "You show love through acts of service and making your partner feel safe. You're reliable, consistent, and express affection by taking care of the people you love.",
+      "characteristics": [
+        "Nurturing",
+        "Reliable",
+        "Acts of service",
+        "Protective instincts"
+      ],
+      "suggestions": [
+        "Remember to let others take care of you too – receiving is also an act of love",
+        "Balance protection with allowing your partner independence",
+        "Find someone who appreciates being cared for and reciprocates in their own way"
+      ]
+    },
+    {
+      "name": "The Passionate Lover",
+      "description": "Physical touch is your primary love language. You crave intimacy and closeness, expressing and feeling love most deeply through physical presence.",
+      "characteristics": [
+        "Physically affectionate",
+        "Sensual",
+        "Craves closeness",
+        "Expressive through touch"
+      ],
+      "suggestions": [
+        "Develop other ways to connect when physical touch isn't possible",
+        "Communicate that physical touch is your love language",
+        "Find someone equally comfortable with physical intimacy and touch"
+      ]
+    },
+    {
+      "name": "The Devotee",
+      "description": "When you love, you love completely. You're all-in, prioritizing your relationship and your partner above most other things. Your loyalty is unshakeable.",
+      "characteristics": [
+        "Deeply loyal",
+        "All-in commitment",
+        "Partner-focused",
+        "Sacrificial love"
+      ],
+      "suggestions": [
+        "Maintain your individual identity and friendships outside the relationship",
+        "Ensure your devotion is reciprocated",
+        "Find someone who won't take advantage of your devotion and reciprocates fully"
+      ]
+    },
+    {
+      "name": "The Communicator",
+      "description": "Words are your love language. You need to hear 'I love you,' crave meaningful conversations, and express your feelings verbally. Silent love doesn't register for you.",
+      "characteristics": [
+        "Verbally expressive",
+        "Needs verbal affirmation",
+        "Deep conversationalist",
+        "Articulate emotions"
+      ],
+      "suggestions": [
+        "Learn to recognize love expressed through actions, not just words",
+        "Be patient with partners who show love differently",
+        "Find someone who expresses their feelings openly and enjoys talking"
+      ]
+    },
+    {
+      "name": "The Quality Timer",
+      "description": "Undivided attention is how you give and receive love. You crave meaningful time together without distractions. Being truly present is the greatest gift to you.",
+      "characteristics": [
+        "Present-focused",
+        "Values undivided attention",
+        "Creates meaningful moments",
+        "Dislikes distractions"
+      ],
+      "suggestions": [
+        "Understand that some people show love through busy schedules juggling responsibilities",
+        "Communicate your need for dedicated quality time",
+        "Find someone who puts away their phone and gives you their full attention"
+      ]
+    },
+    {
+      "name": "The Playful Partner",
+      "description": "Laughter and fun are at the heart of your relationships. You keep things light, enjoy teasing, and believe couples who play together stay together.",
+      "characteristics": [
+        "Humorous",
+        "Playful teasing",
+        "Keeps romance fun",
+        "Avoids heavy drama"
+      ],
+      "suggestions": [
+        "Be willing to engage with serious topics when necessary",
+        "Balance playfulness with emotional depth",
+        "Find someone with a great sense of humor who doesn't take themselves too seriously"
+      ]
+    },
+    {
+      "name": "The Soulmate Seeker",
+      "description": "You're searching for 'the one' – that deep, cosmic connection that feels fated. You believe in destiny, twin flames, and love that transcends the ordinary.",
+      "characteristics": [
+        "Spiritually connected",
+        "Believes in destiny",
+        "Seeks deep soul connection",
+        "Idealistic about love"
+      ],
+      "suggestions": [
+        "Great relationships are built, not just found – even soulmates require work",
+        "Stay open to connections that don't feel instantly cosmic",
+        "Find someone who shares your belief in deeper meaning and spiritual connection"
+      ]
+    },
+    {
+      "name": "The Secure Attacher",
+      "description": "You have a healthy relationship with intimacy and independence. You're comfortable with closeness and can handle separation without anxiety. You communicate needs clearly.",
+      "characteristics": [
+        "Emotionally stable",
+        "Clear communicator",
+        "Comfortable with intimacy",
+        "Secure in self"
+      ],
+      "suggestions": [
+        "Your security is a gift – use it to help partners feel safe too",
+        "Be patient with partners who have different attachment styles",
+        "You can adapt to different styles – find someone who values healthy communication"
+      ]
+    },
+    {
+      "name": "The Traditionalist",
+      "description": "You value classic romance and traditional relationship milestones. Marriage, family, and building a conventional life together are important to you.",
+      "characteristics": [
+        "Values tradition",
+        "Milestone-oriented",
+        "Family-focused",
+        "Conventional romance"
+      ],
+      "suggestions": [
+        "Stay open to partners whose timelines differ from yours",
+        "Traditional values can coexist with modern flexibility",
+        "Find someone who shares your vision of traditional commitment and family"
+      ]
+    },
+    {
+      "name": "The Modern Lover",
+      "description": "You reject traditional relationship scripts and create your own rules. You're open to non-traditional arrangements and believe love should be defined by those in it.",
+      "characteristics": [
+        "Non-traditional",
+        "Creates own rules",
+        "Open-minded about structure",
+        "Rejects norms"
+      ],
+      "suggestions": [
+        "Communicate your preferences clearly – don't assume others share your flexibility",
+        "Be upfront about your relationship style from the start",
+        "Find someone equally flexible about relationship definitions and expectations"
+      ]
+    }
+  ]
+}

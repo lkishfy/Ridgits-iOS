@@ -11,6 +11,8 @@ final class MessagingViewModel: ObservableObject {
     @Published var isSending = false
     @Published var errorMessage: String?
     @Published var timeRemaining: TimeInterval?
+    /// Set when a messaging action failed because the account isn't subscribed.
+    @Published var showPaywallPrompt = false
 
     private var conversationsListener: ListenerRegistration?
     private var messagesListener: ListenerRegistration?
@@ -18,23 +20,54 @@ final class MessagingViewModel: ObservableObject {
     private var countdownTimer: Timer?
 
     var pendingIncoming: [RidgitsConversation] {
-        conversations.filter(\.isIncomingPending)
+        sortedByRecency(conversations.filter(\.isIncomingPending))
     }
 
     var awaitingApproval: [RidgitsConversation] {
-        conversations.filter(\.isOutgoingPending)
+        sortedByRecency(conversations.filter(\.isOutgoingPending))
     }
 
     var activeConversations: [RidgitsConversation] {
-        conversations.filter { $0.status == .active || ($0.status == .pending && !$0.isIncomingPending && !$0.isOutgoingPending) }
-            .filter { !$0.isIncomingPending && !$0.isOutgoingPending }
+        sortedByRecency(
+            conversations.filter { conversation in
+                !conversation.isIncomingPending && !conversation.isOutgoingPending
+                    && (conversation.status == .active || conversation.status == .pending)
+            }
+        )
+    }
+
+    var incomingRequestCount: Int {
+        pendingIncoming.count
     }
 
     func startListening() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        conversationsListener?.remove()
+
+        if conversations.isEmpty, let cached = RidgitsConversationsCache.shared.conversations(for: uid) {
+            conversations = cached
+        }
+
+        guard conversationsListener == nil else { return }
+
         conversationsListener = RidgitsFirebaseClient.shared.listenConversations(userId: uid) { [weak self] convos in
-            Task { @MainActor in self?.conversations = convos }
+            Task { @MainActor in
+                self?.conversations = convos
+                RidgitsConversationsCache.shared.save(convos, uid: uid)
+            }
+        }
+    }
+
+    func refresh() async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        do {
+            let convos = try await RidgitsFirebaseClient.shared.fetchConversations(
+                userId: uid,
+                forceRefreshProfiles: true
+            )
+            conversations = convos
+            RidgitsConversationsCache.shared.save(convos, uid: uid)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
@@ -48,6 +81,10 @@ final class MessagingViewModel: ObservableObject {
         }
         conversationListener = RidgitsFirebaseClient.shared.listenConversation(conversationId: conversation.id) { [weak self] convo in
             Task { @MainActor in
+                guard let convo else {
+                    self?.selectedConversation = nil
+                    return
+                }
                 self?.selectedConversation = convo
                 self?.updateCountdown()
             }
@@ -61,6 +98,11 @@ final class MessagingViewModel: ObservableObject {
     func approve(_ conversation: RidgitsConversation) async {
         do {
             try await RidgitsFirebaseClient.shared.approveConversation(conversationId: conversation.id)
+        } catch let ridgitsError as RidgitsError {
+            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
+                showPaywallPrompt = true
+            }
+            errorMessage = ridgitsError.localizedDescription
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -75,6 +117,11 @@ final class MessagingViewModel: ObservableObject {
         do {
             try await RidgitsFirebaseClient.shared.sendMessage(conversationId: conversation.id, message: trimmed)
             messageText = ""
+        } catch let ridgitsError as RidgitsError {
+            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
+                showPaywallPrompt = true
+            }
+            errorMessage = ridgitsError.localizedDescription
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -85,6 +132,12 @@ final class MessagingViewModel: ObservableObject {
         messagesListener?.remove()
         conversationListener?.remove()
         countdownTimer?.invalidate()
+    }
+
+    private func sortedByRecency(_ conversations: [RidgitsConversation]) -> [RidgitsConversation] {
+        conversations.sorted {
+            ($0.lastMessageAt ?? .distantPast) > ($1.lastMessageAt ?? .distantPast)
+        }
     }
 
     private func startCountdownTimer() {
@@ -116,7 +169,10 @@ final class MessagingViewModel: ObservableObject {
 }
 
 struct MessagesView: View {
-    @StateObject private var viewModel = MessagingViewModel()
+    @EnvironmentObject private var ridgitsStore: RidgitsStore
+    @ObservedObject var viewModel: MessagingViewModel
+    @State private var showRequests = false
+    @State private var showSubscriptionPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -124,124 +180,342 @@ struct MessagesView: View {
                 if let selected = viewModel.selectedConversation {
                     ConversationDetailView(viewModel: viewModel, conversation: selected)
                 } else {
-                    conversationList
+                    VStack(spacing: 0) {
+                        inboxHeader
+                        conversationList
+                    }
                 }
             }
-            .background(RidgitsColors.feedBackground)
-            .navigationTitle(viewModel.selectedConversation == nil ? "Messages" : "")
+            .background(Color.white)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if viewModel.selectedConversation != nil {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Back") {
+                        Button {
                             viewModel.selectedConversation = nil
                             viewModel.messagesListenerCleanup()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                        }
+                    }
+                } else {
+                    ToolbarItem(placement: .principal) { EmptyView() }
+                }
+            }
+            .toolbar(viewModel.selectedConversation == nil ? .hidden : .visible, for: .navigationBar)
+        }
+        .sheet(isPresented: $showRequests) {
+            MessageRequestsView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(
+                preferredBilling: .yearly,
+                highlightTier: .plus,
+                headline: "Get Ridgits+",
+                subheadline: "Messaging requires Ridgits+ — \(ridgitsStore.plusYearlyPriceLine)/year."
+            )
+        }
+        .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
+            guard showPaywall else { return }
+            viewModel.showPaywallPrompt = false
+            showSubscriptionPaywall = true
+        }
+        .alert("Couldn't send message", isPresented: Binding(
+            get: { viewModel.errorMessage != nil && !viewModel.showPaywallPrompt },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK") { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    private var inboxHeader: some View {
+        HStack(alignment: .center) {
+            Text("Messages")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(RidgitsColors.textHeadline)
+
+            Spacer()
+
+            Button {
+                showRequests = true
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Requests")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+
+                    if viewModel.incomingRequestCount > 0 {
+                        Text("\(viewModel.incomingRequestCount)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(minWidth: 18, minHeight: 18)
+                            .background(RidgitsColors.destructive)
+                            .clipShape(Circle())
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+        .background(Color.white)
+    }
+
+    private var conversationList: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                if viewModel.activeConversations.isEmpty {
+                    emptyInbox
+                } else {
+                    ForEach(viewModel.activeConversations) { convo in
+                        DMConversationRow(conversation: convo) {
+                            viewModel.selectConversation(convo)
                         }
                     }
                 }
             }
+            .ridgitsTabBarScrollTracking()
+            .ridgitsFloatingTabBarPadding()
         }
-        .onAppear { viewModel.startListening() }
-        .onDisappear { viewModel.stopListening() }
-    }
-
-    private var conversationList: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                if !viewModel.pendingIncoming.isEmpty {
-                    section(title: "Pending requests", conversations: viewModel.pendingIncoming, pending: true)
-                }
-                if !viewModel.awaitingApproval.isEmpty {
-                    section(title: "Awaiting approval", conversations: viewModel.awaitingApproval, pending: true)
-                }
-                section(title: "Active", conversations: viewModel.activeConversations, pending: false)
-            }
-            .padding(20)
+        .coordinateSpace(name: "ridgitsTabScroll")
+        .refreshable {
+            await viewModel.refresh()
         }
     }
 
-    private func section(title: String, conversations: [RidgitsConversation], pending: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(RidgitsTypography.headline(16))
+    private var emptyInbox: some View {
+        VStack(spacing: 8) {
+            Text("No messages yet")
+                .font(RidgitsTypography.headline(17))
                 .foregroundStyle(RidgitsColors.textHeadline)
-            if conversations.isEmpty {
-                Text("None")
-                    .font(RidgitsTypography.body(14))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-            } else {
-                ForEach(conversations) { convo in
-                    ConversationRow(conversation: convo, pending: pending) {
-                        viewModel.selectConversation(convo)
-                    } onApprove: {
-                        Task { await viewModel.approve(convo) }
-                    }
-                }
-            }
+            Text("Send a message to a match to start chatting")
+                .font(RidgitsTypography.body(15))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 32)
+        .padding(.top, 80)
     }
 }
 
-private struct ConversationRow: View {
-    let conversation: RidgitsConversation
-    let pending: Bool
-    let onTap: () -> Void
-    let onApprove: () -> Void
+private struct MessageRequestsView: View {
+    @EnvironmentObject private var ridgitsStore: RidgitsStore
+    @ObservedObject var viewModel: MessagingViewModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                AsyncImage(url: URL(string: conversation.otherUserImage)) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    RidgitsColors.border
-                }
-                .frame(width: 48, height: 48)
-                .clipShape(Circle())
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 0) {
+                    if viewModel.pendingIncoming.isEmpty && viewModel.awaitingApproval.isEmpty {
+                        Text("No message requests")
+                            .font(RidgitsTypography.body(15))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 48)
+                    }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(conversation.otherUserName)
-                        .font(RidgitsTypography.headline(15))
-                        .foregroundStyle(RidgitsColors.textHeadline)
-                    Text(conversation.lastMessage ?? "No messages yet")
-                        .font(RidgitsTypography.body(13))
-                        .foregroundStyle(RidgitsColors.textSecondary)
+                    if !viewModel.pendingIncoming.isEmpty {
+                        requestsSectionHeader("Message requests")
+                        ForEach(viewModel.pendingIncoming) { convo in
+                            DMConversationRow(
+                                conversation: convo,
+                                subtitleOverride: convo.lastMessage ?? "Sent you a message",
+                                showsApprove: true,
+                                onApprove: {
+                                    guard ridgitsStore.hasPlusMembership else {
+                                        viewModel.showPaywallPrompt = true
+                                        return
+                                    }
+                                    Task { await viewModel.approve(convo) }
+                                }
+                            ) {
+                                viewModel.selectConversation(convo)
+                                dismiss()
+                            }
+                        }
+                    }
+
+                    if !viewModel.awaitingApproval.isEmpty {
+                        requestsSectionHeader("Awaiting approval")
+                        ForEach(viewModel.awaitingApproval) { convo in
+                            DMConversationRow(
+                                conversation: convo,
+                                subtitleOverride: convo.lastMessage ?? "Waiting for them to approve",
+                                statusLabel: "Pending"
+                            ) {
+                                viewModel.selectConversation(convo)
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+                .padding(.bottom, 24)
+            }
+            .background(Color.white)
+            .navigationTitle("Requests")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .font(.system(size: 16, weight: .semibold))
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func requestsSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(RidgitsColors.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 8)
+    }
+}
+
+private struct DMConversationRow: View {
+    let conversation: RidgitsConversation
+    var subtitleOverride: String?
+    var statusLabel: String?
+    var showsApprove: Bool = false
+    var onApprove: (() -> Void)?
+    let onTap: () -> Void
+
+    private var isUnread: Bool { conversation.unreadCount > 0 }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Button(action: onTap) {
+                HStack(alignment: .center, spacing: 12) {
+                    avatar
+                    conversationText
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if showsApprove, let onApprove {
+                Button(action: onApprove) {
+                    Text("Approve")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(RidgitsColors.ctaBlack)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    private var conversationText: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(conversation.otherUserName)
+                    .font(.system(size: 16, weight: isUnread ? .semibold : .regular))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .lineLimit(1)
+
+                RidgitsVerifiedBadge(tier: conversation.otherUserSubscriptionTier, size: 16)
+
+                Spacer(minLength: 0)
+
+                if let timestamp = RidgitsMessageFormatting.relativeTimestamp(conversation.lastMessageAt) {
+                    Text(timestamp)
+                        .font(.system(size: 14))
+                        .foregroundStyle(RidgitsColors.textMuted)
+                }
+            }
+
+            HStack(spacing: 6) {
+                Text(previewText)
+                    .font(.system(size: 15, weight: isUnread ? .semibold : .regular))
+                    .foregroundStyle(isUnread ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
+                    .lineLimit(1)
+
+                if let statusLabel {
+                    Text("· \(statusLabel)")
+                        .font(.system(size: 15))
+                        .foregroundStyle(RidgitsColors.textMuted)
                         .lineLimit(1)
                 }
-                Spacer()
-                if conversation.unreadCount > 0 {
-                    Text("\(conversation.unreadCount)")
-                        .font(RidgitsTypography.caption(11))
-                        .foregroundStyle(.white)
-                        .padding(6)
-                        .background(RidgitsColors.ctaBlack)
-                        .clipShape(Circle())
+
+                Spacer(minLength: 0)
+
+                if isUnread && !showsApprove {
+                    Circle()
+                        .fill(RidgitsColors.primaryBlue)
+                        .frame(width: 8, height: 8)
                 }
             }
-            .padding(12)
-            .background(pending ? RidgitsColors.pendingYellow : RidgitsColors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                    .stroke(pending ? RidgitsColors.pendingBorder : RidgitsColors.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
         }
-        .overlay(alignment: .bottomTrailing) {
-            if conversation.isIncomingPending {
-                Button("Approve", action: onApprove)
-                    .font(RidgitsTypography.label(12))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(RidgitsColors.ctaBlack)
-                    .clipShape(Capsule())
-                    .padding(8)
+    }
+
+    private var previewText: String {
+        if let subtitleOverride { return subtitleOverride }
+        return conversation.lastMessage ?? "No messages yet"
+    }
+
+    @ViewBuilder
+    private var avatar: some View {
+        Group {
+            if let url = URL(string: conversation.otherUserImage), !conversation.otherUserImage.isEmpty {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    default:
+                        initialsAvatar
+                    }
+                }
+            } else {
+                initialsAvatar
             }
         }
+        .frame(width: 56, height: 56)
+        .clipShape(Circle())
+    }
+
+    private var initialsAvatar: some View {
+        Circle()
+            .fill(RidgitsColors.contextBar)
+            .overlay {
+                Text(conversation.otherUserName.prefix(1).uppercased())
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+            }
+    }
+}
+
+private enum RidgitsMessageFormatting {
+    static func relativeTimestamp(_ date: Date?) -> String? {
+        guard let date else { return nil }
+        let interval = Date().timeIntervalSince(date)
+        if interval < 60 { return "now" }
+        if interval < 3600 { return "\(Int(interval / 60))m" }
+        if interval < 86_400 { return "\(Int(interval / 3600))h" }
+        if interval < 604_800 { return "\(Int(interval / 86_400))d" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d/yy"
+        return formatter.string(from: date)
     }
 }
 
 struct ConversationDetailView: View {
+    @EnvironmentObject private var ridgitsStore: RidgitsStore
     @ObservedObject var viewModel: MessagingViewModel
     let conversation: RidgitsConversation
 
@@ -268,7 +542,7 @@ struct ConversationDetailView: View {
                                 message: message,
                                 isMine: message.senderId == Auth.auth().currentUser?.uid
                             )
-                                .id(message.id)
+                            .id(message.id)
                         }
                     }
                     .padding(16)
@@ -288,6 +562,10 @@ struct ConversationDetailView: View {
                         .background(RidgitsColors.inputSurface)
                         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                     Button {
+                        guard ridgitsStore.hasPlusMembership else {
+                            viewModel.showPaywallPrompt = true
+                            return
+                        }
                         Task { await viewModel.sendMessage() }
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
@@ -305,12 +583,28 @@ struct ConversationDetailView: View {
                     .padding()
             } else if conversation.isIncomingPending {
                 RidgitsPrimaryButton(title: "Approve conversation") {
+                    guard ridgitsStore.hasPlusMembership else {
+                        viewModel.showPaywallPrompt = true
+                        return
+                    }
                     Task { await viewModel.approve(conversation) }
                 }
                 .padding()
             }
         }
-        .navigationTitle(conversation.otherUserName)
+        .padding(.bottom, 72)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack(spacing: 6) {
+                    Text(conversation.otherUserName)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                        .lineLimit(1)
+                    RidgitsVerifiedBadge(tier: conversation.otherUserSubscriptionTier, size: 16)
+                }
+            }
+        }
     }
 }
 

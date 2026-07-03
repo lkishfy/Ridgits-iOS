@@ -1,0 +1,1259 @@
+{
+  "id": "self-sabotage",
+  "questions": [
+    {
+      "id": "sab_000",
+      "category": "Fear",
+      "text": "When something good is happening in your life, you typically:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel grateful and enjoy it fully"
+        },
+        {
+          "value": 1,
+          "label": "Feel happy but slightly worried it won't last"
+        },
+        {
+          "value": 2,
+          "label": "Wait for the other shoe to drop"
+        },
+        {
+          "value": 3,
+          "label": "Find ways to undermine or complicate it"
+        }
+      ]
+    },
+    {
+      "id": "sab_001",
+      "category": "Fear",
+      "text": "How do you respond when someone compliments you?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Accept it graciously and say thank you"
+        },
+        {
+          "value": 1,
+          "label": "Feel pleased but slightly uncomfortable"
+        },
+        {
+          "value": 2,
+          "label": "Deflect or minimize the compliment"
+        },
+        {
+          "value": 3,
+          "label": "Reject it or point out why they're wrong"
+        }
+      ]
+    },
+    {
+      "id": "sab_002",
+      "category": "Fear",
+      "text": "When you're close to achieving a goal, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Push through with excitement and determination"
+        },
+        {
+          "value": 1,
+          "label": "Feel nervous but stay committed"
+        },
+        {
+          "value": 2,
+          "label": "Start doubting yourself or procrastinating"
+        },
+        {
+          "value": 3,
+          "label": "Often give up or create obstacles"
+        }
+      ]
+    },
+    {
+      "id": "sab_003",
+      "category": "Fear",
+      "text": "What's your relationship with success?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I feel worthy of success and work toward it"
+        },
+        {
+          "value": 1,
+          "label": "I want success but sometimes doubt I deserve it"
+        },
+        {
+          "value": 2,
+          "label": "Success makes me uncomfortable or guilty"
+        },
+        {
+          "value": 3,
+          "label": "I fear success more than failure"
+        }
+      ]
+    },
+    {
+      "id": "sab_004",
+      "category": "Fear",
+      "text": "How do you handle positive attention?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I receive it comfortably"
+        },
+        {
+          "value": 1,
+          "label": "I appreciate it but feel a bit self-conscious"
+        },
+        {
+          "value": 2,
+          "label": "I feel anxious and want to hide"
+        },
+        {
+          "value": 3,
+          "label": "I actively avoid or deflect it"
+        }
+      ]
+    },
+    {
+      "id": "sab_005",
+      "category": "Fear",
+      "text": "When you start succeeding at something new, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel proud and motivated to continue"
+        },
+        {
+          "value": 1,
+          "label": "Feel good but wonder if it's beginner's luck"
+        },
+        {
+          "value": 2,
+          "label": "Start questioning if you really deserve it"
+        },
+        {
+          "value": 3,
+          "label": "Find ways to quit or mess it up"
+        }
+      ]
+    },
+    {
+      "id": "sab_006",
+      "category": "Fear",
+      "text": "What happens when things are going 'too well'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I appreciate it and stay present"
+        },
+        {
+          "value": 1,
+          "label": "I feel grateful but slightly anxious"
+        },
+        {
+          "value": 2,
+          "label": "I brace for something bad to happen"
+        },
+        {
+          "value": 3,
+          "label": "I unconsciously create problems or drama"
+        }
+      ]
+    },
+    {
+      "id": "sab_007",
+      "category": "Fear",
+      "text": "How comfortable are you with being happy?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very comfortable - I embrace happiness"
+        },
+        {
+          "value": 1,
+          "label": "Mostly comfortable with occasional guilt"
+        },
+        {
+          "value": 2,
+          "label": "Uncomfortable - happiness feels unsafe"
+        },
+        {
+          "value": 3,
+          "label": "Very uncomfortable - I distrust good feelings"
+        }
+      ]
+    },
+    {
+      "id": "sab_008",
+      "category": "Fear",
+      "text": "When someone treats you really well, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel grateful and treat them well in return"
+        },
+        {
+          "value": 1,
+          "label": "Appreciate it but wonder why they're so nice"
+        },
+        {
+          "value": 2,
+          "label": "Question their motives or authenticity"
+        },
+        {
+          "value": 3,
+          "label": "Push them away or test them"
+        }
+      ]
+    },
+    {
+      "id": "sab_009",
+      "category": "Fear",
+      "text": "What's your relationship with receiving help?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I accept help graciously when needed"
+        },
+        {
+          "value": 1,
+          "label": "I accept but feel like I owe them"
+        },
+        {
+          "value": 2,
+          "label": "I'm uncomfortable and prefer to struggle alone"
+        },
+        {
+          "value": 3,
+          "label": "I refuse help even when I need it"
+        }
+      ]
+    },
+    {
+      "id": "sab_010",
+      "category": "Fear",
+      "text": "How do you respond to opportunities?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I evaluate and pursue exciting opportunities"
+        },
+        {
+          "value": 1,
+          "label": "I consider them carefully but sometimes overthink"
+        },
+        {
+          "value": 2,
+          "label": "I doubt whether I'm qualified or ready"
+        },
+        {
+          "value": 3,
+          "label": "I talk myself out of them or self-reject"
+        }
+      ]
+    },
+    {
+      "id": "sab_011",
+      "category": "Fear",
+      "text": "What's your inner dialogue about your worthiness?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm worthy of good things"
+        },
+        {
+          "value": 1,
+          "label": "I'm working on believing I'm worthy"
+        },
+        {
+          "value": 2,
+          "label": "I struggle to feel worthy"
+        },
+        {
+          "value": 3,
+          "label": "I fundamentally don't feel worthy"
+        }
+      ]
+    },
+    {
+      "id": "sab_012",
+      "category": "Fear",
+      "text": "When you imagine your ideal future, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Feel excited and motivated"
+        },
+        {
+          "value": 1,
+          "label": "Feel hopeful but realistic"
+        },
+        {
+          "value": 2,
+          "label": "Feel doubtful it could happen for you"
+        },
+        {
+          "value": 3,
+          "label": "Can't let yourself imagine it"
+        }
+      ]
+    },
+    {
+      "id": "sab_013",
+      "category": "Behavior",
+      "text": "How often do you procrastinate on important things?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely - I handle important tasks promptly"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes - usually work through it"
+        },
+        {
+          "value": 2,
+          "label": "Often - it causes problems"
+        },
+        {
+          "value": 3,
+          "label": "Constantly - it's a major pattern"
+        }
+      ]
+    },
+    {
+      "id": "sab_014",
+      "category": "Behavior",
+      "text": "When stressed, you're most likely to:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Use healthy coping strategies"
+        },
+        {
+          "value": 1,
+          "label": "Mix healthy and unhealthy coping"
+        },
+        {
+          "value": 2,
+          "label": "Turn to avoidance or numbing behaviors"
+        },
+        {
+          "value": 3,
+          "label": "Engage in clearly self-destructive behaviors"
+        }
+      ]
+    },
+    {
+      "id": "sab_015",
+      "category": "Behavior",
+      "text": "How do you handle conflict in relationships?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Address it directly with care"
+        },
+        {
+          "value": 1,
+          "label": "Try to resolve it but sometimes avoid"
+        },
+        {
+          "value": 2,
+          "label": "Avoid it or blow it out of proportion"
+        },
+        {
+          "value": 3,
+          "label": "Create bigger conflict or sabotage the relationship"
+        }
+      ]
+    },
+    {
+      "id": "sab_016",
+      "category": "Behavior",
+      "text": "When you commit to something, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Follow through consistently"
+        },
+        {
+          "value": 1,
+          "label": "Usually follow through with occasional slip-ups"
+        },
+        {
+          "value": 2,
+          "label": "Start strong but often don't finish"
+        },
+        {
+          "value": 3,
+          "label": "Rarely follow through on commitments"
+        }
+      ]
+    },
+    {
+      "id": "sab_017",
+      "category": "Behavior",
+      "text": "How do you treat yourself when you make a mistake?",
+      "options": [
+        {
+          "value": 0,
+          "label": "With compassion and learning mindset"
+        },
+        {
+          "value": 1,
+          "label": "With some self-criticism but overall kindness"
+        },
+        {
+          "value": 2,
+          "label": "Harshly - I'm very self-critical"
+        },
+        {
+          "value": 3,
+          "label": "Brutally - I punish myself mentally"
+        }
+      ]
+    },
+    {
+      "id": "sab_018",
+      "category": "Behavior",
+      "text": "What's your pattern with healthy habits?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I maintain them consistently"
+        },
+        {
+          "value": 1,
+          "label": "I maintain them but occasionally slip"
+        },
+        {
+          "value": 2,
+          "label": "I start and stop frequently"
+        },
+        {
+          "value": 3,
+          "label": "I actively resist healthy habits"
+        }
+      ]
+    },
+    {
+      "id": "sab_019",
+      "category": "Behavior",
+      "text": "How do you respond to your own boundaries?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I set and honor them"
+        },
+        {
+          "value": 1,
+          "label": "I set them but sometimes compromise"
+        },
+        {
+          "value": 2,
+          "label": "I set them but regularly violate them"
+        },
+        {
+          "value": 3,
+          "label": "I don't set boundaries for myself"
+        }
+      ]
+    },
+    {
+      "id": "sab_020",
+      "category": "Behavior",
+      "text": "When you're doing well, your habits:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stay consistent - they support my success"
+        },
+        {
+          "value": 1,
+          "label": "Stay mostly consistent"
+        },
+        {
+          "value": 2,
+          "label": "Start to slip - I relax too much"
+        },
+        {
+          "value": 3,
+          "label": "Fall apart - I self-sabotage success"
+        }
+      ]
+    },
+    {
+      "id": "sab_021",
+      "category": "Behavior",
+      "text": "How do you handle success or progress?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Build on it and keep momentum"
+        },
+        {
+          "value": 1,
+          "label": "Celebrate then refocus"
+        },
+        {
+          "value": 2,
+          "label": "Downplay it and lose momentum"
+        },
+        {
+          "value": 3,
+          "label": "Undermine it through poor choices"
+        }
+      ]
+    },
+    {
+      "id": "sab_022",
+      "category": "Behavior",
+      "text": "What's your relationship with self-care?",
+      "options": [
+        {
+          "value": 0,
+          "label": "It's a priority I maintain consistently"
+        },
+        {
+          "value": 1,
+          "label": "I practice it but not always consistently"
+        },
+        {
+          "value": 2,
+          "label": "I know I should but rarely do it"
+        },
+        {
+          "value": 3,
+          "label": "I actively neglect myself"
+        }
+      ]
+    },
+    {
+      "id": "sab_023",
+      "category": "Behavior",
+      "text": "How often do you keep promises to yourself?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Almost always"
+        },
+        {
+          "value": 1,
+          "label": "Usually"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes"
+        },
+        {
+          "value": 3,
+          "label": "Rarely"
+        }
+      ]
+    },
+    {
+      "id": "sab_024",
+      "category": "Behavior",
+      "text": "When things get hard, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Push through with determination"
+        },
+        {
+          "value": 1,
+          "label": "Keep going with support"
+        },
+        {
+          "value": 2,
+          "label": "Consider quitting but usually don't"
+        },
+        {
+          "value": 3,
+          "label": "Give up or self-sabotage"
+        }
+      ]
+    },
+    {
+      "id": "sab_025",
+      "category": "Beliefs",
+      "text": "What's your most common self-talk?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Encouraging and supportive"
+        },
+        {
+          "value": 1,
+          "label": "Mostly positive with some criticism"
+        },
+        {
+          "value": 2,
+          "label": "Critical and doubting"
+        },
+        {
+          "value": 3,
+          "label": "Harsh and defeating"
+        }
+      ]
+    },
+    {
+      "id": "sab_026",
+      "category": "Beliefs",
+      "text": "How do you view your past failures?",
+      "options": [
+        {
+          "value": 0,
+          "label": "As learning experiences and growth opportunities"
+        },
+        {
+          "value": 1,
+          "label": "Disappointed but understanding"
+        },
+        {
+          "value": 2,
+          "label": "As evidence of my inadequacy"
+        },
+        {
+          "value": 3,
+          "label": "As proof I'll never succeed"
+        }
+      ]
+    },
+    {
+      "id": "sab_027",
+      "category": "Beliefs",
+      "text": "What do you believe you deserve?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love, success, and happiness"
+        },
+        {
+          "value": 1,
+          "label": "Good things but I have to earn them"
+        },
+        {
+          "value": 2,
+          "label": "Only what I can achieve through struggle"
+        },
+        {
+          "value": 3,
+          "label": "Not much - good things happen to others"
+        }
+      ]
+    },
+    {
+      "id": "sab_028",
+      "category": "Beliefs",
+      "text": "How do you explain your successes to yourself?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I earned them through effort and ability"
+        },
+        {
+          "value": 1,
+          "label": "Combination of my work and good timing"
+        },
+        {
+          "value": 2,
+          "label": "Mostly luck or external factors"
+        },
+        {
+          "value": 3,
+          "label": "Accident, luck, or others' mistakes"
+        }
+      ]
+    },
+    {
+      "id": "sab_029",
+      "category": "Beliefs",
+      "text": "What's your core belief about yourself?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm capable and worthy"
+        },
+        {
+          "value": 1,
+          "label": "I'm okay but flawed"
+        },
+        {
+          "value": 2,
+          "label": "I'm fundamentally flawed but trying"
+        },
+        {
+          "value": 3,
+          "label": "I'm broken or not enough"
+        }
+      ]
+    },
+    {
+      "id": "sab_030",
+      "category": "Beliefs",
+      "text": "When you look in the mirror, your first thought is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Positive or neutral acceptance"
+        },
+        {
+          "value": 1,
+          "label": "Mixed - some positive, some critical"
+        },
+        {
+          "value": 2,
+          "label": "Primarily critical"
+        },
+        {
+          "value": 3,
+          "label": "Harsh and rejecting"
+        }
+      ]
+    },
+    {
+      "id": "sab_031",
+      "category": "Beliefs",
+      "text": "How do you complete this: 'People like me...'",
+      "options": [
+        {
+          "value": 0,
+          "label": "'...can achieve their goals'"
+        },
+        {
+          "value": 1,
+          "label": "'...have to work hard for everything'"
+        },
+        {
+          "value": 2,
+          "label": "'...don't usually get lucky breaks'"
+        },
+        {
+          "value": 3,
+          "label": "'...don't deserve good things'"
+        }
+      ]
+    },
+    {
+      "id": "sab_032",
+      "category": "Beliefs",
+      "text": "What's your relationship with your potential?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm actively working to reach it"
+        },
+        {
+          "value": 1,
+          "label": "I believe in it but face obstacles"
+        },
+        {
+          "value": 2,
+          "label": "I doubt I have much potential"
+        },
+        {
+          "value": 3,
+          "label": "I don't believe I have meaningful potential"
+        }
+      ]
+    },
+    {
+      "id": "sab_033",
+      "category": "Beliefs",
+      "text": "How do you view your worthiness of love?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm worthy of love as I am"
+        },
+        {
+          "value": 1,
+          "label": "I'm worthy but need to work on myself"
+        },
+        {
+          "value": 2,
+          "label": "I'll be worthy when I'm better/different"
+        },
+        {
+          "value": 3,
+          "label": "I'm fundamentally unworthy of real love"
+        }
+      ]
+    },
+    {
+      "id": "sab_034",
+      "category": "Beliefs",
+      "text": "When you achieve something, your inner voice says:",
+      "options": [
+        {
+          "value": 0,
+          "label": "'I did it! I'm proud of myself'"
+        },
+        {
+          "value": 1,
+          "label": "'That's good, but I could have done better'"
+        },
+        {
+          "value": 2,
+          "label": "'That wasn't really that hard/impressive'"
+        },
+        {
+          "value": 3,
+          "label": "'Anyone could have done that'"
+        }
+      ]
+    },
+    {
+      "id": "sab_035",
+      "category": "Beliefs",
+      "text": "What do you believe about change?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I can change and grow"
+        },
+        {
+          "value": 1,
+          "label": "Change is possible but difficult"
+        },
+        {
+          "value": 2,
+          "label": "Real change is unlikely for me"
+        },
+        {
+          "value": 3,
+          "label": "I can't really change who I am"
+        }
+      ]
+    },
+    {
+      "id": "sab_036",
+      "category": "Beliefs",
+      "text": "How do you view your mistakes?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Natural part of learning and growth"
+        },
+        {
+          "value": 1,
+          "label": "Disappointing but not defining"
+        },
+        {
+          "value": 2,
+          "label": "Evidence of my inadequacy"
+        },
+        {
+          "value": 3,
+          "label": "Proof I'll always fail"
+        }
+      ]
+    },
+    {
+      "id": "sab_037",
+      "category": "Beliefs",
+      "text": "What's your belief about happiness?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I deserve to be happy"
+        },
+        {
+          "value": 1,
+          "label": "Happiness is earned through effort"
+        },
+        {
+          "value": 2,
+          "label": "Happiness is for other people"
+        },
+        {
+          "value": 3,
+          "label": "I don't deserve lasting happiness"
+        }
+      ]
+    },
+    {
+      "id": "sab_038",
+      "category": "Patterns",
+      "text": "How aware are you of your self-sabotaging patterns?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very aware - I actively work on them"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat aware - I'm learning"
+        },
+        {
+          "value": 2,
+          "label": "Limited awareness - patterns surprise me"
+        },
+        {
+          "value": 3,
+          "label": "Not aware - I don't see the patterns"
+        }
+      ]
+    },
+    {
+      "id": "sab_039",
+      "category": "Patterns",
+      "text": "When you notice yourself self-sabotaging, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stop and redirect to healthier choices"
+        },
+        {
+          "value": 1,
+          "label": "Notice but don't always stop it"
+        },
+        {
+          "value": 2,
+          "label": "Notice but feel powerless to stop"
+        },
+        {
+          "value": 3,
+          "label": "Don't notice until after the damage"
+        }
+      ]
+    },
+    {
+      "id": "sab_040",
+      "category": "Patterns",
+      "text": "How often do you repeat the same self-destructive patterns?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely - I learn and change"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes - working on breaking cycles"
+        },
+        {
+          "value": 2,
+          "label": "Often - same patterns keep emerging"
+        },
+        {
+          "value": 3,
+          "label": "Constantly - feel stuck in loops"
+        }
+      ]
+    },
+    {
+      "id": "sab_041",
+      "category": "Patterns",
+      "text": "What triggers your self-sabotage most?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I've identified and manage my triggers"
+        },
+        {
+          "value": 1,
+          "label": "Success, intimacy, or vulnerability"
+        },
+        {
+          "value": 2,
+          "label": "Stress or any discomfort"
+        },
+        {
+          "value": 3,
+          "label": "Almost anything good happening"
+        }
+      ]
+    },
+    {
+      "id": "sab_042",
+      "category": "Patterns",
+      "text": "How do your relationships typically end?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Mutual decision or clear incompatibility"
+        },
+        {
+          "value": 1,
+          "label": "Natural drifting or honest conversations"
+        },
+        {
+          "value": 2,
+          "label": "Me pushing them away or creating distance"
+        },
+        {
+          "value": 3,
+          "label": "Me sabotaging when things get good"
+        }
+      ]
+    },
+    {
+      "id": "sab_043",
+      "category": "Patterns",
+      "text": "What's your pattern with opportunities?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I recognize and pursue them"
+        },
+        {
+          "value": 1,
+          "label": "I sometimes hesitate but usually go for it"
+        },
+        {
+          "value": 2,
+          "label": "I often let them pass"
+        },
+        {
+          "value": 3,
+          "label": "I actively avoid or ruin them"
+        }
+      ]
+    },
+    {
+      "id": "sab_044",
+      "category": "Patterns",
+      "text": "How do you handle periods of stability?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I appreciate and maintain them"
+        },
+        {
+          "value": 1,
+          "label": "I enjoy them but worry a bit"
+        },
+        {
+          "value": 2,
+          "label": "I feel uncomfortable and restless"
+        },
+        {
+          "value": 3,
+          "label": "I unconsciously create chaos"
+        }
+      ]
+    },
+    {
+      "id": "sab_045",
+      "category": "Patterns",
+      "text": "What happens when you're close to a breakthrough?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I push through to achieve it"
+        },
+        {
+          "value": 1,
+          "label": "I feel resistance but work through it"
+        },
+        {
+          "value": 2,
+          "label": "I often quit right before succeeding"
+        },
+        {
+          "value": 3,
+          "label": "I always sabotage right at the finish line"
+        }
+      ]
+    },
+    {
+      "id": "sab_046",
+      "category": "Patterns",
+      "text": "How much do you repeat your family's patterns?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I've broken unhealthy family patterns"
+        },
+        {
+          "value": 1,
+          "label": "I'm working on breaking them"
+        },
+        {
+          "value": 2,
+          "label": "I repeat many of them"
+        },
+        {
+          "value": 3,
+          "label": "I'm living out the same patterns"
+        }
+      ]
+    },
+    {
+      "id": "sab_047",
+      "category": "Patterns",
+      "text": "What's your relationship with therapy or self-work?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Active participant in my growth"
+        },
+        {
+          "value": 1,
+          "label": "I do some self-work regularly"
+        },
+        {
+          "value": 2,
+          "label": "I know I should but resist"
+        },
+        {
+          "value": 3,
+          "label": "I avoid it or sabotage the process"
+        }
+      ]
+    },
+    {
+      "id": "sab_048",
+      "category": "Patterns",
+      "text": "When you identify a pattern, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Create a plan to change it"
+        },
+        {
+          "value": 1,
+          "label": "Try to change but struggle"
+        },
+        {
+          "value": 2,
+          "label": "Feel aware but helpless"
+        },
+        {
+          "value": 3,
+          "label": "Continue the pattern anyway"
+        }
+      ]
+    },
+    {
+      "id": "sab_049",
+      "category": "Patterns",
+      "text": "How ready are you to change your self-sabotaging patterns?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very ready - actively working on change"
+        },
+        {
+          "value": 1,
+          "label": "Ready but need support"
+        },
+        {
+          "value": 2,
+          "label": "Ambivalent - want change but scared"
+        },
+        {
+          "value": 3,
+          "label": "Not ready - patterns feel safer than change"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Self-Aware Overcomer",
+      "description": "You have strong awareness of any self-limiting patterns and actively work to overcome them. You practice self-compassion, maintain healthy habits, and believe in your capacity for growth and change.",
+      "characteristics": [
+        "High self-awareness",
+        "Practices self-compassion",
+        "Maintains healthy boundaries and habits",
+        "Growth-oriented mindset"
+      ],
+      "suggestions": [
+        "Continue your self-work and celebrate progress",
+        "Share your growth practices with others",
+        "Stay vigilant during stressful periods",
+        "Remember that maintaining growth is also growth"
+      ]
+    },
+    {
+      "name": "The Imposter",
+      "description": "Despite evidence of your capabilities, you doubt your worthiness and attribute success to luck or external factors. You fear being 'found out' and unconsciously undermine your achievements to match your internal self-image.",
+      "characteristics": [
+        "Attributes success to external factors",
+        "Persistent self-doubt despite evidence",
+        "Fear of being exposed as fraud",
+        "Difficulty internalizing achievements"
+      ],
+      "suggestions": [
+        "Keep a success journal documenting your contributions",
+        "Challenge thoughts about luck with evidence",
+        "Practice accepting compliments without deflecting",
+        "Work with a therapist on core beliefs about worthiness",
+        "Connect with others who experience imposter syndrome"
+      ]
+    },
+    {
+      "name": "The Upper Limit Problem",
+      "description": "You unconsciously have a 'set point' for how much success, love, or happiness you can tolerate. When you exceed it, you self-sabotage back to your comfort zone. Good things make you anxious because they feel unfamiliar.",
+      "characteristics": [
+        "Sabotages when things go well",
+        "Discomfort with sustained happiness",
+        "Creates problems during good times",
+        "Has a tolerance ceiling for good feelings"
+      ],
+      "suggestions": [
+        "Read 'The Big Leap' by Gay Hendricks",
+        "Practice tolerating good feelings in small doses",
+        "Notice when you're about to self-sabotage and pause",
+        "Work on expanding your capacity for happiness",
+        "Challenge beliefs about deserving good things"
+      ]
+    },
+    {
+      "name": "The Perfectionist Procrastinator",
+      "description": "Your impossibly high standards paralyze you. You procrastinate because you fear failure, so you protect your ego by not really trying. 'I didn't fail, I just didn't do my best' becomes your shield against vulnerability.",
+      "characteristics": [
+        "All-or-nothing thinking",
+        "Chronic procrastination",
+        "Fear of failure prevents action",
+        "Uses lack of effort as excuse"
+      ],
+      "suggestions": [
+        "Practice 'good enough' rather than perfect",
+        "Set process goals instead of outcome goals",
+        "Take small imperfect actions daily",
+        "Work on separating self-worth from performance",
+        "Challenge perfectionist thoughts with evidence"
+      ]
+    },
+    {
+      "name": "The Repeater",
+      "description": "You repeat the same painful patterns across relationships, jobs, and life situations. You might be unconsciously recreating family dynamics or trying to master old wounds. The patterns feel familiar, even when they hurt.",
+      "characteristics": [
+        "Repeats same patterns across life areas",
+        "Attracts similar situations repeatedly",
+        "Comfort with familiar dysfunction",
+        "Limited awareness of patterns"
+      ],
+      "suggestions": [
+        "Work with a therapist on family-of-origin issues",
+        "Journal about patterns across different life areas",
+        "Pause before making major decisions - is this the pattern?",
+        "Build new neural pathways through different choices",
+        "Surround yourself with people who model healthier patterns"
+      ]
+    },
+    {
+      "name": "The Self-Punisher",
+      "description": "You carry deep shame or guilt and punish yourself through self-sabotage. You don't believe you deserve good things, so you unconsciously ensure you don't have them. Your inner critic is brutal and constant.",
+      "characteristics": [
+        "Harsh, punitive self-talk",
+        "Deep-seated shame or guilt",
+        "Believes suffering is deserved",
+        "Actively denies self good things"
+      ],
+      "suggestions": [
+        "Seek therapy - this requires professional support",
+        "Practice self-compassion exercises daily",
+        "Work on trauma healing (EMDR, IFS, somatic work)",
+        "Challenge beliefs about deserving punishment",
+        "Build relationship with inner child work",
+        "Consider whether religious or family shame needs processing"
+      ]
+    }
+  ]
+}

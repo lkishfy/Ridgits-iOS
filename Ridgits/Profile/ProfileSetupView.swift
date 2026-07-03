@@ -11,56 +11,86 @@ struct ProfileSetupView: View {
 
     init(onComplete: @escaping () -> Void) {
         let uid = Auth.auth().currentUser?.uid ?? ""
-        _profile = State(initialValue: RidgitsUserProfile(
-            id: uid, name: "", location: "", age: nil, image: "",
-            about: "", interests: [], aspirations: "", additionalImages: []
-        ))
+        _profile = State(initialValue: RidgitsUserProfile.empty(uid: uid))
         self.onComplete = onComplete
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Basics") {
-                    TextField("Name", text: $profile.name)
-                    TextField("City", text: $profile.location)
-                    TextField("Age", value: $profile.age, format: .number)
-                        .keyboardType(.numberPad)
-                    TextField("Photo URL", text: $profile.image)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.URL)
-                }
-                Section("About") {
-                    TextField("About me", text: $profile.about, axis: .vertical)
-                        .lineLimit(3...6)
-                    TextField("Aspirations", text: $profile.aspirations, axis: .vertical)
-                        .lineLimit(2...4)
-                }
-                Section("Interests") {
-                    HStack {
-                        TextField("Add interest", text: $interestDraft)
-                        Button("Add") {
-                            let trimmed = interestDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-                            guard !trimmed.isEmpty else { return }
-                            profile.interests.append(trimmed)
-                            interestDraft = ""
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    RidgitsSectionHeader(
+                        title: "Your Profile",
+                        subtitle: "Complete your profile to start matching"
+                    )
+
+                    RidgitsDashboardCard {
+                        VStack(alignment: .leading, spacing: 14) {
+                            field("Name", required: true) {
+                                RidgitsTextField(placeholder: "Username", text: $profile.name)
+                            }
+                            field("City", required: true) {
+                                RidgitsTextField(placeholder: "City, State", text: $profile.location)
+                            }
+                            field("Age", required: true) {
+                                RidgitsTextField(
+                                    placeholder: "Age",
+                                    text: Binding(
+                                        get: { profile.age.map(String.init) ?? "" },
+                                        set: { profile.age = Int($0) }
+                                    ),
+                                    keyboard: .numberPad
+                                )
+                            }
+                            field("Profile Photo", required: true) {
+                                RidgitsProfilePhotoPicker(imageURL: $profile.image)
+                            }
+                            field("About", required: true) {
+                                RidgitsTextField(placeholder: "About me", text: $profile.about, axis: .vertical, lineLimit: 3...5)
+                            }
+                            field("Aspirations", required: true) {
+                                RidgitsTextField(placeholder: "What you're looking for", text: $profile.aspirations, axis: .vertical, lineLimit: 2...4)
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                RidgitsFormStyle.fieldLabel("Interests", required: true)
+                                HStack {
+                                    RidgitsTextField(placeholder: "Add interest", text: $interestDraft)
+                                    Button("Add") {
+                                        let trimmed = interestDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                                        guard !trimmed.isEmpty else { return }
+                                        profile.interests.append(trimmed)
+                                        interestDraft = ""
+                                    }
+                                    .font(RidgitsTypography.label(12))
+                                }
+                            }
+
+                            RidgitsSquareButton(title: isSaving ? "Saving…" : "Save & Continue", style: .filled) {
+                                Task { await save() }
+                            }
+                            .disabled(!profile.isCompleteForMatching || isSaving)
                         }
-                    }
-                    ForEach(profile.interests, id: \.self) { interest in
-                        Text(interest)
+                        .padding(16)
                     }
                 }
+                .padding(16)
             }
-            .navigationTitle("Your profile")
+            .background(RidgitsColors.feedBackground)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        Task { await save() }
-                    }
-                    .disabled(!profile.isCompleteForMatching || isSaving)
+                ToolbarItem(placement: .principal) {
+                    RidgitsLogoView.onLight(size: 22)
                 }
             }
             .task { await loadExisting() }
+        }
+    }
+
+    private func field<Content: View>(_ title: String, required: Bool = false, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            RidgitsFormStyle.fieldLabel(title, required: required)
+            content()
         }
     }
 

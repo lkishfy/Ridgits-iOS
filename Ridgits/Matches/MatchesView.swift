@@ -1,115 +1,299 @@
 import SwiftUI
 import FirebaseAuth
-import FirebaseFirestore
-
-@MainActor
-final class MatchesViewModel: ObservableObject {
-    @Published var nearbyMatches: [RidgitsMatch] = []
-    @Published var nationwideMatches: [RidgitsMatch] = []
-    @Published var maxDistance = 25
-    @Published var isLoading = false
-    @Published var errorMessage: String?
-
-    var nearbyAvailableCount: Int { nearbyMatches.count }
-
-    func load(hasNearbyAccess: Bool) async {
-        isLoading = true
-        defer { isLoading = false }
-        do {
-            nationwideMatches = try await RidgitsFirebaseClient.shared.getTopNationwideMatches(limit: 10)
-            nearbyMatches = try await RidgitsFirebaseClient.shared.findMatches(maxDistance: maxDistance)
-        } catch {
-            errorMessage = error.localizedDescription
-            if !hasNearbyAccess {
-                nearbyMatches = []
-            }
-        }
-    }
-
-    func sendPoke(to match: RidgitsMatch) async {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        try? await Firestore.firestore().collection("pokes").addDocument(data: [
-            "fromUserId": uid,
-            "toUserId": match.userId,
-            "createdAt": FieldValue.serverTimestamp(),
-        ])
-    }
-}
 
 struct MatchesView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
-    @StateObject private var viewModel = MatchesViewModel()
-    @State private var showPaywall = false
+    @EnvironmentObject private var nearbyPresence: RidgitsNearbyPresenceService
+    @EnvironmentObject private var pokeInbox: RidgitsPokeInbox
+    @ObservedObject var viewModel: MatchesViewModel
+    @State private var showSubscriptionPaywall = false
+    @State private var showCloseMatchesSheet = false
     @State private var composeMatch: RidgitsMatch?
+    @State private var selectedMatch: RidgitsMatch?
     @State private var composeMessage = ""
+    @State private var showCompatibilityFilter = false
 
-    private var nearbyPeopleAvailable: Bool {
-        viewModel.nearbyAvailableCount > 0
+    private var hasExtendedNearby: Bool {
+        ridgitsStore.hasExtendedNearbyRadius
+    }
+
+    private var sliderMin: Double {
+        Double(RidgitsNearbyAccess.subscribedMinRadiusMiles)
+    }
+
+    private var sliderMax: Double {
+        Double(RidgitsNearbyAccess.maxRadiusMiles(hasExtendedRadius: hasExtendedNearby))
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                if nearbyPresence.isActive, nearbyPresence.nearbyPeerCount > 0 {
+                    nearbyBluetoothBanner
+                }
+                if pokeInbox.unseenCount > 0 {
+                    pokeInboxBanner
+                }
                 nearbySection
                 RidgitsSectionHeader(title: "Top nationwide", subtitle: "Preview compatibility scores")
                 matchSection(viewModel.nationwideMatches, locked: false, allowInteraction: true)
             }
+            .ridgitsTabBarScrollTracking()
             .padding(20)
+            .ridgitsFloatingTabBarPadding()
         }
+        .coordinateSpace(name: "ridgitsTabScroll")
         .background(RidgitsColors.feedBackground)
         .navigationTitle("Matches")
         .refreshable {
-            await viewModel.load(hasNearbyAccess: ridgitsStore.hasNearbyAccess)
+            await ridgitsStore.refreshAccessInBackground()
+            await viewModel.load(hasExtendedNearby: hasExtendedNearby, forceRefresh: true)
         }
-        .task {
-            await viewModel.load(hasNearbyAccess: ridgitsStore.hasNearbyAccess)
+        .task(id: hasExtendedNearby) {
+            viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
+                viewModel.maxDistance,
+                hasExtendedRadius: hasExtendedNearby
+            )
+            if let uid = Auth.auth().currentUser?.uid {
+                viewModel.hydrateFromCache(uid: uid, hasExtendedNearby: hasExtendedNearby)
+            }
+            await ridgitsStore.refreshAccessInBackground()
+            await viewModel.load(hasExtendedNearby: hasExtendedNearby)
         }
-        .onChange(of: ridgitsStore.hasNearbyAccess) { _, hasAccess in
-            Task { await viewModel.load(hasNearbyAccess: hasAccess) }
+        .onChange(of: viewModel.maxDistance) { _, newValue in
+            let minAllowed = RidgitsNearbyAccess.minRadiusMiles(hasExtendedRadius: hasExtendedNearby)
+            guard newValue >= minAllowed else { return }
+            viewModel.onRadiusChanged(hasExtendedNearby: hasExtendedNearby)
         }
-        .sheet(isPresented: $showPaywall) {
-            NearbyPaywallView(nearbyCount: viewModel.nearbyAvailableCount, radiusMiles: viewModel.maxDistance)
+        .onChange(of: viewModel.compatibilityFilter) { _, _ in
+            viewModel.onCompatibilityFilterChanged(hasExtendedNearby: hasExtendedNearby)
+        }
+        .ridgitsBlockingLoader(
+            isPresented: viewModel.isLoadingNearby,
+            title: "Finding matches",
+            subtitle: "Scanning compatible people near you"
+        )
+        .navigationDestination(item: $selectedMatch) { match in
+            MatchProfileView(
+                match: match,
+                onMessage: { composeMatch = match },
+                onPoke: {
+                    if let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] {
+                        Task { await viewModel.unpoke(match: match, pokeId: pokeId) }
+                    } else {
+                        guard ridgitsStore.hasPlusMembership else {
+                            showSubscriptionPaywall = true
+                            return
+                        }
+                        Task { await viewModel.sendPoke(to: match) }
+                    }
+                }
+            )
+        }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(
+                preferredBilling: .yearly,
+                highlightTier: .plus,
+                headline: "Get Ridgits+",
+                subheadline: "Subscribe to message, poke, and unlock nearby matches — \(ridgitsStore.plusYearlyPriceLine)/year."
+            )
+        }
+        .sheet(isPresented: $showCloseMatchesSheet) {
+            NearbyCloseMatchesSheet(
+                matchCount: viewModel.closeMatchCount,
+                isLoading: viewModel.isLoadingNearby && viewModel.closeMatchCount == 0,
+                priceLine: ridgitsStore.plusYearlyPriceLine,
+                onSubscribe: {
+                    showCloseMatchesSheet = false
+                    showSubscriptionPaywall = true
+                }
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
         }
         .sheet(item: $composeMatch) { match in
             composeSheet(for: match)
         }
+        .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
+            guard showPaywall else { return }
+            viewModel.showPaywallPrompt = false
+            showSubscriptionPaywall = true
+        }
+        .alert("Something went wrong", isPresented: Binding(
+            get: { viewModel.errorMessage != nil && !viewModel.showPaywallPrompt },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK") { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    private func attemptRadiusChange(to rawValue: Double) {
+        let stepped = Int((rawValue / 5.0).rounded() * 5)
+
+        if RidgitsNearbyAccess.isCloseRadiusAttempt(stepped, hasExtendedRadius: hasExtendedNearby) {
+            showCloseMatchesSheet = true
+            return
+        }
+
+        viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(stepped, hasExtendedRadius: hasExtendedNearby)
+    }
+
+    private func presentCloseMatchesSheet() {
+        showCloseMatchesSheet = true
     }
 
     @ViewBuilder
-    private var nearbySection: some View {
-        RidgitsSectionHeader(
-            title: "Nearby",
-            subtitle: ridgitsStore.hasNearbyAccess
-                ? "Within \(viewModel.maxDistance) miles"
-                : nearbyPeopleAvailable
-                    ? "\(viewModel.nearbyAvailableCount) people within \(viewModel.maxDistance) miles"
-                    : "Checking who's close to you"
-        )
+    private var pokeInboxBanner: some View {
+        RidgitsCard {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("\(pokeInbox.unseenCount) new \(pokeInbox.unseenCount == 1 ? "poke" : "pokes")")
+                    .font(RidgitsTypography.label(14))
+                if let latest = pokeInbox.receivedPokes.first(where: \.isActionable) {
+                    Text("\(latest.fromName) is interested. Tap their profile below.")
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                }
+            }
+        }
+    }
 
-        if ridgitsStore.hasNearbyAccess {
+    private var nearbyBluetoothBanner: some View {
+        RidgitsCard {
+            HStack(spacing: 10) {
+                Image(systemName: "dot.radiowaves.left.and.right")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color(hex: 0x059669))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(nearbyPresence.nearbyPeerCount) Ridgits \(nearbyPresence.nearbyPeerCount == 1 ? "person" : "people") nearby")
+                        .font(RidgitsTypography.label(14))
+                    Text("Detected via Bluetooth while the app is open")
+                        .font(RidgitsTypography.caption(11))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                }
+            }
+        }
+    }
+
+    private var nearbySection: some View {
+        Group {
             distanceSlider
-            matchSection(viewModel.nearbyMatches, locked: false, allowInteraction: true)
-        } else if viewModel.isLoading {
-            ProgressView().padding(.vertical, 12)
-        } else if nearbyPeopleAvailable {
-            nearbyUnlockCard
-            matchSection(Array(viewModel.nearbyMatches.prefix(3)), locked: true, allowInteraction: false)
-        } else {
-            noNearbyCard
+
+            if viewModel.isLoading && viewModel.nearbyMatches.isEmpty {
+                ProgressView().padding(.vertical, 12)
+            } else {
+                nearbyMatchesSection
+            }
+
+            if !hasExtendedNearby, viewModel.closeMatchCount > 0 {
+                closeMatchesTeaser
+            }
+        }
+    }
+
+    private var nearbyMatchesSection: some View {
+        Group {
+            if viewModel.nearbyMatches.isEmpty && !viewModel.isLoading && !viewModel.isLoadingNearby {
+                if viewModel.compatibilityFilter.isActive,
+                   viewModel.unfilteredNearbyCount(hasExtendedNearby: hasExtendedNearby) > 0 {
+                    filteredEmptyCard
+                } else {
+                    noNearbyCard
+                }
+            } else {
+                matchSection(viewModel.nearbyMatches, locked: false, allowInteraction: true)
+            }
+        }
+    }
+
+    private var filteredEmptyCard: some View {
+        RidgitsCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("No matches for these filters")
+                    .font(RidgitsTypography.headline())
+                Text("People are nearby, but none meet your minimum compatibility scores. Lower a slider or reset filters.")
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                RidgitsSquareButton(title: "Reset filters", style: .outlined) {
+                    viewModel.resetCompatibilityFilter(hasExtendedNearby: hasExtendedNearby)
+                }
+            }
         }
     }
 
     private var distanceSlider: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Radius: \(viewModel.maxDistance) mi")
-                .font(RidgitsTypography.label())
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
+                Text("\(viewModel.nearbyMatches.count) \(viewModel.nearbyMatches.count == 1 ? "person" : "people") · within \(viewModel.maxDistance) miles")
+                    .font(RidgitsTypography.caption(11))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .textCase(.uppercase)
+                    .tracking(0.6)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+
+                Spacer(minLength: 8)
+
+                Button {
+                    showCompatibilityFilter.toggle()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "line.3.horizontal.decrease")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text("Filter")
+                            .font(RidgitsTypography.label(11))
+                        if viewModel.compatibilityFilter.isActive {
+                            Circle()
+                                .fill(RidgitsColors.ctaBlack)
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .background(RidgitsColors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
+                }
+                .buttonStyle(.plain)
+                .popover(isPresented: $showCompatibilityFilter, arrowEdge: .top) {
+                    CompatibilityFilterPopover(
+                        filter: $viewModel.compatibilityFilter,
+                        onReset: {
+                            viewModel.resetCompatibilityFilter(hasExtendedNearby: hasExtendedNearby)
+                        }
+                    )
+                    .presentationCompactAdaptation(.popover)
+                }
+            }
+
             Slider(value: Binding(
                 get: { Double(viewModel.maxDistance) },
-                set: { viewModel.maxDistance = Int($0) }
-            ), in: 5...100, step: 5)
+                set: { attemptRadiusChange(to: $0) }
+            ), in: sliderMin...sliderMax, step: 5)
             .tint(RidgitsColors.ctaBlack)
-            .onChange(of: viewModel.maxDistance) { _, _ in
-                Task { await viewModel.load(hasNearbyAccess: ridgitsStore.hasNearbyAccess) }
+            .disabled(viewModel.isLoadingNearby)
+
+            HStack(spacing: 6) {
+                ForEach(radiusPresets, id: \.self) { preset in
+                    Button {
+                        attemptRadiusChange(to: Double(preset))
+                    } label: {
+                        Text("\(preset)")
+                            .font(RidgitsTypography.caption(11))
+                            .foregroundStyle(viewModel.maxDistance == preset ? .white : RidgitsColors.textSecondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                            .background(viewModel.maxDistance == preset ? RidgitsColors.ctaBlack : RidgitsColors.hoverSurface)
+                            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.isLoadingNearby)
+                }
             }
         }
         .padding(16)
@@ -118,24 +302,21 @@ struct MatchesView: View {
         .overlay(RoundedRectangle(cornerRadius: RidgitsRadius.lg).stroke(RidgitsColors.border, lineWidth: 1))
     }
 
-    private var nearbyUnlockCard: some View {
+    private var radiusPresets: [Int] {
+        hasExtendedNearby ? [10, 25, 50, 100] : [25, 50, 100]
+    }
+
+    private var closeMatchesTeaser: some View {
         RidgitsCard {
             VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(Color(hex: 0x059669))
-                        .frame(width: 8, height: 8)
-                    Text("\(viewModel.nearbyAvailableCount) compatible \(viewModel.nearbyAvailableCount == 1 ? "person" : "people") within \(viewModel.maxDistance) miles")
-                        .font(RidgitsTypography.body(14))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                }
-                Text("Unlock nearby matches")
+                CloseMatchesCountBadge(count: viewModel.closeMatchCount)
+                Text("Unlock close matches")
                     .font(RidgitsTypography.headline())
-                Text("Get 12 months of local discovery for \(ridgitsStore.yearlyPriceLine).")
+                Text("Subscribe to search closer than 25 miles and connect with people near you.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
-                RidgitsPrimaryButton(title: "See who's near you — \(ridgitsStore.yearlyPriceLine)") {
-                    showPaywall = true
+                RidgitsPrimaryButton(title: "See who's closer") {
+                    presentCloseMatchesSheet()
                 }
             }
         }
@@ -146,7 +327,7 @@ struct MatchesView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("No one nearby yet")
                     .font(RidgitsTypography.headline())
-                Text("There aren't compatible people within \(viewModel.maxDistance) miles right now. Check back later or browse nationwide matches below.")
+                Text("There aren't compatible people within \(viewModel.maxDistance) miles right now. Try a wider radius or browse nationwide matches below.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
             }
@@ -158,25 +339,30 @@ struct MatchesView: View {
             if viewModel.isLoading && matches.isEmpty {
                 ProgressView().padding()
             } else if matches.isEmpty {
-                Text("No matches yet — finish your quiz and profile.")
-                    .font(RidgitsTypography.body(14))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                EmptyView()
             } else {
                 ForEach(matches) { match in
-                    MatchCard(match: match, locked: locked) {
-                        guard allowInteraction else {
-                            if nearbyPeopleAvailable { showPaywall = true }
-                            return
+                    MatchCard(
+                        match: match,
+                        locked: locked,
+                        sentPoke: pokeInbox.sentPokeIdsByUser[match.userId] != nil,
+                        onOpenProfile: {
+                            guard allowInteraction, !locked else { return }
+                            selectedMatch = match
+                        },
+                        onMessage: {
+                            guard allowInteraction else { return }
+                            composeMatch = match
+                        },
+                        onPoke: {
+                            guard allowInteraction else { return }
+                            if let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] {
+                                Task { await viewModel.unpoke(match: match, pokeId: pokeId) }
+                            } else {
+                                Task { await viewModel.sendPoke(to: match) }
+                            }
                         }
-                        composeMatch = match
-                    } onPoke: {
-                        guard allowInteraction else {
-                            if nearbyPeopleAvailable { showPaywall = true }
-                            return
-                        }
-                        Task { await viewModel.sendPoke(to: match) }
-                    }
+                    )
                 }
             }
         }
@@ -189,7 +375,7 @@ struct MatchesView: View {
                     .font(RidgitsTypography.headline())
                 Text("Once they accept, you have 24 hours and 16 messages total.")
                     .font(RidgitsTypography.body(14))
-                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .foregroundStyle(RidgitsColors.textHeadline.opacity(0.72))
                 TextEditor(text: $composeMessage)
                     .frame(minHeight: 120)
                     .padding(8)
@@ -197,13 +383,29 @@ struct MatchesView: View {
                     .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                     .overlay(RoundedRectangle(cornerRadius: RidgitsRadius.md).stroke(RidgitsColors.inputBorder, lineWidth: 1))
                 RidgitsPrimaryButton(title: "Send request", isDisabled: composeMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
+                    guard ridgitsStore.hasPlusMembership else {
+                        showSubscriptionPaywall = true
+                        return
+                    }
                     Task {
-                        _ = try? await RidgitsFirebaseClient.shared.startConversation(
-                            toUserId: match.userId,
-                            message: composeMessage
-                        )
-                        composeMessage = ""
-                        composeMatch = nil
+                        do {
+                            _ = try await RidgitsFirebaseClient.shared.startConversation(
+                                toUserId: match.userId,
+                                message: composeMessage
+                            )
+                            composeMessage = ""
+                            composeMatch = nil
+                        } catch let ridgitsError as RidgitsError {
+                            composeMatch = nil
+                            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
+                                showSubscriptionPaywall = true
+                            } else {
+                                viewModel.errorMessage = ridgitsError.localizedDescription
+                            }
+                        } catch {
+                            composeMatch = nil
+                            viewModel.errorMessage = error.localizedDescription
+                        }
                     }
                 }
                 Spacer()
@@ -219,69 +421,213 @@ struct MatchesView: View {
     }
 }
 
+private struct CompatibilityFilterPopover: View {
+    @Binding var filter: RidgitsCompatibilityFilter
+    let onReset: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Filter by compatibility")
+                    .font(RidgitsTypography.caption(11))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .textCase(.uppercase)
+                    .tracking(0.8)
+                Spacer()
+                Button("Reset") { onReset() }
+                    .font(RidgitsTypography.label(12))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+            }
+
+            ForEach(RidgitsCompatibilityFilterDimension.allCases) { dimension in
+                compatibilitySlider(for: dimension)
+            }
+        }
+        .padding(16)
+        .frame(width: 320)
+        .background(RidgitsColors.surface)
+    }
+
+    private func compatibilitySlider(for dimension: RidgitsCompatibilityFilterDimension) -> some View {
+        let value = dimension.minimum(from: filter)
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(dimension.title)
+                    .font(RidgitsTypography.body(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Spacer()
+                Text("\(value)%")
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .monospacedDigit()
+            }
+
+            Slider(
+                value: Binding(
+                    get: { Double(value) },
+                    set: { newValue in
+                        dimension.setMinimum(Int(newValue), on: &filter)
+                    }
+                ),
+                in: 0...150,
+                step: 5
+            )
+            .tint(RidgitsColors.ctaBlack)
+        }
+    }
+}
+
+private struct CloseMatchesCountBadge: View {
+    let count: Int
+
+    var body: some View {
+        Text("\(count) within 25 mi")
+            .font(RidgitsTypography.caption(11))
+            .fontWeight(.semibold)
+            .foregroundStyle(Color(hex: 0x15803D))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(hex: 0xDCFCE7))
+            .clipShape(Capsule())
+    }
+}
+
+private struct NearbyCloseMatchesSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let matchCount: Int
+    let isLoading: Bool
+    let priceLine: String
+    let onSubscribe: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    if matchCount > 0 {
+                        CloseMatchesCountBadge(count: matchCount)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Close matches are a Ridgits+ perk")
+                            .font(RidgitsTypography.headline(20))
+                            .foregroundStyle(RidgitsColors.textHeadline)
+                        Text("Free search starts at 30 miles. Subscribe to see people within 25 miles.")
+                            .font(RidgitsTypography.body(14))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                    }
+
+                    if isLoading {
+                        ProgressView("Finding close matches…")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 24)
+                    } else if matchCount == 0 {
+                        Text("No close matches right now — check back as more people join nearby.")
+                            .font(RidgitsTypography.body(14))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                    } else {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(matchCount)")
+                                .font(.system(size: 52, weight: .bold, design: .rounded))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                            Text("compatible \(matchCount == 1 ? "person" : "people") within 25 miles")
+                                .font(RidgitsTypography.body(15))
+                                .foregroundStyle(RidgitsColors.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 8)
+                    }
+
+                    RidgitsPrimaryButton(title: "Get Ridgits+ yearly — \(priceLine)/year") {
+                        onSubscribe()
+                    }
+                    .disabled(isLoading)
+
+                    Button("Not now") { dismiss() }
+                        .font(RidgitsTypography.body(14))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                        .frame(maxWidth: .infinity)
+                }
+                .padding(20)
+            }
+            .background(RidgitsColors.feedBackground)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Close") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
 private struct MatchCard: View {
     let match: RidgitsMatch
     let locked: Bool
+    let sentPoke: Bool
+    let onOpenProfile: () -> Void
     let onMessage: () -> Void
     let onPoke: () -> Void
 
     var body: some View {
         RidgitsCard {
-            HStack(alignment: .top, spacing: 12) {
-                AsyncImage(url: URL(string: match.image)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image.resizable().scaledToFill()
-                    default:
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top, spacing: 12) {
+                    RidgitsCachedProfileImage(remoteURL: match.image.isEmpty ? nil : match.image) {
                         RidgitsColors.border
                     }
-                }
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
 
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(locked ? "Someone nearby" : match.name)
-                            .font(RidgitsTypography.headline(16))
-                        Spacer()
-                        RidgitsCompatibilityBadge(percent: match.compatibility.overall)
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            Text(locked ? "Someone nearby" : match.name)
+                                .font(RidgitsTypography.headline(16))
+                            if !locked {
+                                RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 16)
+                            }
+                            Spacer()
+                            RidgitsCompatibilityBadge(percent: match.compatibility.overall)
+                        }
+                        if !locked, !match.location.isEmpty {
+                            Text(match.location)
+                                .font(RidgitsTypography.caption())
+                                .foregroundStyle(RidgitsColors.textSecondary)
+                        }
+                        if let about = match.about, !locked {
+                            Text(about)
+                                .font(RidgitsTypography.body(13))
+                                .foregroundStyle(RidgitsColors.textSecondary)
+                                .lineLimit(2)
+                        }
                     }
-                    if let miles = match.distanceMiles {
-                        Text(String(format: "%.0f mi away · %@", miles, locked ? "Unlock to view" : match.location))
-                            .font(RidgitsTypography.caption())
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    } else if !locked {
-                        Text(match.location)
-                            .font(RidgitsTypography.caption())
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    }
-                    if let about = match.about, !locked {
-                        Text(about)
-                            .font(RidgitsTypography.body(13))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                            .lineLimit(2)
-                    }
-                    HStack(spacing: 8) {
-                        Button("Message", action: onMessage)
-                            .font(RidgitsTypography.label(13))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(RidgitsColors.ctaBlack)
-                            .clipShape(Capsule())
-                        Button("Poke", action: onPoke)
-                            .font(RidgitsTypography.label(13))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .overlay(Capsule().stroke(RidgitsColors.border, lineWidth: 1))
-                    }
-                    .padding(.top, 4)
-                    .blur(radius: locked ? 6 : 0)
                 }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if locked {
+                        onMessage()
+                    } else {
+                        onOpenProfile()
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    Button("Message", action: onMessage)
+                        .font(RidgitsTypography.label(13))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(RidgitsColors.ctaBlack)
+                        .clipShape(Capsule())
+                    Button(sentPoke ? "Unpoke" : "Poke", action: onPoke)
+                        .font(RidgitsTypography.label(13))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .overlay(Capsule().stroke(RidgitsColors.border, lineWidth: 1))
+                }
+                .padding(.top, 10)
+                .blur(radius: locked ? 6 : 0)
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture { if locked { onMessage() } }
     }
 }

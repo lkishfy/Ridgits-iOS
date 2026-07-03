@@ -13,6 +13,17 @@ struct RidgitsLinkPurchaseResult: Decodable {
     let idempotent: Bool
 }
 
+struct RidgitsNearbyMatchesResult {
+    let matches: [RidgitsMatch]
+    let closeMatchCount: Int
+}
+
+struct RidgitsSignupValidation {
+    let ok: Bool
+    let error: String?
+    let code: String?
+}
+
 @MainActor
 final class RidgitsAPIClient {
     static let shared = RidgitsAPIClient()
@@ -61,13 +72,23 @@ final class RidgitsAPIClient {
         )
     }
 
-    func findMatches(maxDistance: Int) async throws -> [RidgitsMatch] {
+    func findMatches(
+        maxDistance: Int,
+        previewCloseMatches: Bool = false
+    ) async throws -> RidgitsNearbyMatchesResult {
+        var body: [String: Any] = ["maxDistance": maxDistance]
+        if previewCloseMatches {
+            body["previewCloseMatches"] = true
+        }
         let data = try await authorizedRequest(
             path: "/api/matches/nearby",
             method: "POST",
-            body: ["maxDistance": maxDistance]
+            body: body
         )
-        return parseMatches(data["matches"])
+        return RidgitsNearbyMatchesResult(
+            matches: parseMatches(data["matches"]),
+            closeMatchCount: data["closeMatchCount"] as? Int ?? data["hiddenNearbyCount"] as? Int ?? 0
+        )
     }
 
     func getTopNationwideMatches(limit: Int = 10) async throws -> [RidgitsMatch] {
@@ -115,6 +136,138 @@ final class RidgitsAPIClient {
         )
     }
 
+    func registerDevice(deviceId: String, fcmToken: String, appVersion: String?, deviceModel: String?) async throws {
+        var body: [String: Any] = [
+            "deviceId": deviceId,
+            "fcmToken": fcmToken,
+            "platform": "ios",
+        ]
+        if let appVersion { body["appVersion"] = appVersion }
+        if let deviceModel { body["deviceModel"] = deviceModel }
+        _ = try await authorizedRequest(path: "/api/notifications/register-device", method: "POST", body: body)
+    }
+
+    func unregisterDevice(deviceId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/notifications/register-device",
+            method: "DELETE",
+            body: ["deviceId": deviceId]
+        )
+    }
+
+    func fetchNotificationPreferences() async throws -> RidgitsNotificationPreferences {
+        let data = try await authorizedRequest(path: "/api/notifications/preferences", method: "GET", body: nil)
+        let prefs = data["preferences"] as? [String: Any] ?? [:]
+        return RidgitsNotificationPreferences.fromDictionary(prefs)
+    }
+
+    func updateNotificationPreferences(_ preferences: RidgitsNotificationPreferences) async throws -> RidgitsNotificationPreferences {
+        let data = try await authorizedRequest(
+            path: "/api/notifications/preferences",
+            method: "PATCH",
+            body: preferences.asDictionary()
+        )
+        let prefs = data["preferences"] as? [String: Any] ?? [:]
+        return RidgitsNotificationPreferences.fromDictionary(prefs)
+    }
+
+    func recordNotificationOpened(type: String, metadata: [String: String]) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/notifications/preferences",
+            method: "POST",
+            body: ["type": type, "metadata": metadata]
+        )
+    }
+
+    func sendPoke(toUserId: String) async throws -> String {
+        let data = try await authorizedRequest(
+            path: "/api/pokes/send",
+            method: "POST",
+            body: ["toUserId": toUserId]
+        )
+        guard let pokeId = data["pokeId"] as? String else {
+            throw RidgitsError.server("Could not send poke.")
+        }
+        return pokeId
+    }
+
+    func unpoke(pokeId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/pokes/unpoke",
+            method: "POST",
+            body: ["pokeId": pokeId]
+        )
+    }
+
+    func markPokeSeen(pokeId: String, profileVisited: Bool = false) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/pokes/seen",
+            method: "POST",
+            body: ["pokeId": pokeId, "profileVisited": profileVisited]
+        )
+    }
+
+    func deleteAccount() async throws {
+        _ = try await authorizedRequest(path: "/api/account/delete", method: "DELETE", body: nil)
+    }
+
+    func fetchReferralProfile() async throws -> RidgitsReferralProfileResponse {
+        let data = try await authorizedRequest(path: "/api/referrals/profile", method: "GET", body: nil)
+        let json = try JSONSerialization.data(withJSONObject: data)
+        let decoder = JSONDecoder()
+        return try decoder.decode(RidgitsReferralProfileResponse.self, from: json)
+    }
+
+    func redeemReferralCode(_ referralCode: String, source: String = "profile") async throws -> RidgitsReferralRedeemResponse {
+        let data = try await authorizedRequest(
+            path: "/api/referrals/redeem",
+            method: "POST",
+            body: ["referralCode": referralCode, "source": source]
+        )
+        let json = try JSONSerialization.data(withJSONObject: data)
+        return try JSONDecoder().decode(RidgitsReferralRedeemResponse.self, from: json)
+    }
+
+    func qualifyReferral() async throws -> RidgitsReferralQualifyResponse {
+        let data = try await authorizedRequest(path: "/api/referrals/qualify", method: "POST", body: [:])
+        let json = try JSONSerialization.data(withJSONObject: data)
+        return try JSONDecoder().decode(RidgitsReferralQualifyResponse.self, from: json)
+    }
+
+    /// Authoritative pre-signup / post-OAuth check (disposable email, 18+ birth year).
+    /// Unauthenticated — safe to call before a Firebase Auth account exists.
+    func validateSignup(email: String? = nil, birthYear: Int? = nil) async throws -> RidgitsSignupValidation {
+        var body: [String: Any] = [:]
+        if let email { body["email"] = email }
+        if let birthYear { body["birthYear"] = birthYear }
+
+        var request = URLRequest(url: baseURL.appendingPathComponent("/api/auth/validate-signup"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 20
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (responseData, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw RidgitsError.server("Invalid response")
+        }
+        let json = (try? JSONSerialization.jsonObject(with: responseData) as? [String: Any]) ?? [:]
+
+        guard (200...299).contains(http.statusCode) else {
+            let message = json["error"] as? String ?? "Could not validate signup (\(http.statusCode))"
+            if let code = json["code"] as? String {
+                throw RidgitsError.serverCoded(message: message, code: code)
+            }
+            throw RidgitsError.server(message)
+        }
+
+        return RidgitsSignupValidation(
+            ok: json["ok"] as? Bool ?? true,
+            error: json["error"] as? String,
+            code: json["code"] as? String
+        )
+    }
+
     private func parseMatches(_ value: Any?) -> [RidgitsMatch] {
         guard let matches = value as? [[String: Any]] else { return [] }
         return matches.compactMap(RidgitsMatch.fromDictionary)
@@ -148,6 +301,9 @@ final class RidgitsAPIClient {
         let json = (try? JSONSerialization.jsonObject(with: responseData) as? [String: Any]) ?? [:]
         guard (200...299).contains(http.statusCode) else {
             let message = json["error"] as? String ?? "Request failed (\(http.statusCode))"
+            if let code = json["code"] as? String {
+                throw RidgitsError.serverCoded(message: message, code: code)
+            }
             throw RidgitsError.server(message)
         }
         return json

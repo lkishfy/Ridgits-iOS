@@ -25,6 +25,10 @@ enum RidgitsColors {
     // Login hero
     static let charcoal = Color(hex: 0x0A0A0A)
     static let buttonPrimary = Color(hex: 0x333333)
+    static let assistantGreen = Color(hex: 0x76B88E)
+    static let assistantDark = Color(hex: 0x141414)
+    static let assistantPanel = Color(hex: 0x161616)
+    static let dashboardBorder = Color(hex: 0xE0E0E0)
 }
 
 enum RidgitsTypography {
@@ -63,13 +67,21 @@ enum RidgitsTypography {
     static func cta(_ size: CGFloat = 15) -> Font {
         .system(size: size, weight: .medium, design: .default)
     }
+
+    static func sectionLabel(_ size: CGFloat = 13) -> Font {
+        .system(size: size, weight: .medium, design: .default)
+    }
+
+    static func mono(_ size: CGFloat = 18) -> Font {
+        .system(size: size, weight: .bold, design: .monospaced)
+    }
 }
 
 enum RidgitsRadius {
-    static let sm: CGFloat = 6
-    static let md: CGFloat = 8
-    static let lg: CGFloat = 12
-    static let xl: CGFloat = 24
+    static let sm: CGFloat = 4
+    static let md: CGFloat = 6
+    static let lg: CGFloat = 8
+    static let xl: CGFloat = 12
 }
 
 extension Color {

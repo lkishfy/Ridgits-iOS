@@ -1,0 +1,1253 @@
+{
+  "id": "attraction",
+  "questions": [
+    {
+      "id": "att_000",
+      "category": "Magnetism",
+      "text": "When you walk into a party, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Make an entrance and greet everyone"
+        },
+        {
+          "value": 1,
+          "label": "Find a friend immediately"
+        },
+        {
+          "value": 2,
+          "label": "Stand back and observe first"
+        },
+        {
+          "value": 3,
+          "label": "Try to be invisible"
+        }
+      ]
+    },
+    {
+      "id": "att_001",
+      "category": "Magnetism",
+      "text": "How often do strangers approach you?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very often, I have 'talk to me' energy"
+        },
+        {
+          "value": 1,
+          "label": "Occasionally"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never, I have 'do not disturb' energy"
+        }
+      ]
+    },
+    {
+      "id": "att_002",
+      "category": "Magnetism",
+      "text": "In conversation, you are usually:",
+      "options": [
+        {
+          "value": 0,
+          "label": "The storyteller / Entertainer"
+        },
+        {
+          "value": 1,
+          "label": "The active listener"
+        },
+        {
+          "value": 2,
+          "label": "The debater"
+        },
+        {
+          "value": 3,
+          "label": "Quiet / Passive"
+        }
+      ]
+    },
+    {
+      "id": "att_003",
+      "category": "Magnetism",
+      "text": "Your eye contact style is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Intense and lingering"
+        },
+        {
+          "value": 1,
+          "label": "Warm and engaging"
+        },
+        {
+          "value": 2,
+          "label": "Shy / I look away often"
+        },
+        {
+          "value": 3,
+          "label": "Avoidant"
+        }
+      ]
+    },
+    {
+      "id": "att_004",
+      "category": "Magnetism",
+      "text": "How expressive is your body language?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very - lots of gestures and touch"
+        },
+        {
+          "value": 1,
+          "label": "Moderately expressive"
+        },
+        {
+          "value": 2,
+          "label": "Controlled and still"
+        },
+        {
+          "value": 3,
+          "label": "Closed off (arms crossed)"
+        }
+      ]
+    },
+    {
+      "id": "att_005",
+      "category": "Magnetism",
+      "text": "Your laugh is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Loud and infectious"
+        },
+        {
+          "value": 1,
+          "label": "Polite chuckle"
+        },
+        {
+          "value": 2,
+          "label": "Quiet smile"
+        },
+        {
+          "value": 3,
+          "label": "I rarely laugh out loud"
+        }
+      ]
+    },
+    {
+      "id": "att_006",
+      "category": "Magnetism",
+      "text": "People describe your energy as:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Exciting / Electric"
+        },
+        {
+          "value": 1,
+          "label": "Warm / Comforting"
+        },
+        {
+          "value": 2,
+          "label": "Calm / Grounded"
+        },
+        {
+          "value": 3,
+          "label": "Intimidating / Cold"
+        }
+      ]
+    },
+    {
+      "id": "att_007",
+      "category": "Magnetism",
+      "text": "Are you comfortable being the center of attention?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I love it / Thrive on it"
+        },
+        {
+          "value": 1,
+          "label": "It's okay for a bit"
+        },
+        {
+          "value": 2,
+          "label": "I prefer one-on-one"
+        },
+        {
+          "value": 3,
+          "label": "I hate it"
+        }
+      ]
+    },
+    {
+      "id": "att_008",
+      "category": "Magnetism",
+      "text": "Flirting style:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Bold and direct"
+        },
+        {
+          "value": 1,
+          "label": "Playful teasing"
+        },
+        {
+          "value": 2,
+          "label": "Subtle signals"
+        },
+        {
+          "value": 3,
+          "label": "I don't know how to flirt"
+        }
+      ]
+    },
+    {
+      "id": "att_009",
+      "category": "Magnetism",
+      "text": "Your dress sense:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Bold / Statement pieces"
+        },
+        {
+          "value": 1,
+          "label": "Stylish / Put together"
+        },
+        {
+          "value": 2,
+          "label": "Casual / Comfortable"
+        },
+        {
+          "value": 3,
+          "label": "To blend in"
+        }
+      ]
+    },
+    {
+      "id": "att_010",
+      "category": "Magnetism",
+      "text": "Group dynamics:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I lead the group naturally"
+        },
+        {
+          "value": 1,
+          "label": "I'm a key participant"
+        },
+        {
+          "value": 2,
+          "label": "I observe from the edge"
+        },
+        {
+          "value": 3,
+          "label": "I feel excluded"
+        }
+      ]
+    },
+    {
+      "id": "att_011",
+      "category": "Magnetism",
+      "text": "Compliments:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I give them freely and often"
+        },
+        {
+          "value": 1,
+          "label": "I give meaningful ones occasionally"
+        },
+        {
+          "value": 2,
+          "label": "I feel awkward giving them"
+        },
+        {
+          "value": 3,
+          "label": "I rarely notice things to compliment"
+        }
+      ]
+    },
+    {
+      "id": "att_012",
+      "category": "Magnetism",
+      "text": "Charisma self-rating:",
+      "options": [
+        {
+          "value": 0,
+          "label": "High - I can charm anyone"
+        },
+        {
+          "value": 1,
+          "label": "Moderate - usually liked"
+        },
+        {
+          "value": 2,
+          "label": "Low - I'm an acquired taste"
+        },
+        {
+          "value": 3,
+          "label": "None - I'm socially awkward"
+        }
+      ]
+    },
+    {
+      "id": "att_013",
+      "category": "Mystery",
+      "text": "How much do you reveal on a first date?",
+      "options": [
+        {
+          "value": 0,
+          "label": "My whole life story"
+        },
+        {
+          "value": 1,
+          "label": "A good amount, keep it flowing"
+        },
+        {
+          "value": 2,
+          "label": "Just enough to pique interest"
+        },
+        {
+          "value": 3,
+          "label": "Very little, I'm guarded"
+        }
+      ]
+    },
+    {
+      "id": "att_014",
+      "category": "Mystery",
+      "text": "Do people say you're hard to read?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never, I'm an open book"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes"
+        },
+        {
+          "value": 2,
+          "label": "Often"
+        },
+        {
+          "value": 3,
+          "label": "Always"
+        }
+      ]
+    },
+    {
+      "id": "att_015",
+      "category": "Mystery",
+      "text": "Social media presence:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I post everything I do"
+        },
+        {
+          "value": 1,
+          "label": "Curated highlights"
+        },
+        {
+          "value": 2,
+          "label": "Cryptic or artistic posts"
+        },
+        {
+          "value": 3,
+          "label": "Ghost / Private / No posts"
+        }
+      ]
+    },
+    {
+      "id": "att_016",
+      "category": "Mystery",
+      "text": "When asked 'What are you thinking?':",
+      "options": [
+        {
+          "value": 0,
+          "label": "I say exactly what it is"
+        },
+        {
+          "value": 1,
+          "label": "I summarize it"
+        },
+        {
+          "value": 2,
+          "label": "I deflect playfully"
+        },
+        {
+          "value": 3,
+          "label": "I say 'nothing'"
+        }
+      ]
+    },
+    {
+      "id": "att_017",
+      "category": "Mystery",
+      "text": "Predictability:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm very consistent and predictable"
+        },
+        {
+          "value": 1,
+          "label": "Mostly consistent"
+        },
+        {
+          "value": 2,
+          "label": "I like to surprise people"
+        },
+        {
+          "value": 3,
+          "label": "I'm chaotic / unpredictable"
+        }
+      ]
+    },
+    {
+      "id": "att_018",
+      "category": "Mystery",
+      "text": "Availability:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always available"
+        },
+        {
+          "value": 1,
+          "label": "Available but busy"
+        },
+        {
+          "value": 2,
+          "label": "Hard to pin down"
+        },
+        {
+          "value": 3,
+          "label": "Aloof / Distant"
+        }
+      ]
+    },
+    {
+      "id": "att_019",
+      "category": "Mystery",
+      "text": "Emotional transparency:",
+      "options": [
+        {
+          "value": 0,
+          "label": "My face shows everything"
+        },
+        {
+          "value": 1,
+          "label": "I share feelings easily"
+        },
+        {
+          "value": 2,
+          "label": "I keep a poker face"
+        },
+        {
+          "value": 3,
+          "label": "I repress/hide emotions"
+        }
+      ]
+    },
+    {
+      "id": "att_020",
+      "category": "Mystery",
+      "text": "The 'Chase':",
+      "options": [
+        {
+          "value": 0,
+          "label": "I hate games, no chase"
+        },
+        {
+          "value": 1,
+          "label": "I like a little pursuit"
+        },
+        {
+          "value": 2,
+          "label": "I enjoy being chased"
+        },
+        {
+          "value": 3,
+          "label": "I make it impossible to catch me"
+        }
+      ]
+    },
+    {
+      "id": "att_021",
+      "category": "Mystery",
+      "text": "Unanswered questions:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I answer everything fully"
+        },
+        {
+          "value": 1,
+          "label": "I answer most things"
+        },
+        {
+          "value": 2,
+          "label": "I leave them wanting more"
+        },
+        {
+          "value": 3,
+          "label": "I dodge questions"
+        }
+      ]
+    },
+    {
+      "id": "att_022",
+      "category": "Mystery",
+      "text": "Depth vs Breadth:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I go deep fast"
+        },
+        {
+          "value": 1,
+          "label": "Balanced approach"
+        },
+        {
+          "value": 2,
+          "label": "Layers, peeled slowly"
+        },
+        {
+          "value": 3,
+          "label": "Surface level only"
+        }
+      ]
+    },
+    {
+      "id": "att_023",
+      "category": "Mystery",
+      "text": "Responding to texts:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Instantly"
+        },
+        {
+          "value": 1,
+          "label": "Reasonably"
+        },
+        {
+          "value": 2,
+          "label": "Sporadically / Unpredictably"
+        },
+        {
+          "value": 3,
+          "label": "Slowly"
+        }
+      ]
+    },
+    {
+      "id": "att_024",
+      "category": "Mystery",
+      "text": "Leaving a party:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Long goodbyes to everyone"
+        },
+        {
+          "value": 1,
+          "label": "Say bye to host"
+        },
+        {
+          "value": 2,
+          "label": "Irish exit (disappear)"
+        },
+        {
+          "value": 3,
+          "label": "I leave early unnoticed"
+        }
+      ]
+    },
+    {
+      "id": "att_025",
+      "category": "Mystery",
+      "text": "Personal history:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I share my past freely"
+        },
+        {
+          "value": 1,
+          "label": "Share relevant parts"
+        },
+        {
+          "value": 2,
+          "label": "Share vaguely"
+        },
+        {
+          "value": 3,
+          "label": "My past is a secret"
+        }
+      ]
+    },
+    {
+      "id": "att_026",
+      "category": "Availability",
+      "text": "Schedule flexibility:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I clear my schedule for dates"
+        },
+        {
+          "value": 1,
+          "label": "I fit dates in where I can"
+        },
+        {
+          "value": 2,
+          "label": "My time is scarce"
+        },
+        {
+          "value": 3,
+          "label": "I'm always 'busy'"
+        }
+      ]
+    },
+    {
+      "id": "att_027",
+      "category": "Availability",
+      "text": "Emotional readiness:",
+      "options": [
+        {
+          "value": 0,
+          "label": "100% ready for love"
+        },
+        {
+          "value": 1,
+          "label": "Open but cautious"
+        },
+        {
+          "value": 2,
+          "label": "Still healing / unsure"
+        },
+        {
+          "value": 3,
+          "label": "Emotionally unavailable"
+        }
+      ]
+    },
+    {
+      "id": "att_028",
+      "category": "Availability",
+      "text": "Future planning:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I plan months ahead"
+        },
+        {
+          "value": 1,
+          "label": "Plan a few weeks ahead"
+        },
+        {
+          "value": 2,
+          "label": "Plan day-by-day"
+        },
+        {
+          "value": 3,
+          "label": "Spontaneous only"
+        }
+      ]
+    },
+    {
+      "id": "att_029",
+      "category": "Availability",
+      "text": "Introducing to friends:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Immediately"
+        },
+        {
+          "value": 1,
+          "label": "After a few weeks"
+        },
+        {
+          "value": 2,
+          "label": "After months"
+        },
+        {
+          "value": 3,
+          "label": "Never / Keep separate"
+        }
+      ]
+    },
+    {
+      "id": "att_030",
+      "category": "Availability",
+      "text": "Vulnerability:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I cry/share feelings openly"
+        },
+        {
+          "value": 1,
+          "label": "I share feelings with trust"
+        },
+        {
+          "value": 2,
+          "label": "I struggle to be vulnerable"
+        },
+        {
+          "value": 3,
+          "label": "I never show weakness"
+        }
+      ]
+    },
+    {
+      "id": "att_031",
+      "category": "Availability",
+      "text": "Priorities:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Relationship is #1 priority"
+        },
+        {
+          "value": 1,
+          "label": "Balanced with work/friends"
+        },
+        {
+          "value": 2,
+          "label": "Work/Hobbies come first"
+        },
+        {
+          "value": 3,
+          "label": "Freedom is #1"
+        }
+      ]
+    },
+    {
+      "id": "att_032",
+      "category": "Availability",
+      "text": "Consistency:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Reliable as a rock"
+        },
+        {
+          "value": 1,
+          "label": "Mostly reliable"
+        },
+        {
+          "value": 2,
+          "label": "Flaky sometimes"
+        },
+        {
+          "value": 3,
+          "label": "Very inconsistent"
+        }
+      ]
+    },
+    {
+      "id": "att_033",
+      "category": "Availability",
+      "text": "Commitment style:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Eager to commit"
+        },
+        {
+          "value": 1,
+          "label": "Take it slow but steady"
+        },
+        {
+          "value": 2,
+          "label": "Commitment phobic"
+        },
+        {
+          "value": 3,
+          "label": "Anti-commitment"
+        }
+      ]
+    },
+    {
+      "id": "att_034",
+      "category": "Availability",
+      "text": "Communication frequency:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constant contact"
+        },
+        {
+          "value": 1,
+          "label": "Daily check-ins"
+        },
+        {
+          "value": 2,
+          "label": "Every few days"
+        },
+        {
+          "value": 3,
+          "label": "Rarely"
+        }
+      ]
+    },
+    {
+      "id": "att_035",
+      "category": "Availability",
+      "text": "Dependability:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I'm the one everyone calls"
+        },
+        {
+          "value": 1,
+          "label": "I help when I can"
+        },
+        {
+          "value": 2,
+          "label": "I prefer not to be relied on"
+        },
+        {
+          "value": 3,
+          "label": "Don't count on me"
+        }
+      ]
+    },
+    {
+      "id": "att_036",
+      "category": "Availability",
+      "text": "Intimacy speed:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Fast and intense"
+        },
+        {
+          "value": 1,
+          "label": "Gradual build"
+        },
+        {
+          "value": 2,
+          "label": "Slow burn"
+        },
+        {
+          "value": 3,
+          "label": "Stalled"
+        }
+      ]
+    },
+    {
+      "id": "att_037",
+      "category": "Availability",
+      "text": "Space needs:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I hate being alone"
+        },
+        {
+          "value": 1,
+          "label": "I like some alone time"
+        },
+        {
+          "value": 2,
+          "label": "I need lots of space"
+        },
+        {
+          "value": 3,
+          "label": "I prefer solitude"
+        }
+      ]
+    },
+    {
+      "id": "att_038",
+      "category": "Confidence",
+      "text": "Self-assuredness:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I know I'm a catch"
+        },
+        {
+          "value": 1,
+          "label": "I feel good about myself"
+        },
+        {
+          "value": 2,
+          "label": "I have doubts often"
+        },
+        {
+          "value": 3,
+          "label": "I feel unworthy"
+        }
+      ]
+    },
+    {
+      "id": "att_039",
+      "category": "Confidence",
+      "text": "Handling rejection:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Their loss, I move on"
+        },
+        {
+          "value": 1,
+          "label": "It stings but I recover"
+        },
+        {
+          "value": 2,
+          "label": "I take it very personally"
+        },
+        {
+          "value": 3,
+          "label": "I avoid risks to avoid it"
+        }
+      ]
+    },
+    {
+      "id": "att_040",
+      "category": "Confidence",
+      "text": "Initiating dates:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ask without hesitation"
+        },
+        {
+          "value": 1,
+          "label": "I ask if I get signals"
+        },
+        {
+          "value": 2,
+          "label": "I wait to be asked"
+        },
+        {
+          "value": 3,
+          "label": "I never initiate"
+        }
+      ]
+    },
+    {
+      "id": "att_041",
+      "category": "Confidence",
+      "text": "Jealousy:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely jealous, I'm secure"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes, usually mild"
+        },
+        {
+          "value": 2,
+          "label": "Often jealous"
+        },
+        {
+          "value": 3,
+          "label": "Possessive / Controlling"
+        }
+      ]
+    },
+    {
+      "id": "att_042",
+      "category": "Confidence",
+      "text": "Setting standards:",
+      "options": [
+        {
+          "value": 0,
+          "label": "High standards, no settling"
+        },
+        {
+          "value": 1,
+          "label": "Reasonable standards"
+        },
+        {
+          "value": 2,
+          "label": "I settle often"
+        },
+        {
+          "value": 3,
+          "label": "I take what I can get"
+        }
+      ]
+    },
+    {
+      "id": "att_043",
+      "category": "Confidence",
+      "text": "Walking away from bad situations:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Immediately"
+        },
+        {
+          "value": 1,
+          "label": "After trying to fix it"
+        },
+        {
+          "value": 2,
+          "label": "I stay too long"
+        },
+        {
+          "value": 3,
+          "label": "I feel trapped"
+        }
+      ]
+    },
+    {
+      "id": "att_044",
+      "category": "Confidence",
+      "text": "Body image:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I love my body"
+        },
+        {
+          "value": 1,
+          "label": "I accept my body"
+        },
+        {
+          "value": 2,
+          "label": "I'm self-conscious"
+        },
+        {
+          "value": 3,
+          "label": "I hide my body"
+        }
+      ]
+    },
+    {
+      "id": "att_045",
+      "category": "Confidence",
+      "text": "Opinions of others:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Don't care what they think"
+        },
+        {
+          "value": 1,
+          "label": "I listen but decide myself"
+        },
+        {
+          "value": 2,
+          "label": "I seek validation"
+        },
+        {
+          "value": 3,
+          "label": "I'm ruled by others' views"
+        }
+      ]
+    },
+    {
+      "id": "att_046",
+      "category": "Confidence",
+      "text": "Assertiveness:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ask for what I want"
+        },
+        {
+          "value": 1,
+          "label": "I can be assertive"
+        },
+        {
+          "value": 2,
+          "label": "I'm passive"
+        },
+        {
+          "value": 3,
+          "label": "I'm a doormat"
+        }
+      ]
+    },
+    {
+      "id": "att_047",
+      "category": "Confidence",
+      "text": "Risk taking:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I love risks in love"
+        },
+        {
+          "value": 1,
+          "label": "Calculated risks"
+        },
+        {
+          "value": 2,
+          "label": "Risk averse"
+        },
+        {
+          "value": 3,
+          "label": "Safe choices only"
+        }
+      ]
+    },
+    {
+      "id": "att_048",
+      "category": "Confidence",
+      "text": "Authenticity:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unapologetically me"
+        },
+        {
+          "value": 1,
+          "label": "Mostly authentic"
+        },
+        {
+          "value": 2,
+          "label": "I mask often"
+        },
+        {
+          "value": 3,
+          "label": "I don't know who I am"
+        }
+      ]
+    },
+    {
+      "id": "att_049",
+      "category": "Confidence",
+      "text": "Comparison:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I don't compare myself"
+        },
+        {
+          "value": 1,
+          "label": "Occasionally"
+        },
+        {
+          "value": 2,
+          "label": "Often compare"
+        },
+        {
+          "value": 3,
+          "label": "Constantly feel inferior"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "att_arch_1",
+      "name": "The Siren",
+      "description": "You are highly magnetic, confident, and slightly mysterious. You draw people in effortlessly but may struggle with availability or depth initially.",
+      "characteristics": [
+        "High magnetism",
+        "Moderate mystery",
+        "High confidence",
+        "Selective availability"
+      ],
+      "suggestions": [
+        "Ensure you're attracting the right kind of attention",
+        "Practice vulnerability to deepen bonds",
+        "Don't rely solely on charm"
+      ]
+    },
+    {
+      "id": "att_arch_2",
+      "name": "The Best Friend",
+      "description": "You are warm, available, and open. People feel safe and comfortable with you instantly, but you might lack the 'mystery' spark initially.",
+      "characteristics": [
+        "High availability",
+        "Low mystery",
+        "Warm magnetism",
+        "Steady confidence"
+      ],
+      "suggestions": [
+        "Hold back a little to create intrigue",
+        "Don't be too available too soon",
+        "Prioritize your own needs"
+      ]
+    },
+    {
+      "id": "att_arch_3",
+      "name": "The Enigma",
+      "description": "You are mysterious and hard to read. People are intrigued by you but often unsure where they stand, which can be both attractive and frustrating.",
+      "characteristics": [
+        "High mystery",
+        "Low availability",
+        "Subtle magnetism",
+        "Guarded confidence"
+      ],
+      "suggestions": [
+        "Share more to build trust",
+        "Clarify your intentions",
+        "Let people see the real you"
+      ]
+    },
+    {
+      "id": "att_arch_4",
+      "name": "The Powerhouse",
+      "description": "You are confident, assertive, and magnetic. You know what you want and go for it. Your intensity can be intoxicating or intimidating.",
+      "characteristics": [
+        "High confidence",
+        "High magnetism",
+        "Clear availability",
+        "Low mystery"
+      ],
+      "suggestions": [
+        "Check if others feel overpowered",
+        "Show your softer side",
+        "Allow others to lead sometimes"
+      ]
+    },
+    {
+      "id": "att_arch_5",
+      "name": "The Wallflower",
+      "description": "You are observant and reserved. You may have a rich inner world but struggle to project it, often feeling overlooked in social settings.",
+      "characteristics": [
+        "Low magnetism projection",
+        "High mystery (unintentional)",
+        "Low confidence",
+        "Variable availability"
+      ],
+      "suggestions": [
+        "Practice taking up space",
+        "Share your thoughts more vocally",
+        "Take small social risks"
+      ]
+    },
+    {
+      "id": "att_arch_6",
+      "name": "The Charmer",
+      "description": "You are socially skilled and adaptable. You can make anyone feel special, but may struggle with deep authenticity or being seen as a 'player'.",
+      "characteristics": [
+        "High magnetism",
+        "Adaptable confidence",
+        "Variable availability",
+        "Low mystery"
+      ],
+      "suggestions": [
+        "Focus on quality over quantity",
+        "Be authentic rather than just charming",
+        "Build deeper connections"
+      ]
+    }
+  ]
+}

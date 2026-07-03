@@ -28,7 +28,28 @@
 				<string>com.googleusercontent.apps.484251946150-moqto649uk47tl68vd4q3lmhfrj19ai4</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.ridgits.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ridgits</string>
+			</array>
+		</dict>
 	</array>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Ridgits uses Bluetooth to detect nearby members and share Ridgit quizzes when you bring phones together.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Ridgits uses Bluetooth and the local network to discover nearby members and share Ridgit quizzes in person.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ridgits-nearby._tcp</string>
+		<string>_ridgits-nearby._udp</string>
+	</array>
+	<key>GIDClientID</key>
+	<string>484251946150-moqto649uk47tl68vd4q3lmhfrj19ai4.apps.googleusercontent.com</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

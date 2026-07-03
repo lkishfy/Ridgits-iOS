@@ -1,0 +1,1253 @@
+{
+  "id": "identity-performance",
+  "questions": [
+    {
+      "id": "idp_000",
+      "category": "Persona",
+      "text": "On dates, you tend to be:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Your authentic self from the start"
+        },
+        {
+          "value": 1,
+          "label": "A polished version of yourself"
+        },
+        {
+          "value": 2,
+          "label": "Different depending on who you're with"
+        },
+        {
+          "value": 3,
+          "label": "Whoever they seem to want"
+        }
+      ]
+    },
+    {
+      "id": "idp_001",
+      "category": "Persona",
+      "text": "Your dating profile shows:",
+      "options": [
+        {
+          "value": 0,
+          "label": "The real you, flaws and all"
+        },
+        {
+          "value": 1,
+          "label": "Your best self"
+        },
+        {
+          "value": 2,
+          "label": "Who you think they want"
+        },
+        {
+          "value": 3,
+          "label": "A curated persona"
+        }
+      ]
+    },
+    {
+      "id": "idp_002",
+      "category": "Persona",
+      "text": "On first dates, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Show up exactly as you are"
+        },
+        {
+          "value": 1,
+          "label": "Put your best foot forward"
+        },
+        {
+          "value": 2,
+          "label": "Adapt to match their energy"
+        },
+        {
+          "value": 3,
+          "label": "Perform a role you think works"
+        }
+      ]
+    },
+    {
+      "id": "idp_003",
+      "category": "Persona",
+      "text": "Your dating persona is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "100% authentic"
+        },
+        {
+          "value": 1,
+          "label": "Mostly you, slightly enhanced"
+        },
+        {
+          "value": 2,
+          "label": "Adaptive based on the person"
+        },
+        {
+          "value": 3,
+          "label": "A performance of who you think they want"
+        }
+      ]
+    },
+    {
+      "id": "idp_004",
+      "category": "Persona",
+      "text": "You present yourself as:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Exactly who you are"
+        },
+        {
+          "value": 1,
+          "label": "Your best version"
+        },
+        {
+          "value": 2,
+          "label": "Different versions for different people"
+        },
+        {
+          "value": 3,
+          "label": "Whoever gets the best response"
+        }
+      ]
+    },
+    {
+      "id": "idp_005",
+      "category": "Persona",
+      "text": "On dating apps, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Are completely honest about yourself"
+        },
+        {
+          "value": 1,
+          "label": "Highlight your best qualities"
+        },
+        {
+          "value": 2,
+          "label": "Tailor your profile to attract specific types"
+        },
+        {
+          "value": 3,
+          "label": "Create a persona that gets matches"
+        }
+      ]
+    },
+    {
+      "id": "idp_006",
+      "category": "Persona",
+      "text": "You reveal your authentic self:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Immediately - first date"
+        },
+        {
+          "value": 1,
+          "label": "Gradually over time"
+        },
+        {
+          "value": 2,
+          "label": "When you feel safe"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - you keep up the performance"
+        }
+      ]
+    },
+    {
+      "id": "idp_007",
+      "category": "Persona",
+      "text": "Your dating persona vs. real you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Identical - no difference"
+        },
+        {
+          "value": 1,
+          "label": "Very similar, slightly enhanced"
+        },
+        {
+          "value": 2,
+          "label": "Similar but adapted to context"
+        },
+        {
+          "value": 3,
+          "label": "Quite different - you perform a role"
+        }
+      ]
+    },
+    {
+      "id": "idp_008",
+      "category": "Persona",
+      "text": "You feel most authentic when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Showing all sides of yourself"
+        },
+        {
+          "value": 1,
+          "label": "Presenting your best self"
+        },
+        {
+          "value": 2,
+          "label": "Adapting to the situation"
+        },
+        {
+          "value": 3,
+          "label": "When you know what they want"
+        }
+      ]
+    },
+    {
+      "id": "idp_009",
+      "category": "Persona",
+      "text": "Your dating persona is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unconscious - you don't think about it"
+        },
+        {
+          "value": 1,
+          "label": "Semi-conscious - you're aware but natural"
+        },
+        {
+          "value": 2,
+          "label": "Conscious - you adapt intentionally"
+        },
+        {
+          "value": 3,
+          "label": "Very calculated - you perform strategically"
+        }
+      ]
+    },
+    {
+      "id": "idp_010",
+      "category": "Persona",
+      "text": "You show your flaws:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Early - you want them to see real you"
+        },
+        {
+          "value": 1,
+          "label": "Gradually as trust builds"
+        },
+        {
+          "value": 2,
+          "label": "Only when necessary"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - you hide them"
+        }
+      ]
+    },
+    {
+      "id": "idp_011",
+      "category": "Persona",
+      "text": "Your dating persona is created by:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Just being yourself naturally"
+        },
+        {
+          "value": 1,
+          "label": "Highlighting your strengths"
+        },
+        {
+          "value": 2,
+          "label": "Observing what works and adapting"
+        },
+        {
+          "value": 3,
+          "label": "Strategic performance based on desired outcome"
+        }
+      ]
+    },
+    {
+      "id": "idp_012",
+      "category": "Persona",
+      "text": "You perform your identity:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never - you're always authentic"
+        },
+        {
+          "value": 1,
+          "label": "Minimally - slight enhancement"
+        },
+        {
+          "value": 2,
+          "label": "Moderately - you adapt to context"
+        },
+        {
+          "value": 3,
+          "label": "Significantly - you perform roles"
+        }
+      ]
+    },
+    {
+      "id": "idp_013",
+      "category": "Calibration",
+      "text": "You adjust your behavior based on:",
+      "options": [
+        {
+          "value": 0,
+          "label": "What feels natural to you"
+        },
+        {
+          "value": 1,
+          "label": "Reading their energy and matching it"
+        },
+        {
+          "value": 2,
+          "label": "What seems to work best"
+        },
+        {
+          "value": 3,
+          "label": "Whatever gets a positive response"
+        }
+      ]
+    },
+    {
+      "id": "idp_014",
+      "category": "Calibration",
+      "text": "In social situations, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stay true to yourself regardless"
+        },
+        {
+          "value": 1,
+          "label": "Slightly adjust to fit the room"
+        },
+        {
+          "value": 2,
+          "label": "Significantly adapt to the group"
+        },
+        {
+          "value": 3,
+          "label": "Transform to match expectations"
+        }
+      ]
+    },
+    {
+      "id": "idp_015",
+      "category": "Calibration",
+      "text": "You read the room and:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stay authentic anyway"
+        },
+        {
+          "value": 1,
+          "label": "Make minor adjustments"
+        },
+        {
+          "value": 2,
+          "label": "Adapt to fit in"
+        },
+        {
+          "value": 3,
+          "label": "Change yourself to match"
+        }
+      ]
+    },
+    {
+      "id": "idp_016",
+      "category": "Calibration",
+      "text": "Your ability to adapt is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Low - you stay consistent"
+        },
+        {
+          "value": 1,
+          "label": "Moderate - you adjust slightly"
+        },
+        {
+          "value": 2,
+          "label": "High - you adapt easily"
+        },
+        {
+          "value": 3,
+          "label": "Very high - you're a chameleon"
+        }
+      ]
+    },
+    {
+      "id": "idp_017",
+      "category": "Calibration",
+      "text": "You calibrate to the room:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never - you're always you"
+        },
+        {
+          "value": 1,
+          "label": "Minimally - slight shifts"
+        },
+        {
+          "value": 2,
+          "label": "Moderately - you adapt"
+        },
+        {
+          "value": 3,
+          "label": "Completely - you become who they need"
+        }
+      ]
+    },
+    {
+      "id": "idp_018",
+      "category": "Calibration",
+      "text": "When someone seems different from you, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stay true to yourself"
+        },
+        {
+          "value": 1,
+          "label": "Find common ground naturally"
+        },
+        {
+          "value": 2,
+          "label": "Adapt to bridge the gap"
+        },
+        {
+          "value": 3,
+          "label": "Change yourself to match them"
+        }
+      ]
+    },
+    {
+      "id": "idp_019",
+      "category": "Calibration",
+      "text": "Your calibration level is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Low - consistent across situations"
+        },
+        {
+          "value": 1,
+          "label": "Medium - adaptable when needed"
+        },
+        {
+          "value": 2,
+          "label": "High - you adapt frequently"
+        },
+        {
+          "value": 3,
+          "label": "Very high - you're constantly adjusting"
+        }
+      ]
+    },
+    {
+      "id": "idp_020",
+      "category": "Calibration",
+      "text": "You match someone's energy:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Rarely - you have your own energy"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes if it feels right"
+        },
+        {
+          "value": 2,
+          "label": "Often to create connection"
+        },
+        {
+          "value": 3,
+          "label": "Always - you mirror them"
+        }
+      ]
+    },
+    {
+      "id": "idp_021",
+      "category": "Calibration",
+      "text": "You adapt your communication style:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never - you communicate your way"
+        },
+        {
+          "value": 1,
+          "label": "Slightly based on context"
+        },
+        {
+          "value": 2,
+          "label": "Moderately to connect better"
+        },
+        {
+          "value": 3,
+          "label": "Completely to match them"
+        }
+      ]
+    },
+    {
+      "id": "idp_022",
+      "category": "Calibration",
+      "text": "Your calibration happens:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unconsciously - naturally"
+        },
+        {
+          "value": 1,
+          "label": "Semi-consciously - with awareness"
+        },
+        {
+          "value": 2,
+          "label": "Consciously - intentional adjustment"
+        },
+        {
+          "value": 3,
+          "label": "Very consciously - strategic adaptation"
+        }
+      ]
+    },
+    {
+      "id": "idp_023",
+      "category": "Calibration",
+      "text": "You adjust based on their response:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never - you stay consistent"
+        },
+        {
+          "value": 1,
+          "label": "Minimally - you notice but stay you"
+        },
+        {
+          "value": 2,
+          "label": "Moderately - you adapt to connect"
+        },
+        {
+          "value": 3,
+          "label": "Significantly - you change to please"
+        }
+      ]
+    },
+    {
+      "id": "idp_024",
+      "category": "Calibration",
+      "text": "Your calibration to the room is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Non-existent - you're always you"
+        },
+        {
+          "value": 1,
+          "label": "Minimal - slight situational awareness"
+        },
+        {
+          "value": 2,
+          "label": "Moderate - you adapt when helpful"
+        },
+        {
+          "value": 3,
+          "label": "Maximum - you transform for context"
+        }
+      ]
+    },
+    {
+      "id": "idp_025",
+      "category": "Signaling",
+      "text": "You signal who you are through:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Just being yourself naturally"
+        },
+        {
+          "value": 1,
+          "label": "Your words and actions matching"
+        },
+        {
+          "value": 2,
+          "label": "Intentionally chosen signals"
+        },
+        {
+          "value": 3,
+          "label": "Strategic messaging"
+        }
+      ]
+    },
+    {
+      "id": "idp_026",
+      "category": "Signaling",
+      "text": "Your signals are:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unconscious - just who you are"
+        },
+        {
+          "value": 1,
+          "label": "Natural but aware"
+        },
+        {
+          "value": 2,
+          "label": "Intentionally crafted"
+        },
+        {
+          "value": 3,
+          "label": "Very calculated"
+        }
+      ]
+    },
+    {
+      "id": "idp_027",
+      "category": "Signaling",
+      "text": "You signal your availability:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Naturally through behavior"
+        },
+        {
+          "value": 1,
+          "label": "Through clear communication"
+        },
+        {
+          "value": 2,
+          "label": "Through mixed signals"
+        },
+        {
+          "value": 3,
+          "label": "Through intentional ambiguity"
+        }
+      ]
+    },
+    {
+      "id": "idp_028",
+      "category": "Signaling",
+      "text": "People read you as:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Exactly who you are"
+        },
+        {
+          "value": 1,
+          "label": "Mostly authentic"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes confusing"
+        },
+        {
+          "value": 3,
+          "label": "Hard to read"
+        }
+      ]
+    },
+    {
+      "id": "idp_029",
+      "category": "Signaling",
+      "text": "Your signaling is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Clear and consistent"
+        },
+        {
+          "value": 1,
+          "label": "Mostly clear"
+        },
+        {
+          "value": 2,
+          "label": "Mixed or confusing"
+        },
+        {
+          "value": 3,
+          "label": "Intentional ambiguity"
+        }
+      ]
+    },
+    {
+      "id": "idp_030",
+      "category": "Signaling",
+      "text": "You signal interest through:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Direct communication"
+        },
+        {
+          "value": 1,
+          "label": "Actions matching words"
+        },
+        {
+          "value": 2,
+          "label": "Subtle hints"
+        },
+        {
+          "value": 3,
+          "label": "Playing hard to get"
+        }
+      ]
+    },
+    {
+      "id": "idp_031",
+      "category": "Signaling",
+      "text": "Your signals are consistent:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always - you're clear"
+        },
+        {
+          "value": 1,
+          "label": "Usually - mostly consistent"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes - mixed signals"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - confusing"
+        }
+      ]
+    },
+    {
+      "id": "idp_032",
+      "category": "Signaling",
+      "text": "You use signaling to:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Express who you authentically are"
+        },
+        {
+          "value": 1,
+          "label": "Attract compatible people"
+        },
+        {
+          "value": 2,
+          "label": "Control how you're perceived"
+        },
+        {
+          "value": 3,
+          "label": "Manipulate outcomes"
+        }
+      ]
+    },
+    {
+      "id": "idp_033",
+      "category": "Signaling",
+      "text": "People interpret your signals as:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Genuine and clear"
+        },
+        {
+          "value": 1,
+          "label": "Mostly authentic"
+        },
+        {
+          "value": 2,
+          "label": "Confusing or mixed"
+        },
+        {
+          "value": 3,
+          "label": "Hard to decipher"
+        }
+      ]
+    },
+    {
+      "id": "idp_034",
+      "category": "Signaling",
+      "text": "Your signaling style is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Direct and transparent"
+        },
+        {
+          "value": 1,
+          "label": "Clear but nuanced"
+        },
+        {
+          "value": 2,
+          "label": "Subtle and indirect"
+        },
+        {
+          "value": 3,
+          "label": "Calculated and strategic"
+        }
+      ]
+    },
+    {
+      "id": "idp_035",
+      "category": "Signaling",
+      "text": "You're aware of the signals you send:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Not really - you're just you"
+        },
+        {
+          "value": 1,
+          "label": "Somewhat - you notice"
+        },
+        {
+          "value": 2,
+          "label": "Yes - you're intentional"
+        },
+        {
+          "value": 3,
+          "label": "Very aware - you craft them"
+        }
+      ]
+    },
+    {
+      "id": "idp_036",
+      "category": "Signaling",
+      "text": "Your signals match your reality:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always - they're authentic"
+        },
+        {
+          "value": 1,
+          "label": "Usually - mostly aligned"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes - mixed"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - they're performance"
+        }
+      ]
+    },
+    {
+      "id": "idp_037",
+      "category": "Signaling",
+      "text": "You signal your identity:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Naturally through being yourself"
+        },
+        {
+          "value": 1,
+          "label": "Through authentic expression"
+        },
+        {
+          "value": 2,
+          "label": "Through intentional presentation"
+        },
+        {
+          "value": 3,
+          "label": "Through strategic performance"
+        }
+      ]
+    },
+    {
+      "id": "idp_038",
+      "category": "Consistency",
+      "text": "You're consistent across different situations:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always - you're the same everywhere"
+        },
+        {
+          "value": 1,
+          "label": "Usually - mostly consistent"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes - you adapt"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - you're different everywhere"
+        }
+      ]
+    },
+    {
+      "id": "idp_039",
+      "category": "Consistency",
+      "text": "Your identity performance is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Consistent - same you everywhere"
+        },
+        {
+          "value": 1,
+          "label": "Mostly consistent with minor variations"
+        },
+        {
+          "value": 2,
+          "label": "Adaptive - different in different contexts"
+        },
+        {
+          "value": 3,
+          "label": "Inconsistent - very different everywhere"
+        }
+      ]
+    },
+    {
+      "id": "idp_040",
+      "category": "Consistency",
+      "text": "Between apps, dates, and IRL, you're:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Exactly the same"
+        },
+        {
+          "value": 1,
+          "label": "Very similar"
+        },
+        {
+          "value": 2,
+          "label": "Noticeably different"
+        },
+        {
+          "value": 3,
+          "label": "Completely different"
+        }
+      ]
+    },
+    {
+      "id": "idp_041",
+      "category": "Consistency",
+      "text": "Your consistency level is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "High - very consistent"
+        },
+        {
+          "value": 1,
+          "label": "Medium - mostly consistent"
+        },
+        {
+          "value": 2,
+          "label": "Low - adaptive"
+        },
+        {
+          "value": 3,
+          "label": "Very low - highly variable"
+        }
+      ]
+    },
+    {
+      "id": "idp_042",
+      "category": "Consistency",
+      "text": "People see the same you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Everywhere - totally consistent"
+        },
+        {
+          "value": 1,
+          "label": "Most places - mostly the same"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes - you adapt"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - different you everywhere"
+        }
+      ]
+    },
+    {
+      "id": "idp_043",
+      "category": "Consistency",
+      "text": "Your adaptability vs. consistency:",
+      "options": [
+        {
+          "value": 0,
+          "label": "High consistency, low adaptability"
+        },
+        {
+          "value": 1,
+          "label": "Balanced - consistent but adaptable"
+        },
+        {
+          "value": 2,
+          "label": "More adaptable, less consistent"
+        },
+        {
+          "value": 3,
+          "label": "Very adaptable, low consistency"
+        }
+      ]
+    },
+    {
+      "id": "idp_044",
+      "category": "Consistency",
+      "text": "You maintain your core identity:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Always, no matter the context"
+        },
+        {
+          "value": 1,
+          "label": "Usually, with minor adaptations"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes, you adapt significantly"
+        },
+        {
+          "value": 3,
+          "label": "Rarely, you transform for context"
+        }
+      ]
+    },
+    {
+      "id": "idp_045",
+      "category": "Consistency",
+      "text": "Your consistency is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Unconscious - you're just naturally consistent"
+        },
+        {
+          "value": 1,
+          "label": "Natural - consistent by nature"
+        },
+        {
+          "value": 2,
+          "label": "Intentional - you try to stay consistent"
+        },
+        {
+          "value": 3,
+          "label": "Low - you adapt too much to be consistent"
+        }
+      ]
+    },
+    {
+      "id": "idp_046",
+      "category": "Consistency",
+      "text": "You're the same person:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Everywhere, always"
+        },
+        {
+          "value": 1,
+          "label": "Most places, most of the time"
+        },
+        {
+          "value": 2,
+          "label": "Sometimes, depending on context"
+        },
+        {
+          "value": 3,
+          "label": "Rarely - context changes you"
+        }
+      ]
+    },
+    {
+      "id": "idp_047",
+      "category": "Consistency",
+      "text": "Your identity performance varies:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Never - always consistent"
+        },
+        {
+          "value": 1,
+          "label": "Minimally - slight variations"
+        },
+        {
+          "value": 2,
+          "label": "Moderately - noticeable differences"
+        },
+        {
+          "value": 3,
+          "label": "Significantly - very different"
+        }
+      ]
+    },
+    {
+      "id": "idp_048",
+      "category": "Consistency",
+      "text": "Between conscious and unconscious performance:",
+      "options": [
+        {
+          "value": 0,
+          "label": "You're always just you naturally"
+        },
+        {
+          "value": 1,
+          "label": "Mostly natural, slight awareness"
+        },
+        {
+          "value": 2,
+          "label": "Mix of conscious and unconscious"
+        },
+        {
+          "value": 3,
+          "label": "Very conscious performance"
+        }
+      ]
+    },
+    {
+      "id": "idp_049",
+      "category": "Consistency",
+      "text": "Your consistency across situations shows:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Strong sense of self"
+        },
+        {
+          "value": 1,
+          "label": "Authentic core with adaptations"
+        },
+        {
+          "value": 2,
+          "label": "Adaptability over consistency"
+        },
+        {
+          "value": 3,
+          "label": "Unclear sense of self"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "idp_arch_0",
+      "name": "The Authentic Performer",
+      "description": "You show up as yourself consistently across all contexts. Your identity performance is authentic - you're the same person on apps, dates, and in real life. You don't adapt or perform roles; you just are who you are.",
+      "characteristics": [
+        "Consistent across all contexts",
+        "Authentic persona",
+        "Low calibration/adapation",
+        "Clear signaling"
+      ],
+      "suggestions": [
+        "Maintain your authenticity while being open to growth",
+        "Notice if consistency serves you in all contexts",
+        "Consider slight adaptations where helpful"
+      ]
+    },
+    {
+      "id": "idp_arch_1",
+      "name": "The Adaptive Authentic",
+      "description": "You have a strong authentic core but you adapt to context. You calibrate to the room while staying true to yourself. Your identity performance is mostly consistent with natural variations based on situation.",
+      "characteristics": [
+        "Authentic core with adaptations",
+        "Moderate calibration",
+        "Clear but nuanced signaling",
+        "Balanced consistency"
+      ],
+      "suggestions": [
+        "Continue balancing authenticity with adaptability",
+        "Ensure adaptations don't compromise your core",
+        "Stay aware of when you adapt vs. perform"
+      ]
+    },
+    {
+      "id": "idp_arch_2",
+      "name": "The Chameleon",
+      "description": "You significantly adapt your identity performance based on context, person, and desired outcome. You calibrate heavily to the room and transform to match expectations. Your consistency is low because you're highly adaptable.",
+      "characteristics": [
+        "High adaptability",
+        "Low consistency",
+        "Heavy calibration",
+        "Context-dependent persona"
+      ],
+      "suggestions": [
+        "Identify your authentic core beneath adaptations",
+        "Notice if adaptability serves you or exhausts you",
+        "Practice consistency in safe relationships"
+      ]
+    },
+    {
+      "id": "idp_arch_3",
+      "name": "The Strategic Performer",
+      "description": "You consciously craft and perform your identity based on desired outcomes. Your persona is intentional and calculated. You signal strategically to control how you're perceived. You may lose track of who you authentically are.",
+      "characteristics": [
+        "Conscious performance",
+        "Strategic signaling",
+        "Calculated persona",
+        "Outcome-focused adaptation"
+      ],
+      "suggestions": [
+        "Explore who you are without performance",
+        "Notice if strategic performance serves or limits you",
+        "Practice showing up authentically in safe spaces"
+      ]
+    },
+    {
+      "id": "idp_arch_4",
+      "name": "The Unconscious Adapter",
+      "description": "You unconsciously adapt your identity performance without realizing it. You calibrate to situations automatically and may send mixed signals. You're not fully aware of how much you change between contexts.",
+      "characteristics": [
+        "Unconscious adaptation",
+        "Mixed signaling",
+        "Variable consistency",
+        "Low awareness of performance"
+      ],
+      "suggestions": [
+        "Increase awareness of when and how you adapt",
+        "Notice patterns in your identity shifts",
+        "Explore your authentic core beneath adaptations"
+      ]
+    },
+    {
+      "id": "idp_arch_5",
+      "name": "The Polished Self",
+      "description": "You present a polished, best version of yourself rather than your raw authentic self. You're aware of your performance and enhance your qualities. You calibrate moderately and maintain consistency in your polished persona.",
+      "characteristics": [
+        "Enhanced best self",
+        "Moderate calibration",
+        "Clear consistent signaling",
+        "Conscious enhancement"
+      ],
+      "suggestions": [
+        "Gradually reveal more authentic sides",
+        "Balance polish with vulnerability",
+        "Notice if polish creates distance or connection"
+      ]
+    }
+  ]
+}

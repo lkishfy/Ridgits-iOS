@@ -1,0 +1,1253 @@
+{
+  "id": "messaging",
+  "questions": [
+    {
+      "id": "msg_000",
+      "category": "Tone",
+      "text": "How often do you use emojis in your messages?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Frequently - almost every message"
+        },
+        {
+          "value": 1,
+          "label": "Occasionally to soften the tone"
+        },
+        {
+          "value": 2,
+          "label": "Rarely - only for emphasis"
+        },
+        {
+          "value": 3,
+          "label": "Never - I prefer plain text"
+        }
+      ]
+    },
+    {
+      "id": "msg_001",
+      "category": "Tone",
+      "text": "When someone texts 'K', how do you interpret it?",
+      "options": [
+        {
+          "value": 0,
+          "label": "They're busy or just acknowledging"
+        },
+        {
+          "value": 1,
+          "label": "A bit short, but maybe fine"
+        },
+        {
+          "value": 2,
+          "label": "Passive-aggressive or mad"
+        },
+        {
+          "value": 3,
+          "label": "I don't overthink it"
+        }
+      ]
+    },
+    {
+      "id": "msg_002",
+      "category": "Tone",
+      "text": "How do you handle serious conversations over text?",
+      "options": [
+        {
+          "value": 0,
+          "label": "I prefer to call or meet up"
+        },
+        {
+          "value": 1,
+          "label": "I send long, thoughtful paragraphs"
+        },
+        {
+          "value": 2,
+          "label": "I try to keep it light and avoid conflict"
+        },
+        {
+          "value": 3,
+          "label": "I get defensive or shut down"
+        }
+      ]
+    },
+    {
+      "id": "msg_003",
+      "category": "Tone",
+      "text": "Your typical message length is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Long paragraphs with lots of detail"
+        },
+        {
+          "value": 1,
+          "label": "Medium - a few sentences"
+        },
+        {
+          "value": 2,
+          "label": "Short and concise"
+        },
+        {
+          "value": 3,
+          "label": "One or two words mostly"
+        }
+      ]
+    },
+    {
+      "id": "msg_004",
+      "category": "Tone",
+      "text": "Do you use exclamation marks?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes! Lots of them to show enthusiasm!"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes, to be polite"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never - they feel fake"
+        }
+      ]
+    },
+    {
+      "id": "msg_005",
+      "category": "Tone",
+      "text": "How sarcastic are you over text?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very - it's my love language"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes, with people who get it"
+        },
+        {
+          "value": 2,
+          "label": "Rarely - it gets lost in translation"
+        },
+        {
+          "value": 3,
+          "label": "Never - I'm very literal"
+        }
+      ]
+    },
+    {
+      "id": "msg_006",
+      "category": "Tone",
+      "text": "When you're excited, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Text immediately with all caps/emojis"
+        },
+        {
+          "value": 1,
+          "label": "Share the news calmly"
+        },
+        {
+          "value": 2,
+          "label": "Wait for the right moment"
+        },
+        {
+          "value": 3,
+          "label": "Keep it to myself mostly"
+        }
+      ]
+    },
+    {
+      "id": "msg_007",
+      "category": "Tone",
+      "text": "How do you express affection via text?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Words of affirmation and hearts"
+        },
+        {
+          "value": 1,
+          "label": "Sending memes or links they'd like"
+        },
+        {
+          "value": 2,
+          "label": "Checking in regularly"
+        },
+        {
+          "value": 3,
+          "label": "I don't really do that over text"
+        }
+      ]
+    },
+    {
+      "id": "msg_008",
+      "category": "Tone",
+      "text": "If someone sends a dry text, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Try to liven up the conversation"
+        },
+        {
+          "value": 1,
+          "label": "Match their energy"
+        },
+        {
+          "value": 2,
+          "label": "Assume they're not interested"
+        },
+        {
+          "value": 3,
+          "label": "Ignore it"
+        }
+      ]
+    },
+    {
+      "id": "msg_009",
+      "category": "Tone",
+      "text": "How much do you use GIFs/memes?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constantly - it's 50% of my chat"
+        },
+        {
+          "value": 1,
+          "label": "Occasionally for a laugh"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never"
+        }
+      ]
+    },
+    {
+      "id": "msg_010",
+      "category": "Tone",
+      "text": "When upset, your texting style becomes:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Short and cold"
+        },
+        {
+          "value": 1,
+          "label": "Verbose and explanatory"
+        },
+        {
+          "value": 2,
+          "label": "Passive-aggressive"
+        },
+        {
+          "value": 3,
+          "label": "I stop texting completely"
+        }
+      ]
+    },
+    {
+      "id": "msg_011",
+      "category": "Tone",
+      "text": "How do you handle compliments over text?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love them, respond enthusiastically"
+        },
+        {
+          "value": 1,
+          "label": "Say thanks politely"
+        },
+        {
+          "value": 2,
+          "label": "Deflect with humor"
+        },
+        {
+          "value": 3,
+          "label": "Ignore or change subject"
+        }
+      ]
+    },
+    {
+      "id": "msg_012",
+      "category": "Tone",
+      "text": "Your 'good morning' texts are:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Daily and cheerful"
+        },
+        {
+          "value": 1,
+          "label": "Occasional/When I feel like it"
+        },
+        {
+          "value": 2,
+          "label": "Only in response to theirs"
+        },
+        {
+          "value": 3,
+          "label": "Non-existent"
+        }
+      ]
+    },
+    {
+      "id": "msg_013",
+      "category": "Pacing",
+      "text": "How quickly do you typically reply?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Almost instantly"
+        },
+        {
+          "value": 1,
+          "label": "Within an hour or so"
+        },
+        {
+          "value": 2,
+          "label": "Within the day"
+        },
+        {
+          "value": 3,
+          "label": "Days later (I'm bad at texting)"
+        }
+      ]
+    },
+    {
+      "id": "msg_014",
+      "category": "Pacing",
+      "text": "If they take hours to reply, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Double text or check in"
+        },
+        {
+          "value": 1,
+          "label": "Wait patiently"
+        },
+        {
+          "value": 2,
+          "label": "Wait exactly that long to reply back"
+        },
+        {
+          "value": 3,
+          "label": "Lose interest"
+        }
+      ]
+    },
+    {
+      "id": "msg_015",
+      "category": "Pacing",
+      "text": "Do you play 'the waiting game'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "No, I reply when I see it"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes, to not look desperate"
+        },
+        {
+          "value": 2,
+          "label": "Yes, usually"
+        },
+        {
+          "value": 3,
+          "label": "I don't play games, I'm just busy"
+        }
+      ]
+    },
+    {
+      "id": "msg_016",
+      "category": "Pacing",
+      "text": "Double texting makes you feel:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Totally fine, I have lots to say"
+        },
+        {
+          "value": 1,
+          "label": "Okay if it's relevant"
+        },
+        {
+          "value": 2,
+          "label": "Anxious/Annoying"
+        },
+        {
+          "value": 3,
+          "label": "I would never do it"
+        }
+      ]
+    },
+    {
+      "id": "msg_017",
+      "category": "Pacing",
+      "text": "Your ideal texting frequency with a partner:",
+      "options": [
+        {
+          "value": 0,
+          "label": "All day, constant stream"
+        },
+        {
+          "value": 1,
+          "label": "A few check-ins throughout the day"
+        },
+        {
+          "value": 2,
+          "label": "Morning and night mainly"
+        },
+        {
+          "value": 3,
+          "label": "Only for logistics/making plans"
+        }
+      ]
+    },
+    {
+      "id": "msg_018",
+      "category": "Pacing",
+      "text": "When you see a message but can't reply fully:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I send a quick 'busy rn' text"
+        },
+        {
+          "value": 1,
+          "label": "I leave it unread so I remember"
+        },
+        {
+          "value": 2,
+          "label": "I read it and reply mentally (then forget)"
+        },
+        {
+          "value": 3,
+          "label": "I ignore it until I'm free"
+        }
+      ]
+    },
+    {
+      "id": "msg_019",
+      "category": "Pacing",
+      "text": "How do you feel about 'left on read'?",
+      "options": [
+        {
+          "value": 0,
+          "label": "It triggers major anxiety"
+        },
+        {
+          "value": 1,
+          "label": "Annoying but I get over it"
+        },
+        {
+          "value": 2,
+          "label": "Indifferent"
+        },
+        {
+          "value": 3,
+          "label": "I do it to others often"
+        }
+      ]
+    },
+    {
+      "id": "msg_020",
+      "category": "Pacing",
+      "text": "Late night texts (after 11pm):",
+      "options": [
+        {
+          "value": 0,
+          "label": "Love them, that's when we vibe"
+        },
+        {
+          "value": 1,
+          "label": "Okay if we're close"
+        },
+        {
+          "value": 2,
+          "label": "Annoying, I'm sleeping"
+        },
+        {
+          "value": 3,
+          "label": "Major red flag"
+        }
+      ]
+    },
+    {
+      "id": "msg_021",
+      "category": "Pacing",
+      "text": "If the conversation dies, you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Start a new topic immediately"
+        },
+        {
+          "value": 1,
+          "label": "Let it sit for a bit then reach out"
+        },
+        {
+          "value": 2,
+          "label": "Wait for them to restart it"
+        },
+        {
+          "value": 3,
+          "label": "Let it die forever"
+        }
+      ]
+    },
+    {
+      "id": "msg_022",
+      "category": "Pacing",
+      "text": "How often do you check your phone?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constantly attached to it"
+        },
+        {
+          "value": 1,
+          "label": "Regularly"
+        },
+        {
+          "value": 2,
+          "label": "Every few hours"
+        },
+        {
+          "value": 3,
+          "label": "I often forget where it is"
+        }
+      ]
+    },
+    {
+      "id": "msg_023",
+      "category": "Pacing",
+      "text": "Texting during work/school:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I text throughout the day anyway"
+        },
+        {
+          "value": 1,
+          "label": "Only on breaks"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never, focus mode is on"
+        }
+      ]
+    },
+    {
+      "id": "msg_024",
+      "category": "Pacing",
+      "text": "Response time expectations:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I expect replies within minutes"
+        },
+        {
+          "value": 1,
+          "label": "Within the hour is polite"
+        },
+        {
+          "value": 2,
+          "label": "Whenever they can is fine"
+        },
+        {
+          "value": 3,
+          "label": "I don't track it at all"
+        }
+      ]
+    },
+    {
+      "id": "msg_025",
+      "category": "Pacing",
+      "text": "Leaving a conversation:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I say 'bye' or 'talk later'"
+        },
+        {
+          "value": 1,
+          "label": "I react to the last message"
+        },
+        {
+          "value": 2,
+          "label": "I just stop replying"
+        },
+        {
+          "value": 3,
+          "label": "I ghost mostly"
+        }
+      ]
+    },
+    {
+      "id": "msg_026",
+      "category": "Initiation",
+      "text": "How often do you initiate the conversation?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Almost always (80%+)"
+        },
+        {
+          "value": 1,
+          "label": "Often (60-70%)"
+        },
+        {
+          "value": 2,
+          "label": "About half the time (50%)"
+        },
+        {
+          "value": 3,
+          "label": "Rarely/Never (<20%)"
+        }
+      ]
+    },
+    {
+      "id": "msg_027",
+      "category": "Initiation",
+      "text": "Asking to meet up:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ask directly and often"
+        },
+        {
+          "value": 1,
+          "label": "I hint at it hoping they ask"
+        },
+        {
+          "value": 2,
+          "label": "I wait for them to ask always"
+        },
+        {
+          "value": 3,
+          "label": "I avoid meeting up usually"
+        }
+      ]
+    },
+    {
+      "id": "msg_028",
+      "category": "Initiation",
+      "text": "How direct are you about your interest?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very direct ('I like you')"
+        },
+        {
+          "value": 1,
+          "label": "Flirty but playful"
+        },
+        {
+          "value": 2,
+          "label": "Subtle hints only"
+        },
+        {
+          "value": 3,
+          "label": "Hard to read / Poker face"
+        }
+      ]
+    },
+    {
+      "id": "msg_029",
+      "category": "Initiation",
+      "text": "Sending the first text after a date:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I do it immediately if I had fun"
+        },
+        {
+          "value": 1,
+          "label": "I wait a few hours or next day"
+        },
+        {
+          "value": 2,
+          "label": "I wait for them to do it"
+        },
+        {
+          "value": 3,
+          "label": "I don't usually follow up"
+        }
+      ]
+    },
+    {
+      "id": "msg_030",
+      "category": "Initiation",
+      "text": "Asking questions:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I ask lots of deep questions"
+        },
+        {
+          "value": 1,
+          "label": "I keep the ball rolling"
+        },
+        {
+          "value": 2,
+          "label": "I answer more than I ask"
+        },
+        {
+          "value": 3,
+          "label": "I give one-word answers mostly"
+        }
+      ]
+    },
+    {
+      "id": "msg_031",
+      "category": "Initiation",
+      "text": "When you like someone, you text:",
+      "options": [
+        {
+          "value": 0,
+          "label": "More often and longer"
+        },
+        {
+          "value": 1,
+          "label": "About the same as usual"
+        },
+        {
+          "value": 2,
+          "label": "Less (I get nervous)"
+        },
+        {
+          "value": 3,
+          "label": "Calculatedly (to maintain power)"
+        }
+      ]
+    },
+    {
+      "id": "msg_032",
+      "category": "Initiation",
+      "text": "Reaction to 'We need to talk':",
+      "options": [
+        {
+          "value": 0,
+          "label": "Immediate panic/Ask 'Why?'"
+        },
+        {
+          "value": 1,
+          "label": "Anxious waiting"
+        },
+        {
+          "value": 2,
+          "label": "Calm curiosity"
+        },
+        {
+          "value": 3,
+          "label": "Ignore/Avoid"
+        }
+      ]
+    },
+    {
+      "id": "msg_033",
+      "category": "Initiation",
+      "text": "Do you screen-shot chats to friends?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Yes, dissecting every word"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes for advice"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never, it's private"
+        }
+      ]
+    },
+    {
+      "id": "msg_034",
+      "category": "Initiation",
+      "text": "Sexting/Risque texts:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I initiate often"
+        },
+        {
+          "value": 1,
+          "label": "I reciprocate if comfortable"
+        },
+        {
+          "value": 2,
+          "label": "I awkwardly change subject"
+        },
+        {
+          "value": 3,
+          "label": "Not my thing at all"
+        }
+      ]
+    },
+    {
+      "id": "msg_035",
+      "category": "Initiation",
+      "text": "Texting exes:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I do it when lonely/drunk"
+        },
+        {
+          "value": 1,
+          "label": "Cordial check-ins sometimes"
+        },
+        {
+          "value": 2,
+          "label": "Only for logistics"
+        },
+        {
+          "value": 3,
+          "label": "Blocked/Deleted"
+        }
+      ]
+    },
+    {
+      "id": "msg_036",
+      "category": "Initiation",
+      "text": "Group chats vs 1-on-1:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Prefer 1-on-1 intimacy"
+        },
+        {
+          "value": 1,
+          "label": "Like both equally"
+        },
+        {
+          "value": 2,
+          "label": "Prefer group (less pressure)"
+        },
+        {
+          "value": 3,
+          "label": "Dislike texting generally"
+        }
+      ]
+    },
+    {
+      "id": "msg_037",
+      "category": "Initiation",
+      "text": "Sending photos/selfies:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Often, sharing my day"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes if I look good"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never"
+        }
+      ]
+    },
+    {
+      "id": "msg_038",
+      "category": "Subtext",
+      "text": "Overthinking messages:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I analyze every punctuation mark"
+        },
+        {
+          "value": 1,
+          "label": "I worry if tone seems off"
+        },
+        {
+          "value": 2,
+          "label": "Only if it's ambiguous"
+        },
+        {
+          "value": 3,
+          "label": "I take it at face value"
+        }
+      ]
+    },
+    {
+      "id": "msg_039",
+      "category": "Subtext",
+      "text": "Editing messages before sending:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I rewrite multiple times"
+        },
+        {
+          "value": 1,
+          "label": "Quick proofread"
+        },
+        {
+          "value": 2,
+          "label": "Send it raw (typos and all)"
+        },
+        {
+          "value": 3,
+          "label": "Voice note (easier)"
+        }
+      ]
+    },
+    {
+      "id": "msg_040",
+      "category": "Subtext",
+      "text": "Deleting messages for everyone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I do it if I panic after sending"
+        },
+        {
+          "value": 1,
+          "label": "Only for typos"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never, own what you said"
+        }
+      ]
+    },
+    {
+      "id": "msg_041",
+      "category": "Subtext",
+      "text": "Checking if they're online:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Obsessively checking status"
+        },
+        {
+          "value": 1,
+          "label": "Noticed it casually"
+        },
+        {
+          "value": 2,
+          "label": "Don't pay attention"
+        },
+        {
+          "value": 3,
+          "label": "I have that feature off"
+        }
+      ]
+    },
+    {
+      "id": "msg_042",
+      "category": "Subtext",
+      "text": "Typing bubbles anxiety:",
+      "options": [
+        {
+          "value": 0,
+          "label": "High - watching them appear/disappear"
+        },
+        {
+          "value": 1,
+          "label": "Moderate curiosity"
+        },
+        {
+          "value": 2,
+          "label": "Low"
+        },
+        {
+          "value": 3,
+          "label": "Don't notice"
+        }
+      ]
+    },
+    {
+      "id": "msg_043",
+      "category": "Subtext",
+      "text": "Interpreting silence:",
+      "options": [
+        {
+          "value": 0,
+          "label": "They hate me / something is wrong"
+        },
+        {
+          "value": 1,
+          "label": "They're probably busy"
+        },
+        {
+          "value": 2,
+          "label": "They'll reply later"
+        },
+        {
+          "value": 3,
+          "label": "Didn't notice they hadn't replied"
+        }
+      ]
+    },
+    {
+      "id": "msg_044",
+      "category": "Subtext",
+      "text": "Texting etiquette rules:",
+      "options": [
+        {
+          "value": 0,
+          "label": "I follow strict unwritten rules"
+        },
+        {
+          "value": 1,
+          "label": "I try to be polite"
+        },
+        {
+          "value": 2,
+          "label": "Loose guidelines"
+        },
+        {
+          "value": 3,
+          "label": "No rules, just chaos"
+        }
+      ]
+    },
+    {
+      "id": "msg_045",
+      "category": "Subtext",
+      "text": "Ghosting vs Slow Fade:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Slow fade is kinder"
+        },
+        {
+          "value": 1,
+          "label": "Ghosting is easier"
+        },
+        {
+          "value": 2,
+          "label": "Direct rejection is best"
+        },
+        {
+          "value": 3,
+          "label": "I don't think about it"
+        }
+      ]
+    },
+    {
+      "id": "msg_046",
+      "category": "Subtext",
+      "text": "Re-reading old chats:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Often, for nostalgia or analysis"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes"
+        },
+        {
+          "value": 2,
+          "label": "Only to find info"
+        },
+        {
+          "value": 3,
+          "label": "Never, look forward not back"
+        }
+      ]
+    },
+    {
+      "id": "msg_047",
+      "category": "Subtext",
+      "text": "Using 'haha' or 'lol':",
+      "options": [
+        {
+          "value": 0,
+          "label": "As punctuation for everything"
+        },
+        {
+          "value": 1,
+          "label": "When actually funny"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never"
+        }
+      ]
+    },
+    {
+      "id": "msg_048",
+      "category": "Subtext",
+      "text": "Texting games perception:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Necessary evil of dating"
+        },
+        {
+          "value": 1,
+          "label": "Annoying but present"
+        },
+        {
+          "value": 2,
+          "label": "Waste of time"
+        },
+        {
+          "value": 3,
+          "label": "What games?"
+        }
+      ]
+    },
+    {
+      "id": "msg_049",
+      "category": "Subtext",
+      "text": "Fear of being 'too much':",
+      "options": [
+        {
+          "value": 0,
+          "label": "Constant worry"
+        },
+        {
+          "value": 1,
+          "label": "Occasional concern"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "Never, I am enough"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "msg_arch_1",
+      "name": "The Textual Healer",
+      "description": "You use messaging to build deep connection. You're responsive, engaged, and thoughtful. You value consistency and clarity.",
+      "characteristics": [
+        "High responsiveness",
+        "Emotionally expressive",
+        "Values consistency",
+        "Dislikes games"
+      ],
+      "suggestions": [
+        "Remember not everyone texts at your speed",
+        "Save some depth for in-person",
+        "Don't over-give to dry texters"
+      ]
+    },
+    {
+      "id": "msg_arch_2",
+      "name": "The Novelist",
+      "description": "You have a lot to say and you say it all. Long paragraphs, multiple bubbles, deep thoughts. You value thorough communication.",
+      "characteristics": [
+        "Detailed responses",
+        "Prefers depth over brevity",
+        "Intellectual approach",
+        "Can be overwhelming to some"
+      ],
+      "suggestions": [
+        "Check if the other person is matching your energy",
+        "Try sending voice notes for long stories",
+        "Break up big blocks of text"
+      ]
+    },
+    {
+      "id": "msg_arch_3",
+      "name": "The Ghost Writer",
+      "description": "You're elusive. You reply when you can, often days later. You prioritize your offline life and can be hard to pin down.",
+      "characteristics": [
+        "Slow response time",
+        "Low initiation",
+        "Protective of time",
+        "Can seem uninterested"
+      ],
+      "suggestions": [
+        "Communicate your texting style early on",
+        "Try 5-minute reply windows to clear backlog",
+        "Don't let silence be mistaken for rejection"
+      ]
+    },
+    {
+      "id": "msg_arch_4",
+      "name": "The Emoji Cryptographer",
+      "description": "Your texts are short, playful, and often ambiguous. You rely on vibes, emojis, and subtext rather than direct words.",
+      "characteristics": [
+        "High emoji usage",
+        "Playful/Flirty tone",
+        "Avoids serious topics over text",
+        "Fun but confusing"
+      ],
+      "suggestions": [
+        "Use words for important plans or feelings",
+        "Clarify if you sense confusion",
+        "Make sure you're being taken seriously"
+      ]
+    },
+    {
+      "id": "msg_arch_5",
+      "name": "The Anxious Awaiter",
+      "description": "Texting causes you significant stress. You overanalyze tone, timing, and punctuation. You need reassurance through digital contact.",
+      "characteristics": [
+        "High anxiety around pacing",
+        "Over-analysis of subtext",
+        "Needs frequent check-ins",
+        "Fears silence"
+      ],
+      "suggestions": [
+        "Turn off read receipts/active status",
+        "Focus on their actions, not just texts",
+        "Self-soothe during silence gaps"
+      ]
+    },
+    {
+      "id": "msg_arch_6",
+      "name": "The Dry Responder",
+      "description": "You keep it practical. Short answers, few questions, zero fluff. You view texting as a utility, not a relationship builder.",
+      "characteristics": [
+        "Brief responses",
+        "Low emotion in text",
+        "Practical focus",
+        "Hard to read"
+      ],
+      "suggestions": [
+        "Add one question to keep convos alive",
+        "Use an occasional emoji for warmth",
+        "Call if you hate typing"
+      ]
+    }
+  ]
+}

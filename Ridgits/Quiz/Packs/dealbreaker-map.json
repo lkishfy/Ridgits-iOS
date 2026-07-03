@@ -1,0 +1,1253 @@
+{
+  "id": "dealbreaker-map",
+  "questions": [
+    {
+      "id": "deal_000",
+      "category": "HardLines",
+      "text": "What instantly ends your interest?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Lying or deception"
+        },
+        {
+          "value": 1,
+          "label": "Disrespect or rudeness"
+        },
+        {
+          "value": 2,
+          "label": "Different values on key issues"
+        },
+        {
+          "value": 3,
+          "label": "Not many things are instant dealbreakers"
+        }
+      ]
+    },
+    {
+      "id": "deal_001",
+      "category": "HardLines",
+      "text": "You have a hard line about:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Honesty and transparency"
+        },
+        {
+          "value": 1,
+          "label": "How they treat others"
+        },
+        {
+          "value": 2,
+          "label": "Lifestyle compatibility"
+        },
+        {
+          "value": 3,
+          "label": "Core moral values"
+        }
+      ]
+    },
+    {
+      "id": "deal_002",
+      "category": "HardLines",
+      "text": "A dealbreaker you never compromise on:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Cheating or infidelity"
+        },
+        {
+          "value": 1,
+          "label": "Substance abuse"
+        },
+        {
+          "value": 2,
+          "label": "Abusive behavior"
+        },
+        {
+          "value": 3,
+          "label": "Incompatible life goals"
+        }
+      ]
+    },
+    {
+      "id": "deal_003",
+      "category": "HardLines",
+      "text": "You end things immediately if someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Lies about something significant"
+        },
+        {
+          "value": 1,
+          "label": "Treats service workers poorly"
+        },
+        {
+          "value": 2,
+          "label": "Shows disrespect to you"
+        },
+        {
+          "value": 3,
+          "label": "Crosses a clear boundary"
+        }
+      ]
+    },
+    {
+      "id": "deal_004",
+      "category": "HardLines",
+      "text": "Your non-negotiable standard is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Complete honesty"
+        },
+        {
+          "value": 1,
+          "label": "Mutual respect"
+        },
+        {
+          "value": 2,
+          "label": "Shared core values"
+        },
+        {
+          "value": 3,
+          "label": "I don't have absolute non-negotiables"
+        }
+      ]
+    },
+    {
+      "id": "deal_005",
+      "category": "HardLines",
+      "text": "You have zero tolerance for:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Dishonesty in any form"
+        },
+        {
+          "value": 1,
+          "label": "Disrespectful behavior"
+        },
+        {
+          "value": 2,
+          "label": "Toxic communication"
+        },
+        {
+          "value": 3,
+          "label": "Major incompatibilities"
+        }
+      ]
+    },
+    {
+      "id": "deal_006",
+      "category": "HardLines",
+      "text": "What would make you walk away permanently?",
+      "options": [
+        {
+          "value": 0,
+          "label": "Betrayal of trust"
+        },
+        {
+          "value": 1,
+          "label": "Repeated boundary violations"
+        },
+        {
+          "value": 2,
+          "label": "Fundamental value mismatch"
+        },
+        {
+          "value": 3,
+          "label": "It depends on the situation"
+        }
+      ]
+    },
+    {
+      "id": "deal_007",
+      "category": "HardLines",
+      "text": "Your most rigid standard is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Integrity and truthfulness"
+        },
+        {
+          "value": 1,
+          "label": "How they treat you"
+        },
+        {
+          "value": 2,
+          "label": "Life goals alignment"
+        },
+        {
+          "value": 3,
+          "label": "I'm flexible on most things"
+        }
+      ]
+    },
+    {
+      "id": "deal_008",
+      "category": "HardLines",
+      "text": "You never give second chances for:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Lying or cheating"
+        },
+        {
+          "value": 1,
+          "label": "Physical or emotional abuse"
+        },
+        {
+          "value": 2,
+          "label": "Repeated disrespect"
+        },
+        {
+          "value": 3,
+          "label": "I believe in second chances"
+        }
+      ]
+    },
+    {
+      "id": "deal_009",
+      "category": "HardLines",
+      "text": "A hard line that others might find strict:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Complete transparency"
+        },
+        {
+          "value": 1,
+          "label": "No contact with exes"
+        },
+        {
+          "value": 2,
+          "label": "Specific lifestyle choices"
+        },
+        {
+          "value": 3,
+          "label": "I don't think I have strict lines"
+        }
+      ]
+    },
+    {
+      "id": "deal_010",
+      "category": "HardLines",
+      "text": "You consider it unforgivable if someone:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Lies repeatedly"
+        },
+        {
+          "value": 1,
+          "label": "Betrays your trust"
+        },
+        {
+          "value": 2,
+          "label": "Crosses a clear boundary"
+        },
+        {
+          "value": 3,
+          "label": "Very few things are unforgivable"
+        }
+      ]
+    },
+    {
+      "id": "deal_011",
+      "category": "HardLines",
+      "text": "Your dealbreakers are:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Very clear and firm"
+        },
+        {
+          "value": 1,
+          "label": "Clear but flexible in context"
+        },
+        {
+          "value": 2,
+          "label": "Somewhat flexible"
+        },
+        {
+          "value": 3,
+          "label": "Mostly flexible"
+        }
+      ]
+    },
+    {
+      "id": "deal_012",
+      "category": "HardLines",
+      "text": "You enforce your hard lines:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Immediately and consistently"
+        },
+        {
+          "value": 1,
+          "label": "Usually, with some exceptions"
+        },
+        {
+          "value": 2,
+          "label": "When it really matters"
+        },
+        {
+          "value": 3,
+          "label": "Depends on the situation"
+        }
+      ]
+    },
+    {
+      "id": "deal_013",
+      "category": "SoftLines",
+      "text": "Something that bothers you but isn't a dealbreaker:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Different communication styles"
+        },
+        {
+          "value": 1,
+          "label": "Messy living habits"
+        },
+        {
+          "value": 2,
+          "label": "Different interests"
+        },
+        {
+          "value": 3,
+          "label": "Most things are negotiable"
+        }
+      ]
+    },
+    {
+      "id": "deal_014",
+      "category": "SoftLines",
+      "text": "You have soft lines about:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Texting habits and responsiveness"
+        },
+        {
+          "value": 1,
+          "label": "Social media behavior"
+        },
+        {
+          "value": 2,
+          "label": "Spending habits"
+        },
+        {
+          "value": 3,
+          "label": "Very few things - I'm flexible"
+        }
+      ]
+    },
+    {
+      "id": "deal_015",
+      "category": "SoftLines",
+      "text": "Something you'd overlook if you're really attracted:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Inconsistent communication"
+        },
+        {
+          "value": 1,
+          "label": "Different hobbies"
+        },
+        {
+          "value": 2,
+          "label": "Past relationship patterns"
+        },
+        {
+          "value": 3,
+          "label": "Most things if attraction is strong"
+        }
+      ]
+    },
+    {
+      "id": "deal_016",
+      "category": "SoftLines",
+      "text": "You're flexible about:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Communication preferences"
+        },
+        {
+          "value": 1,
+          "label": "Lifestyle differences"
+        },
+        {
+          "value": 2,
+          "label": "Personality quirks"
+        },
+        {
+          "value": 3,
+          "label": "Almost everything"
+        }
+      ]
+    },
+    {
+      "id": "deal_017",
+      "category": "SoftLines",
+      "text": "A preference that becomes flexible under pressure:",
+      "options": [
+        {
+          "value": 0,
+          "label": "How often you see each other"
+        },
+        {
+          "value": 1,
+          "label": "Their friend group"
+        },
+        {
+          "value": 2,
+          "label": "Their career path"
+        },
+        {
+          "value": 3,
+          "label": "Most preferences if needed"
+        }
+      ]
+    },
+    {
+      "id": "deal_018",
+      "category": "SoftLines",
+      "text": "You're willing to compromise on:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Communication style"
+        },
+        {
+          "value": 1,
+          "label": "Time together"
+        },
+        {
+          "value": 2,
+          "label": "Some lifestyle choices"
+        },
+        {
+          "value": 3,
+          "label": "Almost everything if it's right"
+        }
+      ]
+    },
+    {
+      "id": "deal_019",
+      "category": "SoftLines",
+      "text": "Something you'd accept if everything else is perfect:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Different social needs"
+        },
+        {
+          "value": 1,
+          "label": "Career-focused lifestyle"
+        },
+        {
+          "value": 2,
+          "label": "Past baggage"
+        },
+        {
+          "value": 3,
+          "label": "Many things for the right person"
+        }
+      ]
+    },
+    {
+      "id": "deal_020",
+      "category": "SoftLines",
+      "text": "Your soft lines are:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Clear preferences but negotiable"
+        },
+        {
+          "value": 1,
+          "label": "Flexible based on context"
+        },
+        {
+          "value": 2,
+          "label": "Very flexible"
+        },
+        {
+          "value": 3,
+          "label": "Almost non-existent"
+        }
+      ]
+    },
+    {
+      "id": "deal_021",
+      "category": "SoftLines",
+      "text": "You break your soft lines when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Attraction is strong"
+        },
+        {
+          "value": 1,
+          "label": "You really like someone"
+        },
+        {
+          "value": 2,
+          "label": "You're feeling pressure"
+        },
+        {
+          "value": 3,
+          "label": "You don't really have soft lines"
+        }
+      ]
+    },
+    {
+      "id": "deal_022",
+      "category": "SoftLines",
+      "text": "You're willing to overlook:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Minor inconsistencies"
+        },
+        {
+          "value": 1,
+          "label": "Communication gaps"
+        },
+        {
+          "value": 2,
+          "label": "Past issues"
+        },
+        {
+          "value": 3,
+          "label": "Many things for connection"
+        }
+      ]
+    },
+    {
+      "id": "deal_023",
+      "category": "SoftLines",
+      "text": "A standard that weakens when you're attracted:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Response time expectations"
+        },
+        {
+          "value": 1,
+          "label": "Frequency of contact"
+        },
+        {
+          "value": 2,
+          "label": "Social behavior"
+        },
+        {
+          "value": 3,
+          "label": "Many standards if attraction is strong"
+        }
+      ]
+    },
+    {
+      "id": "deal_024",
+      "category": "SoftLines",
+      "text": "You compromise on soft lines:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Often when attracted"
+        },
+        {
+          "value": 1,
+          "label": "Sometimes if it's important"
+        },
+        {
+          "value": 2,
+          "label": "Rarely"
+        },
+        {
+          "value": 3,
+          "label": "I don't have soft lines to compromise"
+        }
+      ]
+    },
+    {
+      "id": "deal_025",
+      "category": "BlindSpots",
+      "text": "Something you overlook when attracted:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Red flags in their behavior"
+        },
+        {
+          "value": 1,
+          "label": "Incompatibilities"
+        },
+        {
+          "value": 2,
+          "label": "How they treat you"
+        },
+        {
+          "value": 3,
+          "label": "I try not to overlook things"
+        }
+      ]
+    },
+    {
+      "id": "deal_026",
+      "category": "BlindSpots",
+      "text": "You ignore red flags when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "You're really attracted"
+        },
+        {
+          "value": 1,
+          "label": "You want it to work"
+        },
+        {
+          "value": 2,
+          "label": "You're invested"
+        },
+        {
+          "value": 3,
+          "label": "I try to notice all red flags"
+        }
+      ]
+    },
+    {
+      "id": "deal_027",
+      "category": "BlindSpots",
+      "text": "Your biggest blind spot is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Ignoring how they actually treat you"
+        },
+        {
+          "value": 1,
+          "label": "Overlooking incompatibilities"
+        },
+        {
+          "value": 2,
+          "label": "Believing their words over actions"
+        },
+        {
+          "value": 3,
+          "label": "I don't think I have blind spots"
+        }
+      ]
+    },
+    {
+      "id": "deal_028",
+      "category": "BlindSpots",
+      "text": "You rationalize away:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Inconsistent behavior"
+        },
+        {
+          "value": 1,
+          "label": "Red flags"
+        },
+        {
+          "value": 2,
+          "label": "Your gut feelings"
+        },
+        {
+          "value": 3,
+          "label": "I try not to rationalize"
+        }
+      ]
+    },
+    {
+      "id": "deal_029",
+      "category": "BlindSpots",
+      "text": "When attracted, you miss:",
+      "options": [
+        {
+          "value": 0,
+          "label": "How they actually make you feel"
+        },
+        {
+          "value": 1,
+          "label": "Actions that don't match words"
+        },
+        {
+          "value": 2,
+          "label": "Incompatibility signs"
+        },
+        {
+          "value": 3,
+          "label": "I stay pretty aware"
+        }
+      ]
+    },
+    {
+      "id": "deal_030",
+      "category": "BlindSpots",
+      "text": "You make excuses for someone's behavior when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "You're attracted to them"
+        },
+        {
+          "value": 1,
+          "label": "You want it to work"
+        },
+        {
+          "value": 2,
+          "label": "You're emotionally invested"
+        },
+        {
+          "value": 3,
+          "label": "I don't make excuses"
+        }
+      ]
+    },
+    {
+      "id": "deal_031",
+      "category": "BlindSpots",
+      "text": "Your blind spot is ignoring:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Repeated patterns of behavior"
+        },
+        {
+          "value": 1,
+          "label": "Your own boundaries"
+        },
+        {
+          "value": 2,
+          "label": "Gut feelings about incompatibility"
+        },
+        {
+          "value": 3,
+          "label": "I try to see everything clearly"
+        }
+      ]
+    },
+    {
+      "id": "deal_032",
+      "category": "BlindSpots",
+      "text": "You're blind to:",
+      "options": [
+        {
+          "value": 0,
+          "label": "How their actions affect you"
+        },
+        {
+          "value": 1,
+          "label": "Fundamental incompatibilities"
+        },
+        {
+          "value": 2,
+          "label": "Your own needs being unmet"
+        },
+        {
+          "value": 3,
+          "label": "I try to stay aware"
+        }
+      ]
+    },
+    {
+      "id": "deal_033",
+      "category": "BlindSpots",
+      "text": "When you really like someone, you overlook:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Their actual availability"
+        },
+        {
+          "value": 1,
+          "label": "How they prioritize you"
+        },
+        {
+          "value": 2,
+          "label": "Consistency issues"
+        },
+        {
+          "value": 3,
+          "label": "I try to see the full picture"
+        }
+      ]
+    },
+    {
+      "id": "deal_034",
+      "category": "BlindSpots",
+      "text": "You don't see that you're:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Accepting less than you deserve"
+        },
+        {
+          "value": 1,
+          "label": "Ignoring your own standards"
+        },
+        {
+          "value": 2,
+          "label": "Making excuses for them"
+        },
+        {
+          "value": 3,
+          "label": "I stay pretty self-aware"
+        }
+      ]
+    },
+    {
+      "id": "deal_035",
+      "category": "BlindSpots",
+      "text": "Your biggest blind spot when attracted:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Their true intentions"
+        },
+        {
+          "value": 1,
+          "label": "Your own boundaries"
+        },
+        {
+          "value": 2,
+          "label": "Compatibility reality"
+        },
+        {
+          "value": 3,
+          "label": "I don't think I have blind spots"
+        }
+      ]
+    },
+    {
+      "id": "deal_036",
+      "category": "BlindSpots",
+      "text": "You miss seeing:",
+      "options": [
+        {
+          "value": 0,
+          "label": "How their words don't match actions"
+        },
+        {
+          "value": 1,
+          "label": "That you're settling"
+        },
+        {
+          "value": 2,
+          "label": "Red flags you'd see in others"
+        },
+        {
+          "value": 3,
+          "label": "I try to see everything clearly"
+        }
+      ]
+    },
+    {
+      "id": "deal_037",
+      "category": "BlindSpots",
+      "text": "When attracted, you're blind to:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Your own dealbreakers being crossed"
+        },
+        {
+          "value": 1,
+          "label": "Incompatibility signs"
+        },
+        {
+          "value": 2,
+          "label": "Your gut telling you no"
+        },
+        {
+          "value": 3,
+          "label": "I stay aware of everything"
+        }
+      ]
+    },
+    {
+      "id": "deal_038",
+      "category": "Contradictions",
+      "text": "You say you won't tolerate X, but then you do when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "You're really attracted"
+        },
+        {
+          "value": 1,
+          "label": "You want it to work"
+        },
+        {
+          "value": 2,
+          "label": "You're emotionally invested"
+        },
+        {
+          "value": 3,
+          "label": "I'm consistent with my standards"
+        }
+      ]
+    },
+    {
+      "id": "deal_039",
+      "category": "Contradictions",
+      "text": "Your biggest contradiction is:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Saying you have high standards but accepting less"
+        },
+        {
+          "value": 1,
+          "label": "Wanting consistency but tolerating inconsistency"
+        },
+        {
+          "value": 2,
+          "label": "Saying no drama but choosing drama"
+        },
+        {
+          "value": 3,
+          "label": "I don't think I contradict myself"
+        }
+      ]
+    },
+    {
+      "id": "deal_040",
+      "category": "Contradictions",
+      "text": "You contradict yourself by:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Setting boundaries then breaking them"
+        },
+        {
+          "value": 1,
+          "label": "Saying what you want then accepting opposite"
+        },
+        {
+          "value": 2,
+          "label": "Having standards then ignoring them"
+        },
+        {
+          "value": 3,
+          "label": "I try to be consistent"
+        }
+      ]
+    },
+    {
+      "id": "deal_041",
+      "category": "Contradictions",
+      "text": "You say one thing but do another about:",
+      "options": [
+        {
+          "value": 0,
+          "label": "What you'll accept"
+        },
+        {
+          "value": 1,
+          "label": "Your boundaries"
+        },
+        {
+          "value": 2,
+          "label": "Your dealbreakers"
+        },
+        {
+          "value": 3,
+          "label": "I'm pretty consistent"
+        }
+      ]
+    },
+    {
+      "id": "deal_042",
+      "category": "Contradictions",
+      "text": "Your standards contradict when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Attraction is strong"
+        },
+        {
+          "value": 1,
+          "label": "You're lonely"
+        },
+        {
+          "value": 2,
+          "label": "You're pressured"
+        },
+        {
+          "value": 3,
+          "label": "They're pretty consistent"
+        }
+      ]
+    },
+    {
+      "id": "deal_043",
+      "category": "Contradictions",
+      "text": "You contradict yourself by wanting:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Stability but choosing chaos"
+        },
+        {
+          "value": 1,
+          "label": "Respect but accepting less"
+        },
+        {
+          "value": 2,
+          "label": "Clarity but staying confused"
+        },
+        {
+          "value": 3,
+          "label": "I know what I want clearly"
+        }
+      ]
+    },
+    {
+      "id": "deal_044",
+      "category": "Contradictions",
+      "text": "You're inconsistent about:",
+      "options": [
+        {
+          "value": 0,
+          "label": "What you'll tolerate"
+        },
+        {
+          "value": 1,
+          "label": "Your boundaries"
+        },
+        {
+          "value": 2,
+          "label": "Your dealbreakers"
+        },
+        {
+          "value": 3,
+          "label": "I try to be consistent"
+        }
+      ]
+    },
+    {
+      "id": "deal_045",
+      "category": "Contradictions",
+      "text": "Your biggest contradiction is between:",
+      "options": [
+        {
+          "value": 0,
+          "label": "What you say you want and what you accept"
+        },
+        {
+          "value": 1,
+          "label": "Your standards and your actions"
+        },
+        {
+          "value": 2,
+          "label": "Your boundaries and your tolerance"
+        },
+        {
+          "value": 3,
+          "label": "I don't have contradictions"
+        }
+      ]
+    },
+    {
+      "id": "deal_046",
+      "category": "Contradictions",
+      "text": "You contradict your own values by:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Accepting behavior you wouldn't do"
+        },
+        {
+          "value": 1,
+          "label": "Staying when you'd tell others to leave"
+        },
+        {
+          "value": 2,
+          "label": "Ignoring your own advice"
+        },
+        {
+          "value": 3,
+          "label": "I live by my values consistently"
+        }
+      ]
+    },
+    {
+      "id": "deal_047",
+      "category": "Contradictions",
+      "text": "Your standards become contradictory when:",
+      "options": [
+        {
+          "value": 0,
+          "label": "You're attracted to someone"
+        },
+        {
+          "value": 1,
+          "label": "You want a relationship"
+        },
+        {
+          "value": 2,
+          "label": "You're feeling pressure"
+        },
+        {
+          "value": 3,
+          "label": "They stay pretty consistent"
+        }
+      ]
+    },
+    {
+      "id": "deal_048",
+      "category": "Contradictions",
+      "text": "You say you won't but then you do:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Accept certain behaviors"
+        },
+        {
+          "value": 1,
+          "label": "Break your own boundaries"
+        },
+        {
+          "value": 2,
+          "label": "Stay when you should leave"
+        },
+        {
+          "value": 3,
+          "label": "I stick to what I say"
+        }
+      ]
+    },
+    {
+      "id": "deal_049",
+      "category": "Contradictions",
+      "text": "Your contradictions show you:",
+      "options": [
+        {
+          "value": 0,
+          "label": "Have blind spots about your standards"
+        },
+        {
+          "value": 1,
+          "label": "Aren't clear on what you really want"
+        },
+        {
+          "value": 2,
+          "label": "Prioritize connection over standards"
+        },
+        {
+          "value": 3,
+          "label": "Are pretty clear and consistent"
+        }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "deal_arch_0",
+      "name": "The Uncompromising",
+      "description": "You have clear, firm hard lines and you stick to them. You know what you won't tolerate and you enforce your boundaries consistently. Your standards are non-negotiable.",
+      "characteristics": [
+        "Clear hard lines",
+        "Consistent enforcement",
+        "Non-negotiable standards",
+        "Willing to walk away"
+      ],
+      "suggestions": [
+        "Ensure your hard lines serve you, not limit you",
+        "Balance firmness with flexibility where appropriate",
+        "Notice if hard lines are protecting you or isolating you"
+      ]
+    },
+    {
+      "id": "deal_arch_1",
+      "name": "The Flexible Standard Bearer",
+      "description": "You have preferences and soft lines that you're willing to bend when needed. You're adaptable and willing to compromise on many things, but you know your core non-negotiables.",
+      "characteristics": [
+        "Flexible soft lines",
+        "Willing to compromise",
+        "Clear on core values",
+        "Adaptable to context"
+      ],
+      "suggestions": [
+        "Ensure flexibility doesn't mean losing yourself",
+        "Keep core values clear even when compromising",
+        "Notice if you're compromising too much"
+      ]
+    },
+    {
+      "id": "deal_arch_2",
+      "name": "The Attraction Blind",
+      "description": "When you're attracted to someone, you develop major blind spots. You overlook red flags, ignore incompatibilities, and rationalize away concerns. Your judgment gets clouded by attraction.",
+      "characteristics": [
+        "Blind spots when attracted",
+        "Overlooks red flags",
+        "Rationalizes concerns",
+        "Misses incompatibilities"
+      ],
+      "suggestions": [
+        "Get outside perspective when attracted",
+        "Write down your standards before getting involved",
+        "Notice when you're making excuses"
+      ]
+    },
+    {
+      "id": "deal_arch_3",
+      "name": "The Contradictory Standard Holder",
+      "description": "You have clear standards but you contradict yourself regularly. You say you won't tolerate certain things, then you do. You set boundaries but break them when attracted. Your words and actions don't match.",
+      "characteristics": [
+        "Contradicts own standards",
+        "Says one thing, does another",
+        "Breaks boundaries when attracted",
+        "Inconsistent enforcement"
+      ],
+      "suggestions": [
+        "Get clear on why you contradict yourself",
+        "Align your actions with your stated standards",
+        "Notice the gap between what you say and do"
+      ]
+    },
+    {
+      "id": "deal_arch_4",
+      "name": "The Balanced Boundary Setter",
+      "description": "You have clear hard lines you never compromise, soft lines you're flexible on, and awareness of your blind spots. You're consistent but not rigid, and you stay aware of when attraction clouds your judgment.",
+      "characteristics": [
+        "Clear hard and soft lines",
+        "Aware of blind spots",
+        "Consistent but flexible",
+        "Self-aware about contradictions"
+      ],
+      "suggestions": [
+        "Continue maintaining this balance",
+        "Regularly reassess your standards",
+        "Trust your balanced judgment"
+      ]
+    },
+    {
+      "id": "deal_arch_5",
+      "name": "The Boundaryless",
+      "description": "You don't have clear dealbreakers or standards. You're extremely flexible and willing to adapt to almost anything. You may struggle to know what you actually won't tolerate, leading to accepting less than you deserve.",
+      "characteristics": [
+        "No clear hard lines",
+        "Extremely flexible",
+        "Accepts almost anything",
+        "Struggles with boundaries"
+      ],
+      "suggestions": [
+        "Identify your core non-negotiables",
+        "Practice saying no to things you don't want",
+        "Notice if you're accepting less than you deserve"
+      ]
+    }
+  ]
+}

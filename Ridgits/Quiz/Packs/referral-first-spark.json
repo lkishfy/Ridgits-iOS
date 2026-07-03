@@ -1,0 +1,141 @@
+{
+  "id": "referral-first-spark",
+  "questions": [
+    {
+      "id": "rfs_001",
+      "category": "Spark",
+      "text": "On a first date, you usually know within the first hour whether there's chemistry.",
+      "options": [
+        { "value": 0, "label": "Almost always — I feel it fast" },
+        { "value": 1, "label": "Often, but I give it a full date" },
+        { "value": 2, "label": "Rarely — chemistry grows for me" },
+        { "value": 3, "label": "Almost never on date one" }
+      ]
+    },
+    {
+      "id": "rfs_002",
+      "category": "Spark",
+      "text": "What makes you lean in on a first meet?",
+      "options": [
+        { "value": 0, "label": "Playful banter and quick wit" },
+        { "value": 1, "label": "Deep conversation that goes somewhere" },
+        { "value": 2, "label": "Calm comfort — no pressure" },
+        { "value": 3, "label": "Shared curiosity about each other" }
+      ]
+    },
+    {
+      "id": "rfs_003",
+      "category": "Spark",
+      "text": "If the vibe is good but they're not your usual type, you:",
+      "options": [
+        { "value": 0, "label": "Go with the spark anyway" },
+        { "value": 1, "label": "Stay open and see where it goes" },
+        { "value": 2, "label": "Get cautious — type matters to me" },
+        { "value": 3, "label": "Usually pass unless logic checks out" }
+      ]
+    },
+    {
+      "id": "rfs_004",
+      "category": "Signal",
+      "text": "You feel most attracted when someone:",
+      "options": [
+        { "value": 0, "label": "Is confident and a little bold" },
+        { "value": 1, "label": "Is emotionally present and attentive" },
+        { "value": 2, "label": "Is low-key but consistent" },
+        { "value": 3, "label": "Surprises you with depth" }
+      ]
+    },
+    {
+      "id": "rfs_005",
+      "category": "Signal",
+      "text": "After a great first date, you typically:",
+      "options": [
+        { "value": 0, "label": "Text right away while the energy is hot" },
+        { "value": 1, "label": "Text the next day with something specific" },
+        { "value": 2, "label": "Wait to see if they reach out first" },
+        { "value": 3, "label": "Play it cool for a few days" }
+      ]
+    },
+    {
+      "id": "rfs_006",
+      "category": "Signal",
+      "text": "A 'meh' first date for you usually means:",
+      "options": [
+        { "value": 0, "label": "Move on — life is short" },
+        { "value": 1, "label": "One more try if there's a small spark" },
+        { "value": 2, "label": "Give it a third chance if they're kind" },
+        { "value": 3, "label": "I rarely write people off quickly" }
+      ]
+    },
+    {
+      "id": "rfs_007",
+      "category": "Spark",
+      "text": "Your ideal first-date energy is:",
+      "options": [
+        { "value": 0, "label": "Electric — a little unpredictable" },
+        { "value": 1, "label": "Warm — easy to be myself" },
+        { "value": 2, "label": "Low-stakes — no performance" },
+        { "value": 3, "label": "Intentional — we're both showing up" }
+      ]
+    },
+    {
+      "id": "rfs_008",
+      "category": "Signal",
+      "text": "When someone flirts with you early, you:",
+      "options": [
+        { "value": 0, "label": "Love it — match their energy" },
+        { "value": 1, "label": "Enjoy it if it feels mutual" },
+        { "value": 2, "label": "Prefer subtlety first" },
+        { "value": 3, "label": "Need friendship vibes before flirting" }
+      ]
+    },
+    {
+      "id": "rfs_009",
+      "category": "Spark",
+      "text": "You're most likely to feel a 'first spark' with someone who:",
+      "options": [
+        { "value": 0, "label": "Makes you laugh and keeps up" },
+        { "value": 1, "label": "Asks questions that actually land" },
+        { "value": 2, "label": "Feels safe without being boring" },
+        { "value": 3, "label": "Has their own world you're curious about" }
+      ]
+    },
+    {
+      "id": "rfs_010",
+      "category": "Signal",
+      "text": "If there's chemistry but awkward moments, you:",
+      "options": [
+        { "value": 0, "label": "Laugh through it — charm wins" },
+        { "value": 1, "label": "Name it lightly and keep going" },
+        { "value": 2, "label": "Pull back until it feels smoother" },
+        { "value": 3, "label": "Take it as a sign to slow down" }
+      ]
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "The Instant Spark",
+      "description": "You trust first impressions and move when chemistry hits. You bring momentum early and want reciprocity fast.",
+      "characteristics": ["Fast read on chemistry", "Bold follow-through", "High energy early", "Low tolerance for lukewarm"],
+      "suggestions": ["Leave room for slow-burn people to open up", "Check that speed isn't masking anxiety", "Name what you want by date two"]
+    },
+    {
+      "name": "The Warm Signal",
+      "description": "You feel spark through attunement — attention, humor, and emotional presence matter more than fireworks.",
+      "characteristics": ["Reads subtle signals", "Balanced pacing", "Values reciprocity", "Builds on good moments"],
+      "suggestions": ["Say when you're interested instead of hinting", "Don't confuse kindness with chemistry", "Protect your energy from mixed signals"]
+    },
+    {
+      "name": "The Slow Reveal",
+      "description": "Your spark builds over time. First dates are data-gathering; attraction deepens when trust and comfort show up.",
+      "characteristics": ["Chemistry grows gradually", "Prefers low pressure", "Observes consistency", "Cautious early investment"],
+      "suggestions": ["Tell matches you warm up slowly", "Give one great second date when unsure", "Watch for people who need instant validation"]
+    },
+    {
+      "name": "The Curious Matcher",
+      "description": "You're drawn to depth and novelty. Spark for you is intellectual and emotional — you want to feel seen, not just entertained.",
+      "characteristics": ["Depth over flash", "Values uniqueness", "Thoughtful pacing", "High standards for conversation"],
+      "suggestions": ["Balance depth with lightness on early dates", "Avoid interviewing people", "Let physical chemistry have time too"]
+    }
+  ]
+}
