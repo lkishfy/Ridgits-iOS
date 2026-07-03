@@ -162,10 +162,6 @@ struct MatchesView: View {
             } else {
                 nearbyMatchesSection
             }
-
-            if !hasExtendedNearby, viewModel.closeMatchCount > 0 {
-                closeMatchesTeaser
-            }
         }
     }
 
@@ -283,17 +279,6 @@ struct MatchesView: View {
         hasExtendedNearby ? [10, 25, 50, 100] : [25, 50, 100]
     }
 
-    private var closeMatchesTeaser: some View {
-        RidgitsCard {
-            VStack(alignment: .leading, spacing: 12) {
-                CloseMatchesCountBadge(count: viewModel.closeMatchCount)
-                RidgitsPrimaryButton(title: "See Matches") {
-                    showSubscriptionPaywall = true
-                }
-            }
-        }
-    }
-
     private var noNearbyCard: some View {
         RidgitsCard {
             VStack(alignment: .leading, spacing: 8) {
@@ -369,7 +354,7 @@ struct MatchesView: View {
                             composeMatch = nil
                         } catch let ridgitsError as RidgitsError {
                             composeMatch = nil
-                            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
+                            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
                                 showSubscriptionPaywall = true
                             } else {
                                 viewModel.errorMessage = ridgitsError.localizedDescription
@@ -446,21 +431,6 @@ private struct CompatibilityFilterPopover: View {
             )
             .tint(RidgitsColors.ctaBlack)
         }
-    }
-}
-
-private struct CloseMatchesCountBadge: View {
-    let count: Int
-
-    var body: some View {
-        Text("\(count) within 25 mi")
-            .font(RidgitsTypography.caption(11))
-            .fontWeight(.semibold)
-            .foregroundStyle(Color(hex: 0x15803D))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color(hex: 0xDCFCE7))
-            .clipShape(Capsule())
     }
 }
 

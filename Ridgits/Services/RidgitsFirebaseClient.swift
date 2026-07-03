@@ -596,6 +596,10 @@ final class RidgitsFirebaseClient {
         try await api.markConversationRead(conversationId: conversationId)
     }
 
+    func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {
+        try await api.fetchMessagingQuota()
+    }
+
     func fetchPublicProfile(uid: String) async -> RidgitsUserProfile? {
         guard let doc = try? await db.collection("publicProfiles").document(uid).getDocument(),
               doc.exists,

@@ -73,10 +73,6 @@ enum RidgitsSubscriptionCatalog {
 
     private static let coreMembershipFeatures: [RidgitsSubscriptionFeature] = [
         RidgitsSubscriptionFeature(
-            title: "Message other users",
-            detail: "Send messages and pokes to matches"
-        ),
-        RidgitsSubscriptionFeature(
             title: "Nearby matches",
             detail: "Search within 25 miles and unlock close matches"
         ),
@@ -85,6 +81,28 @@ enum RidgitsSubscriptionCatalog {
             detail: "Analyze Profile Photos, Analyze Messages, Compatibility Reports"
         ),
     ]
+
+    private static func messagingFeature(for tier: RidgitsSubscriptionTier) -> RidgitsSubscriptionFeature {
+        switch tier {
+        case .plus:
+            return RidgitsSubscriptionFeature(
+                title: "Message other users",
+                detail: "48 messages per month (resets monthly)"
+            )
+        case .premium:
+            return RidgitsSubscriptionFeature(
+                title: "Message other users",
+                detail: "128 messages per month (resets monthly)"
+            )
+        case .ultra:
+            return RidgitsSubscriptionFeature(
+                title: "Unlimited messages",
+                detail: "No monthly message cap"
+            )
+        case .free:
+            return RidgitsSubscriptionFeature(title: "Message other users")
+        }
+    }
 
     /// App Store Connect product IDs — configure in one auto-renewable subscription group (ranked for upgrades).
     static let productIds: [String: (tier: RidgitsSubscriptionTier, billing: RidgitsSubscriptionBilling)] = [
@@ -132,16 +150,16 @@ enum RidgitsSubscriptionCatalog {
         case .free:
             return []
         case .plus:
-            return coreMembershipFeatures + [
+            return [messagingFeature(for: .plus)] + coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Ridgits+ Badge", badgeTier: .plus),
             ]
         case .premium:
-            return coreMembershipFeatures + [
+            return [messagingFeature(for: .premium)] + coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Premium Badge", badgeTier: .premium),
             ]
         case .ultra:
-            return coreMembershipFeatures + [
+            return [messagingFeature(for: .ultra)] + coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Exclusive archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Special access to new features"),

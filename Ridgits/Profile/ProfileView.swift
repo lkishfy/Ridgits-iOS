@@ -259,32 +259,6 @@ struct ProfileView: View {
             }
 
             NavigationLink {
-                MakeRidgitView()
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Make Ridgit")
-                            .font(RidgitsTypography.label(14))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                        Text("Create quizzes that reveal your social info to those who pass")
-                            .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(RidgitsColors.textMuted)
-                }
-                .padding(16)
-                .background(RidgitsColors.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                        .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
-                )
-            }
-            .buttonStyle(RidgitsHapticPlainButtonStyle())
-
-            NavigationLink {
                 ProfileSettingsView()
             } label: {
                 HStack {
@@ -309,6 +283,7 @@ struct ProfileView: View {
                 )
             }
             .buttonStyle(RidgitsHapticPlainButtonStyle())
+            .padding(.bottom, 8)
         }
     }
 

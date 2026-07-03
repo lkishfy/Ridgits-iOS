@@ -13,6 +13,7 @@ final class MessagingViewModel: ObservableObject {
     @Published var timeRemaining: TimeInterval?
     /// Set when a messaging action failed because the account isn't subscribed.
     @Published var showPaywallPrompt = false
+    @Published var monthlyQuota: RidgitsMonthlyMessageQuota?
 
     private var conversationsListener: ListenerRegistration?
     private var messagesListener: ListenerRegistration?
@@ -40,6 +41,10 @@ final class MessagingViewModel: ObservableObject {
         pendingIncoming.count
     }
 
+    var canSendMonthlyMessage: Bool {
+        monthlyQuota?.canSend ?? true
+    }
+
     func startListening() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
@@ -48,6 +53,8 @@ final class MessagingViewModel: ObservableObject {
         }
 
         guard conversationsListener == nil else { return }
+
+        Task { await refreshMonthlyQuota() }
 
         conversationsListener = RidgitsFirebaseClient.shared.listenConversations(userId: uid) { [weak self] convos in
             Task { @MainActor in
@@ -66,9 +73,25 @@ final class MessagingViewModel: ObservableObject {
             )
             conversations = convos
             RidgitsConversationsCache.shared.save(convos, uid: uid)
+            await refreshMonthlyQuota()
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    func refreshMonthlyQuota() async {
+        do {
+            monthlyQuota = try await RidgitsFirebaseClient.shared.fetchMessagingQuota()
+        } catch {
+            // Non-fatal — sending is still gated server-side.
+        }
+    }
+
+    private func handleMessagingError(_ ridgitsError: RidgitsError) {
+        if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
+            showPaywallPrompt = true
+        }
+        errorMessage = ridgitsError.localizedDescription
     }
 
     func selectConversation(_ conversation: RidgitsConversation) {
@@ -99,10 +122,7 @@ final class MessagingViewModel: ObservableObject {
         do {
             try await RidgitsFirebaseClient.shared.approveConversation(conversationId: conversation.id)
         } catch let ridgitsError as RidgitsError {
-            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
-                showPaywallPrompt = true
-            }
-            errorMessage = ridgitsError.localizedDescription
+            handleMessagingError(ridgitsError)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -111,17 +131,16 @@ final class MessagingViewModel: ObservableObject {
     func sendMessage() async {
         guard let conversation = selectedConversation else { return }
         let trimmed = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, conversation.canSendMessage else { return }
+        guard !trimmed.isEmpty, conversation.canSendMessage, canSendMonthlyMessage else { return }
         isSending = true
         defer { isSending = false }
         do {
             try await RidgitsFirebaseClient.shared.sendMessage(conversationId: conversation.id, message: trimmed)
             messageText = ""
+            await refreshMonthlyQuota()
         } catch let ridgitsError as RidgitsError {
-            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
-                showPaywallPrompt = true
-            }
-            errorMessage = ridgitsError.localizedDescription
+            handleMessagingError(ridgitsError)
+            await refreshMonthlyQuota()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -228,36 +247,47 @@ struct MessagesView: View {
     }
 
     private var inboxHeader: some View {
-        HStack(alignment: .center) {
-            Text("Messages")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(RidgitsColors.textHeadline)
+        VStack(spacing: 0) {
+            HStack(alignment: .center) {
+                Text("Messages")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(RidgitsColors.textHeadline)
 
-            Spacer()
+                Spacer()
 
-            Button {
-                showRequests = true
-            } label: {
-                HStack(spacing: 6) {
-                    Text("Requests")
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(RidgitsColors.textSecondary)
+                Button {
+                    showRequests = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("Requests")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundStyle(RidgitsColors.textSecondary)
 
-                    if viewModel.incomingRequestCount > 0 {
-                        Text("\(viewModel.incomingRequestCount)")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(minWidth: 18, minHeight: 18)
-                            .background(RidgitsColors.destructive)
-                            .clipShape(Circle())
+                        if viewModel.incomingRequestCount > 0 {
+                            Text("\(viewModel.incomingRequestCount)")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(minWidth: 18, minHeight: 18)
+                                .background(RidgitsColors.destructive)
+                                .clipShape(Circle())
+                        }
                     }
                 }
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
             }
-            .buttonStyle(RidgitsHapticPlainButtonStyle())
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
+
+            if let quota = viewModel.monthlyQuota {
+                Text(quota.displayLabel)
+                    .font(RidgitsTypography.caption())
+                    .foregroundStyle(quota.canSend ? RidgitsColors.textSecondary : RidgitsColors.destructive)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 12)
         .background(Color.white)
     }
 
@@ -549,7 +579,7 @@ struct ConversationDetailView: View {
                 }
             }
 
-            if conversation.canSendMessage && (viewModel.timeRemaining ?? 1) > 0 {
+            if conversation.canSendMessage && (viewModel.timeRemaining ?? 1) > 0 && viewModel.canSendMonthlyMessage {
                 HStack(spacing: 8) {
                     TextField("Message", text: $viewModel.messageText, axis: .vertical)
                         .lineLimit(1...4)
@@ -558,6 +588,10 @@ struct ConversationDetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                     Button {
                         guard ridgitsStore.hasPlusMembership else {
+                            viewModel.showPaywallPrompt = true
+                            return
+                        }
+                        guard viewModel.canSendMonthlyMessage else {
                             viewModel.showPaywallPrompt = true
                             return
                         }
@@ -571,6 +605,11 @@ struct ConversationDetailView: View {
                 }
                 .padding(12)
                 .background(RidgitsColors.surface)
+            } else if conversation.status == .active && !viewModel.canSendMonthlyMessage {
+                Text("You've used all your messages for this month. Upgrade for more, or wait until the 1st (UTC) for your limit to reset.")
+                    .font(RidgitsTypography.body(13))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .padding()
             } else if conversation.status == .active {
                 Text("This conversation has expired or reached the 16-message limit.")
                     .font(RidgitsTypography.body(13))
@@ -587,7 +626,7 @@ struct ConversationDetailView: View {
                 .padding()
             }
         }
-        .padding(.bottom, 72)
+        .padding(.bottom, 98)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

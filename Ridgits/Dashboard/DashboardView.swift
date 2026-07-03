@@ -15,7 +15,6 @@ struct DashboardView: View {
     @State private var archetypeName = "Your Archetype"
     @State private var archetypeDescription = "Complete your quiz to unlock your Ridgits archetype."
     @State private var profileCode: String?
-    @State private var nationwideMatches: [RidgitsMatch] = []
     @State private var showAllArchetypes = false
     @State private var selectedTab = 0
     @State private var showMessageAnalysis = false
@@ -45,7 +44,7 @@ struct DashboardView: View {
         tabContent
             .environmentObject(tabBarScroll)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
+            .overlay(alignment: .bottom) {
                 RidgitsGlassTabBar(
                     selectedTab: RidgitsTab(rawValue: selectedTab) ?? .home,
                     onSelect: { tab in
@@ -64,7 +63,6 @@ struct DashboardView: View {
             tabBarScroll.reset()
         }
         .onAppear { hydrateCachedProfile() }
-        .onAppear { hydrateCachedNationwideMatches() }
         .onAppear {
             if let uid = authManager.currentUser?.uid {
                 matchesViewModel.hydrateFromCache(
@@ -191,13 +189,6 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     quickToolsSection
                     archetypesCard
-                    CommunitySection()
-                    if !ridgitsStore.hasExtendedNearbyRadius && !ridgitsStore.hasWebSubscription {
-                        membershipCard
-                    }
-                    if !nationwideMatches.isEmpty {
-                        topMatchesSection
-                    }
                 }
                 .ridgitsTabBarScrollTracking()
                 .padding(.horizontal, 16)
@@ -447,13 +438,6 @@ struct DashboardView: View {
         }
     }
 
-    private func presentNearbySubscriptionPaywall() {
-        subscriptionPaywallHighlight = nil
-        subscriptionPaywallHeadline = "Choose your plan"
-        subscriptionPaywallSubheadline = nil
-        showSubscriptionPaywall = true
-    }
-
     private func presentArchetypeSubscriptionPaywall(for pack: RidgitsArchetypePack) {
         if pack.ultraOnly {
             subscriptionPaywallHighlight = .ultra
@@ -496,66 +480,6 @@ struct DashboardView: View {
         }
     }
 
-    private var membershipCard: some View {
-        RidgitsDashboardCard {
-            VStack(alignment: .leading, spacing: 10) {
-                if matchesViewModel.closeMatchCount > 0 {
-                    Text("\(matchesViewModel.closeMatchCount) within 25 mi")
-                        .font(RidgitsTypography.caption(11))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Color(hex: 0x15803D))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(hex: 0xDCFCE7))
-                        .clipShape(Capsule())
-                }
-                RidgitsSquareButton(title: "See Matches", style: .filled) {
-                    presentNearbySubscriptionPaywall()
-                }
-            }
-            .padding(16)
-        }
-    }
-
-    private var topMatchesSection: some View {
-        RidgitsDashboardCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Top matches")
-                    .font(RidgitsTypography.label(15))
-                    .foregroundStyle(RidgitsColors.textHeadline)
-                Text("Nationwide compatibility preview")
-                    .font(RidgitsTypography.caption(12))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-
-                ForEach(nationwideMatches.prefix(5)) { match in
-                    HStack(spacing: 10) {
-                        RidgitsCachedProfileImage(remoteURL: match.image.isEmpty ? nil : match.image) {
-                            Circle()
-                                .fill(RidgitsColors.hoverSurface)
-                                .overlay {
-                                    Text(match.name.prefix(1).uppercased())
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(RidgitsColors.textMuted)
-                                }
-                        }
-                        .frame(width: 40, height: 40)
-                        .clipShape(Circle())
-
-                        Text(match.name)
-                            .font(RidgitsTypography.label(14))
-                        RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 14)
-                        Spacer()
-                        RidgitsCompatibilityBadge(percent: match.compatibility.overall)
-                    }
-                    if match.id != nationwideMatches.prefix(5).last?.id {
-                        Divider()
-                    }
-                }
-            }
-            .padding(16)
-        }
-    }
-
     @MainActor
     private func handleModifyQuizDismissed() async {
         showModifyQuiz = false
@@ -570,7 +494,7 @@ struct DashboardView: View {
         await ridgitsStore.refreshAccessInBackground()
         guard let uid = authManager.currentUser?.uid else { return }
 
-        let didSyncQuiz = (try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)) ?? false
+        _ = try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
 
         if let archetype = await RidgitsFirebaseClient.shared.fetchQuizArchetype(uid: uid) {
             archetypeName = archetype.name
@@ -581,25 +505,6 @@ struct DashboardView: View {
 
         profileCode = await RidgitsFirebaseClient.shared.fetchProfileCode(uid: uid)
         packProfile = await RidgitsFirebaseClient.shared.fetchPackProfile(uid: uid)
-
-        do {
-            if nationwideMatches.isEmpty,
-               let uid = authManager.currentUser?.uid,
-               let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 5) {
-                nationwideMatches = cached
-            }
-            let fetched = try await RidgitsFirebaseClient.shared.getTopNationwideMatches(
-                limit: 5,
-                forceRefresh: didSyncQuiz
-            )
-            if fetched.contains(where: { $0.compatibility.overall > 0 }) || nationwideMatches.isEmpty {
-                nationwideMatches = fetched
-            }
-        } catch {
-            if nationwideMatches.isEmpty {
-                nationwideMatches = []
-            }
-        }
 
         refreshNearbyPresence()
     }
@@ -619,13 +524,6 @@ struct DashboardView: View {
             displayName: displayName,
             profileCode: profileCode
         )
-    }
-
-    private func hydrateCachedNationwideMatches() {
-        guard let uid = authManager.currentUser?.uid, nationwideMatches.isEmpty else { return }
-        if let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 5) {
-            nationwideMatches = cached
-        }
     }
 
     private func hydrateCachedProfile() {

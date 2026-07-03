@@ -269,6 +269,51 @@ struct RidgitsMessage: Identifiable, Equatable {
     let createdAt: Date
 }
 
+struct RidgitsMonthlyMessageQuota: Equatable {
+    let periodKey: String
+    let sentCount: Int
+    let limit: Int?
+    let remaining: Int?
+    let unlimited: Bool
+    let resetsAt: Date?
+    let tier: String
+
+    var canSend: Bool {
+        unlimited || (remaining ?? 0) > 0
+    }
+
+    var displayLabel: String {
+        if unlimited { return "Unlimited messages this month" }
+        let left = remaining ?? 0
+        let cap = limit ?? 0
+        return "\(left) of \(cap) messages left this month"
+    }
+
+    static func fromDictionary(_ data: [String: Any]) -> RidgitsMonthlyMessageQuota? {
+        guard let periodKey = data["periodKey"] as? String else { return nil }
+        let sentCount = data["sentCount"] as? Int ?? 0
+        let limit = data["limit"] as? Int
+        let remaining = data["remaining"] as? Int
+        let unlimited = data["unlimited"] as? Bool ?? (limit == nil)
+        let tier = data["tier"] as? String ?? "free"
+        let resetsAt: Date?
+        if let iso = data["resetsAt"] as? String {
+            resetsAt = ISO8601DateFormatter().date(from: iso)
+        } else {
+            resetsAt = nil
+        }
+        return RidgitsMonthlyMessageQuota(
+            periodKey: periodKey,
+            sentCount: sentCount,
+            limit: limit,
+            remaining: remaining,
+            unlimited: unlimited,
+            resetsAt: resetsAt,
+            tier: tier
+        )
+    }
+}
+
 struct QuizOption: Identifiable, Equatable, Hashable {
     let value: Int
     let label: String

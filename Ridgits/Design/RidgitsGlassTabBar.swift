@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 enum RidgitsTab: Int, CaseIterable, Identifiable {
     case home = 0
@@ -86,9 +85,8 @@ extension View {
     }
 
     func ridgitsFloatingTabBarPadding() -> some View {
-        // Tab bar space is reserved via `safeAreaInset` on `DashboardView`.
-        // Keep a little trailing breathing room at the end of scroll content.
-        padding(.bottom, 12)
+        // Clearance for the floating glass tab bar (bar + bottom margin + tap target).
+        padding(.bottom, 98)
     }
 }
 
@@ -114,13 +112,13 @@ struct RidgitsGlassTabBar: View {
 
     @Namespace private var selectionNamespace
 
-    private var barHeight: CGFloat { 56 - (6 * compactProgress) }
-    private var tabRowHeight: CGFloat { barHeight - 8 }
+    private var barHeight: CGFloat { 62 - (6 * compactProgress) }
+    private var tabRowHeight: CGFloat { barHeight - 10 }
     private var horizontalInset: CGFloat { 18 + (14 * compactProgress) }
     private var iconSize: CGFloat { 18 - (1.5 * compactProgress) }
     private var profileSize: CGFloat { 20 - (1.25 * compactProgress) }
-    private var selectionWidth: CGFloat { 52 - (3 * compactProgress) }
-    private var selectionHeight: CGFloat { min(28, tabRowHeight - 4) - (2 * compactProgress) }
+    private var selectionWidth: CGFloat { 54 - (3 * compactProgress) }
+    private var selectionHeight: CGFloat { min(34, tabRowHeight - 2) - (2 * compactProgress) }
     private var barScale: CGFloat { 1 - (0.04 * compactProgress) }
 
     var body: some View {
@@ -130,16 +128,13 @@ struct RidgitsGlassTabBar: View {
             }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.vertical, 5)
         .frame(height: barHeight)
-        .background { glassBackground.clipShape(Capsule(style: .continuous)) }
+        .background { glassBackground }
         .overlay {
             Capsule(style: .continuous)
                 .strokeBorder(glassBorderGradient, lineWidth: 0.75)
         }
-        .compositingGroup()
-        .shadow(color: Color.black.opacity(0.14), radius: 18, y: 10)
-        .shadow(color: Color.black.opacity(0.06), radius: 2, y: 1)
         .scaleEffect(barScale, anchor: .bottom)
         .padding(.horizontal, horizontalInset)
         .animation(Self.compactAnimation, value: compactProgress)
@@ -159,12 +154,22 @@ struct RidgitsGlassTabBar: View {
     }
 
     private var glassBackground: some View {
-        ZStack {
-            RidgitsVisualEffectBlur(style: .systemChromeMaterialLight)
-            // Very light tint so content behind still reads through the blur.
-            Capsule(style: .continuous)
-                .fill(Color.white.opacity(0.08))
-        }
+        Capsule(style: .continuous)
+            .fill(.ultraThinMaterial)
+            .overlay {
+                Capsule(style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.28),
+                                Color.white.opacity(0.06),
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .blendMode(.plusLighter)
+            }
     }
 
     @ViewBuilder
@@ -195,16 +200,9 @@ struct RidgitsGlassTabBar: View {
     }
 
     private var selectionCapsule: some View {
-        ZStack {
-            RidgitsVisualEffectBlur(style: .systemThinMaterialLight)
-            Capsule(style: .continuous)
-                .fill(Color.white.opacity(0.12))
-            Capsule(style: .continuous)
-                .strokeBorder(Color.white.opacity(0.45), lineWidth: 0.5)
-        }
-        .frame(width: selectionWidth, height: selectionHeight)
-        .clipShape(Capsule(style: .continuous))
-        .shadow(color: Color.black.opacity(0.08), radius: 3, y: 1)
+        Capsule(style: .continuous)
+            .fill(RidgitsColors.hoverSurface)
+            .frame(width: selectionWidth, height: selectionHeight)
     }
 
     private func badgeCount(for tab: RidgitsTab) -> Int {
@@ -246,20 +244,6 @@ struct RidgitsGlassTabBar: View {
             .contentTransition(.symbolEffect(.replace))
             .symbolEffect(.bounce, value: isSelected)
             .animation(Self.tabSwitchAnimation, value: isSelected)
-    }
-}
-
-private struct RidgitsVisualEffectBlur: UIViewRepresentable {
-    var style: UIBlurEffect.Style
-
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
-        view.backgroundColor = .clear
-        return view
-    }
-
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        uiView.effect = UIBlurEffect(style: style)
     }
 }
 

@@ -140,6 +140,15 @@ final class RidgitsAPIClient {
         )
     }
 
+    func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {
+        let data = try await authorizedRequest(path: "/api/messaging/quota", method: "GET", body: nil)
+        let quota = data["quota"] as? [String: Any] ?? [:]
+        guard let parsed = RidgitsMonthlyMessageQuota.fromDictionary(quota) else {
+            throw RidgitsError.decoding
+        }
+        return parsed
+    }
+
     func registerDevice(deviceId: String, fcmToken: String, appVersion: String?, deviceModel: String?) async throws {
         var body: [String: Any] = [
             "deviceId": deviceId,
