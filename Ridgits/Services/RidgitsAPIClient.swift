@@ -91,11 +91,15 @@ final class RidgitsAPIClient {
         )
     }
 
-    func getTopNationwideMatches(limit: Int = 10) async throws -> [RidgitsMatch] {
+    func getTopNationwideMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
+        var body: [String: Any] = ["limit": limit]
+        if forceRefresh {
+            body["forceRefresh"] = true
+        }
         let data = try await authorizedRequest(
             path: "/api/matches/nationwide",
             method: "POST",
-            body: ["limit": limit]
+            body: body
         )
         return parseMatches(data["matches"])
     }

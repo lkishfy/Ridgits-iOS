@@ -141,13 +141,13 @@ struct CompareProfilesView: View {
             }
 
             guard let myProgress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid),
-                  myProgress.completed else {
+                  myProgress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: myProgress.answers) else {
                 errorMessage = "Complete your quiz first."
                 return
             }
 
             guard let otherProgress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: otherUserId),
-                  otherProgress.completed else {
+                  otherProgress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: otherProgress.answers) else {
                 errorMessage = "This user has not completed their quiz yet."
                 return
             }

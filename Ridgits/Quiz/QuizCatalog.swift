@@ -78,6 +78,28 @@ enum QuizCatalog {
         }.count
     }
 
+    /// Maps legacy numeric / `legacy_*` Firestore keys to canonical question IDs.
+    static func normalizedQuestionId(forStorageKey key: String) -> String {
+        if key.hasPrefix("legacy_") {
+            let index = Int(key.dropFirst("legacy_".count)) ?? -1
+            if index >= 0, index < questions.count {
+                return questions[index].id
+            }
+            return key
+        }
+        if let first = key.first, first.isLetter {
+            return key
+        }
+        if let index = Int(key), index >= 0, index < questions.count {
+            return questions[index].id
+        }
+        return key
+    }
+
+    static func hasEnoughPersonalityAnswers(in answers: [String: QuizAnswerRecord]) -> Bool {
+        personalityAnsweredCount(in: answers) >= onboardingSkipThreshold
+    }
+
     static var personalityQuestionCount: Int {
         questions.filter { $0.category != "Demographics" }.count
     }

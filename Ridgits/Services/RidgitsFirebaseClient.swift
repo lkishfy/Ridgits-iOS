@@ -61,7 +61,53 @@ final class RidgitsFirebaseClient {
 
     func isQuizCompleted(uid: String) async throws -> Bool {
         let doc = try await db.collection("quizProgress").document(uid).getDocument()
-        return doc.data()?["completed"] as? Bool ?? false
+        guard let data = doc.data() else { return false }
+        if data["completed"] as? Bool == true { return true }
+        if let progress = try await fetchQuizProgress(uid: uid) {
+            return QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
+        }
+        return false
+    }
+
+    /// Marks quiz + onboarding complete on Firestore when the user has enough valid answers.
+    /// Migrates legacy index keys to question IDs and clears stale match caches.
+    @discardableResult
+    func ensureQuizCompletionRecorded(uid: String) async throws -> Bool {
+        guard let progress = try await fetchQuizProgress(uid: uid) else { return false }
+        let eligible = progress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
+        guard eligible else { return false }
+
+        let doc = try await db.collection("quizProgress").document(uid).getDocument()
+        let rawAnswers = doc.data()?["answers"] as? [String: Any] ?? [:]
+        let keysNeedMigration = rawAnswers.keys.contains {
+            QuizCatalog.normalizedQuestionId(forStorageKey: $0) != $0
+        }
+        let needsCompletionFlag = !(doc.data()?["completed"] as? Bool ?? false)
+
+        if needsCompletionFlag || keysNeedMigration {
+            let archetype = QuizArchetypeCalculator.calculate(
+                answers: progress.answers,
+                questions: QuizCatalog.questions
+            )
+            try await saveQuizProgress(
+                uid: uid,
+                answers: progress.answers,
+                currentQuestion: progress.currentQuestion,
+                freePassesRemaining: progress.freePassesRemaining,
+                completed: true,
+                archetype: archetype
+            )
+        }
+
+        try await db.collection("users").document(uid).setData(
+            [
+                "onboardingCompleted": true,
+                "quizCompletedAt": FieldValue.serverTimestamp(),
+            ],
+            merge: true
+        )
+        RidgitsMatchesCache.shared.clearNationwide(uid: uid)
+        return true
     }
 
     func fetchQuizProgress(uid: String) async throws -> LoadedQuizProgress? {
@@ -74,11 +120,20 @@ final class RidgitsFirebaseClient {
         let dealbreakers = data["dealbreakers"] as? [String: Bool] ?? [:]
 
         var answers: [String: QuizAnswerRecord] = [:]
-        for (questionId, rawValue) in flatAnswers {
-            var record = QuizAnswerRecord(
-                preferredAnswers: parseIntArray(preferredAnswers[questionId]) ?? [],
-                importance: parseInt(importanceMap[questionId]) ?? QuizImportance.somewhat.rawValue,
-                dealbreaker: dealbreakers[questionId] == true
+        let sortedKeys = flatAnswers.keys.sorted { lhs, rhs in
+            let lhsIsId = lhs.first?.isLetter == true
+            let rhsIsId = rhs.first?.isLetter == true
+            if lhsIsId != rhsIsId { return !lhsIsId && rhsIsId }
+            return lhs < rhs
+        }
+
+        for rawKey in sortedKeys {
+            guard let rawValue = flatAnswers[rawKey] else { continue }
+            let questionId = QuizCatalog.normalizedQuestionId(forStorageKey: rawKey)
+            var record = answers[questionId] ?? QuizAnswerRecord(
+                preferredAnswers: parseIntArray(preferredAnswers[questionId] ?? preferredAnswers[rawKey]) ?? [],
+                importance: parseInt(importanceMap[questionId] ?? importanceMap[rawKey]) ?? QuizImportance.somewhat.rawValue,
+                dealbreaker: dealbreakers[questionId] == true || dealbreakers[rawKey] == true
             )
             if let array = parseIntArray(rawValue) {
                 record.answers = array
@@ -89,16 +144,25 @@ final class RidgitsFirebaseClient {
                     record.preferredAnswers = [single]
                 }
             }
+            if record.preferredAnswers.isEmpty,
+               let preferred = parseIntArray(preferredAnswers[questionId] ?? preferredAnswers[rawKey]) {
+                record.preferredAnswers = preferred
+            }
+            if let importance = parseInt(importanceMap[questionId] ?? importanceMap[rawKey]) {
+                record.importance = importance
+            }
             answers[questionId] = record
         }
 
         let currentQuestion = parseInt(data["currentQuestion"]) ?? parseInt(data["currentIndex"]) ?? 0
         let freePasses = parseInt(data["freePassesRemaining"]) ?? deriveFreePassesRemaining(from: flatAnswers)
+        let serverCompleted = data["completed"] as? Bool ?? false
+        let derivedCompleted = serverCompleted || QuizCatalog.hasEnoughPersonalityAnswers(in: answers)
 
         return LoadedQuizProgress(
             answers: answers,
             currentQuestion: currentQuestion,
-            completed: data["completed"] as? Bool ?? false,
+            completed: derivedCompleted,
             freePassesRemaining: freePasses
         )
     }
@@ -502,8 +566,17 @@ final class RidgitsFirebaseClient {
             return cached
         }
 
-        let matches = try await api.getTopNationwideMatches(limit: limit)
+        let matches = try await api.getTopNationwideMatches(limit: limit, forceRefresh: shouldRefresh)
         RidgitsMatchesCache.shared.saveNationwide(matches, uid: uid, limit: limit)
+
+        let apiLooksBroken = !matches.isEmpty
+            && matches.allSatisfy({ $0.compatibility.overall == 0 && $0.compatibility.communication == 0 })
+        if apiLooksBroken && !forceRefresh {
+            let refreshed = try await api.getTopNationwideMatches(limit: limit, forceRefresh: true)
+            RidgitsMatchesCache.shared.saveNationwide(refreshed, uid: uid, limit: limit)
+            return refreshed
+        }
+
         return matches
     }
 

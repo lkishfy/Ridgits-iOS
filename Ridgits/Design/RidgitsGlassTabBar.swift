@@ -86,7 +86,9 @@ extension View {
     }
 
     func ridgitsFloatingTabBarPadding() -> some View {
-        padding(.bottom, 88)
+        // Tab bar space is reserved via `safeAreaInset` on `DashboardView`.
+        // Keep a little trailing breathing room at the end of scroll content.
+        padding(.bottom, 12)
     }
 }
 
@@ -112,12 +114,13 @@ struct RidgitsGlassTabBar: View {
 
     @Namespace private var selectionNamespace
 
-    private var barHeight: CGFloat { 54 - (6 * compactProgress) }
+    private var barHeight: CGFloat { 56 - (6 * compactProgress) }
+    private var tabRowHeight: CGFloat { barHeight - 8 }
     private var horizontalInset: CGFloat { 18 + (14 * compactProgress) }
     private var iconSize: CGFloat { 18 - (1.5 * compactProgress) }
     private var profileSize: CGFloat { 20 - (1.25 * compactProgress) }
     private var selectionWidth: CGFloat { 52 - (3 * compactProgress) }
-    private var selectionHeight: CGFloat { 34 - (2 * compactProgress) }
+    private var selectionHeight: CGFloat { min(28, tabRowHeight - 4) - (2 * compactProgress) }
     private var barScale: CGFloat { 1 - (0.04 * compactProgress) }
 
     var body: some View {
@@ -127,13 +130,14 @@ struct RidgitsGlassTabBar: View {
             }
         }
         .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .frame(height: barHeight)
-        .background { glassBackground }
-        .clipShape(Capsule(style: .continuous))
+        .background { glassBackground.clipShape(Capsule(style: .continuous)) }
         .overlay {
             Capsule(style: .continuous)
                 .strokeBorder(glassBorderGradient, lineWidth: 0.75)
         }
+        .compositingGroup()
         .shadow(color: Color.black.opacity(0.14), radius: 18, y: 10)
         .shadow(color: Color.black.opacity(0.06), radius: 2, y: 1)
         .scaleEffect(barScale, anchor: .bottom)
@@ -184,7 +188,7 @@ struct RidgitsGlassTabBar: View {
                     .ridgitsTabBadge(badgeCount(for: tab))
             }
             .frame(maxWidth: .infinity)
-            .frame(height: barHeight)
+            .frame(height: tabRowHeight)
             .contentShape(Rectangle())
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
@@ -199,6 +203,7 @@ struct RidgitsGlassTabBar: View {
                 .strokeBorder(Color.white.opacity(0.45), lineWidth: 0.5)
         }
         .frame(width: selectionWidth, height: selectionHeight)
+        .clipShape(Capsule(style: .continuous))
         .shadow(color: Color.black.opacity(0.08), radius: 3, y: 1)
     }
 

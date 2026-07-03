@@ -303,7 +303,10 @@ final class QuizViewModel: ObservableObject {
     func persistProgress(completed: Bool, uid: String? = nil) async throws {
         let userId = uid ?? Auth.auth().currentUser?.uid
         guard let userId else { return }
-        let archetype = completed
+
+        let markCompleted = resolvedCompletedFlag(requested: completed)
+        // Only recalculate archetype when explicitly finishing — not on modify autosaves.
+        let archetype = completed && markCompleted
             ? QuizArchetypeCalculator.calculate(answers: answers, questions: questions)
             : nil
         try await RidgitsFirebaseClient.shared.saveQuizProgress(
@@ -311,9 +314,22 @@ final class QuizViewModel: ObservableObject {
             answers: answers,
             currentQuestion: poolPosition,
             freePassesRemaining: freePassesRemaining,
-            completed: completed,
+            completed: markCompleted,
             archetype: archetype
         )
+    }
+
+    /// Saves in-progress edits when leaving modify mode without clearing quiz completion.
+    func persistDraftOnExit() async {
+        try? await persistProgress(completed: false)
+    }
+
+    private func resolvedCompletedFlag(requested completed: Bool) -> Bool {
+        if completed { return true }
+        if mode == .modify && QuizCatalog.hasEnoughPersonalityAnswers(in: answers) {
+            return true
+        }
+        return false
     }
 
     private func syncFreePasses() {

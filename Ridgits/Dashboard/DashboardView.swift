@@ -42,25 +42,24 @@ struct DashboardView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            tabContent
-                .environmentObject(tabBarScroll)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            RidgitsGlassTabBar(
-                selectedTab: RidgitsTab(rawValue: selectedTab) ?? .home,
-                onSelect: { tab in
-                    selectedTab = tab.rawValue
-                    tabBarScroll.reset()
-                },
-                compactProgress: tabBarScroll.compactProgress,
-                profileImageURL: profile?.image,
-                matchesBadge: pokeInbox.unseenCount,
-                messagesBadge: unreadCount
-            )
-            .padding(.bottom, 6)
-        }
-        .background(RidgitsColors.feedBackground)
+        tabContent
+            .environmentObject(tabBarScroll)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                RidgitsGlassTabBar(
+                    selectedTab: RidgitsTab(rawValue: selectedTab) ?? .home,
+                    onSelect: { tab in
+                        selectedTab = tab.rawValue
+                        tabBarScroll.reset()
+                    },
+                    compactProgress: tabBarScroll.compactProgress,
+                    profileImageURL: profile?.image,
+                    matchesBadge: pokeInbox.unseenCount,
+                    messagesBadge: unreadCount
+                )
+                .padding(.bottom, 6)
+            }
+            .background(RidgitsColors.feedBackground)
         .onChange(of: selectedTab) { _, _ in
             tabBarScroll.reset()
         }
@@ -245,7 +244,9 @@ struct DashboardView: View {
             } message: {
                 Text("Finish your personality quiz to view full results and compare profiles.")
             }
-            .sheet(isPresented: $showModifyQuiz) {
+            .sheet(isPresented: $showModifyQuiz, onDismiss: {
+                Task { await handleModifyQuizDismissed() }
+            }) {
                 QuizView(mode: .modify) {
                     Task { await loadDashboardData() }
                 } onDismiss: {
@@ -479,7 +480,7 @@ struct DashboardView: View {
         guard let uid = authManager.currentUser?.uid else { return }
         do {
             guard let progress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid),
-                  progress.completed else {
+                  progress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers) else {
                 quizIncompleteAlert = true
                 return
             }
@@ -544,16 +545,7 @@ struct DashboardView: View {
                             .font(RidgitsTypography.label(14))
                         RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 14)
                         Spacer()
-                        Text("\(match.compatibility.overall)%")
-                            .font(RidgitsTypography.label(13))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(RidgitsColors.contextBar)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: RidgitsRadius.sm)
-                                    .stroke(RidgitsColors.border, lineWidth: 1)
-                            )
+                        RidgitsCompatibilityBadge(percent: match.compatibility.overall)
                     }
                     if match.id != nationwideMatches.prefix(5).last?.id {
                         Divider()
@@ -565,10 +557,20 @@ struct DashboardView: View {
     }
 
     @MainActor
+    private func handleModifyQuizDismissed() async {
+        showModifyQuiz = false
+        guard let uid = authManager.currentUser?.uid else { return }
+        _ = try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
+        await loadDashboardData()
+    }
+
+    @MainActor
     private func loadDashboardData() async {
         await loadProfile()
         await ridgitsStore.refreshAccessInBackground()
         guard let uid = authManager.currentUser?.uid else { return }
+
+        let didSyncQuiz = (try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)) ?? false
 
         if let archetype = await RidgitsFirebaseClient.shared.fetchQuizArchetype(uid: uid) {
             archetypeName = archetype.name
@@ -586,7 +588,13 @@ struct DashboardView: View {
                let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 5) {
                 nationwideMatches = cached
             }
-            nationwideMatches = try await RidgitsFirebaseClient.shared.getTopNationwideMatches(limit: 5)
+            let fetched = try await RidgitsFirebaseClient.shared.getTopNationwideMatches(
+                limit: 5,
+                forceRefresh: didSyncQuiz
+            )
+            if fetched.contains(where: { $0.compatibility.overall > 0 }) || nationwideMatches.isEmpty {
+                nationwideMatches = fetched
+            }
         } catch {
             if nationwideMatches.isEmpty {
                 nationwideMatches = []

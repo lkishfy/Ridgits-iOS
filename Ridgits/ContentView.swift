@@ -111,8 +111,14 @@ struct ContentView: View {
         let quizDoneFromServer = (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) ?? false
         let quizDoneFromProgress = progress?.completed == true
 
-        if answeredEnough && !quizDoneFromServer && !quizDoneFromProgress {
-            try? await authManager.markQuizCompleted()
+        if answeredEnough && !quizDoneFromServer {
+            if (try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)) == true {
+                authManager.onboardingCompleted = true
+            }
+        } else if quizDoneFromProgress && !quizDoneFromServer {
+            if (try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)) == true {
+                authManager.onboardingCompleted = true
+            }
         }
 
         quizCompleted = authManager.onboardingCompleted

@@ -54,6 +54,23 @@ enum RidgitsHaptics {
     }
 }
 
+struct RidgitsCircularIconButtonStyle: ButtonStyle {
+    var feedback: RidgitsHaptics.Feedback = .light
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                Circle()
+                    .fill(configuration.isPressed ? RidgitsColors.hoverSurface : Color.clear)
+            )
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed {
+                    RidgitsHaptics.play(feedback)
+                }
+            }
+    }
+}
+
 struct RidgitsHapticPlainButtonStyle: ButtonStyle {
     var feedback: RidgitsHaptics.Feedback = .light
 

@@ -40,6 +40,10 @@ struct QuizView: View {
             }
         }
         .task { await viewModel.bootstrap() }
+        .onDisappear {
+            guard mode == .modify else { return }
+            Task { await viewModel.persistDraftOnExit() }
+        }
         .onChange(of: viewModel.currentQuestionIndex) { _, _ in
             preferencePanelExpanded = false
             syncPreferenceStateFromRecord()
@@ -49,7 +53,9 @@ struct QuizView: View {
                 RidgitsHaptics.play(.success)
                 Task {
                     if mode == .onboarding {
-                        try? await authManager.markQuizCompleted()
+                        if let uid = authManager.currentUser?.uid {
+                            try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
+                        }
                         await referralStore.qualifyReferralIfNeeded()
                     }
                     onCompleted?()
@@ -68,8 +74,13 @@ struct QuizView: View {
     private var toolbarContent: some ToolbarContent {
         if mode == .modify {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Close") { onDismiss?() }
-                    .font(RidgitsTypography.label(12))
+                Button("Close") {
+                    Task {
+                        await viewModel.persistDraftOnExit()
+                        onDismiss?()
+                    }
+                }
+                .font(RidgitsTypography.label(12))
             }
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 2) {
@@ -642,11 +653,11 @@ struct QuizView: View {
             Image(systemName: systemName)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(isEnabled ? RidgitsColors.textSecondary : RidgitsColors.textMuted.opacity(0.35))
-                .frame(width: 28, height: 28)
-                .contentShape(Rectangle())
+                .frame(width: 32, height: 32)
+                .contentShape(Circle())
         }
         .disabled(!isEnabled)
-        .buttonStyle(RidgitsHapticPlainButtonStyle())
+        .buttonStyle(RidgitsCircularIconButtonStyle())
         .accessibilityLabel(accessibilityLabel)
     }
 

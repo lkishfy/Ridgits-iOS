@@ -175,25 +175,33 @@ struct RidgitsCompatibility: Equatable, Codable, Hashable {
     }
 
     static func fromDictionary(_ dict: [String: Any]) -> RidgitsCompatibility {
-        let compat = dict["compatibility"] as? [String: Any] ?? [:]
-        let nestedOverall = parsedInt(compat["overall"])
-        let topOverall = parsedInt(dict["overall"], fallback: parsedInt(dict["compatibilityScore"]))
-        let resolvedOverall: Int
-        if nestedOverall > 0 {
-            resolvedOverall = nestedOverall
-        } else if topOverall > 0 {
-            resolvedOverall = topOverall
-        } else {
-            resolvedOverall = 0
+        if let compatDict = dict["compatibility"] as? [String: Any] {
+            let nestedOverall = parsedInt(compatDict["overall"])
+            let topOverall = parsedInt(dict["overall"], fallback: parsedInt(dict["compatibilityScore"]))
+            let resolvedOverall = nestedOverall > 0 ? nestedOverall : (topOverall > 0 ? topOverall : 0)
+
+            return RidgitsCompatibility(
+                overall: resolvedOverall,
+                communication: parsedInt(compatDict["communication"], fallback: parsedInt(dict["communication"])),
+                intimacy: parsedInt(compatDict["intimacy"], fallback: parsedInt(dict["intimacy"])),
+                values: parsedInt(compatDict["values"], fallback: parsedInt(dict["values"])),
+                social: parsedInt(compatDict["social"], fallback: parsedInt(dict["social"])),
+                commitment: parsedInt(compatDict["commitment"], fallback: parsedInt(dict["commitment"]))
+            )
+        }
+
+        var legacyOverall = parsedInt(dict["compatibility"])
+        if legacyOverall == 0 {
+            legacyOverall = parsedInt(dict["overall"], fallback: parsedInt(dict["compatibilityScore"]))
         }
 
         return RidgitsCompatibility(
-            overall: resolvedOverall,
-            communication: parsedInt(compat["communication"], fallback: parsedInt(dict["communication"])),
-            intimacy: parsedInt(compat["intimacy"], fallback: parsedInt(dict["intimacy"])),
-            values: parsedInt(compat["values"], fallback: parsedInt(dict["values"])),
-            social: parsedInt(compat["social"], fallback: parsedInt(dict["social"])),
-            commitment: parsedInt(compat["commitment"], fallback: parsedInt(dict["commitment"]))
+            overall: legacyOverall,
+            communication: parsedInt(dict["communication"]),
+            intimacy: parsedInt(dict["intimacy"]),
+            values: parsedInt(dict["values"]),
+            social: parsedInt(dict["social"]),
+            commitment: parsedInt(dict["commitment"])
         )
     }
 
