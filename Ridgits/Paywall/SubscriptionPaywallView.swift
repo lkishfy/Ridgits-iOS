@@ -83,9 +83,11 @@ struct SubscriptionPaywallView: View {
             Text(headline ?? "Choose your plan")
                 .font(RidgitsTypography.headline(24))
                 .foregroundStyle(RidgitsColors.textHeadline)
-            Text(subheadline ?? "Upgrade anytime.")
-                .font(RidgitsTypography.body(14))
-                .foregroundStyle(RidgitsColors.textSecondary)
+            if let subheadline, !subheadline.isEmpty {
+                Text(subheadline)
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+            }
         }
     }
 

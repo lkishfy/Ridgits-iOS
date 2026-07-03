@@ -127,6 +127,15 @@ final class RidgitsMatchesCache {
         try? fileManager.removeItem(at: cacheDirectory.appendingPathComponent(poolFilename(uid: uid)))
     }
 
+    func clearNationwide(uid: String) {
+        guard let files = try? fileManager.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil) else {
+            return
+        }
+        for file in files where file.lastPathComponent.hasPrefix("\(uid)_nationwide_") {
+            try? fileManager.removeItem(at: file)
+        }
+    }
+
     // MARK: - Private
 
     private var cacheDirectory: URL {

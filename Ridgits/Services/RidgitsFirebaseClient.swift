@@ -163,6 +163,7 @@ final class RidgitsFirebaseClient {
         }
 
         try await db.collection("quizProgress").document(uid).setData(payload, merge: true)
+        RidgitsMatchesCache.shared.clearNationwide(uid: uid)
     }
 
     private func parseInt(_ value: Any?) -> Int? {
@@ -490,9 +491,14 @@ final class RidgitsFirebaseClient {
     func getTopNationwideMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
         guard let uid = Auth.auth().currentUser?.uid else { return [] }
 
-        if !forceRefresh,
-           let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: limit),
-           !RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: limit) {
+        let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: limit)
+        let cachedLooksBroken = cached?.isEmpty == false
+            && cached?.allSatisfy { $0.compatibility.overall == 0 && $0.compatibility.communication == 0 } == true
+        let shouldRefresh = forceRefresh
+            || cachedLooksBroken
+            || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: limit)
+
+        if !shouldRefresh, let cached {
             return cached
         }
 

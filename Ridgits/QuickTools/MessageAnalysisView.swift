@@ -42,12 +42,7 @@ struct MessageAnalysisView: View {
                 }
             }
             .sheet(isPresented: $showPaywall) {
-                SubscriptionPaywallView(
-                    preferredBilling: .yearly,
-                    highlightTier: .plus,
-                    headline: "Get Ridgits+",
-                    subheadline: "Message analysis requires Ridgits+ — \(ridgitsStore.plusYearlyPriceLine)/year."
-                )
+                SubscriptionPaywallView(preferredBilling: .yearly)
             }
             .onChange(of: selectedItems) { _, items in
                 Task {

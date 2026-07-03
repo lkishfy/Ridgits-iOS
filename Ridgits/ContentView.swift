@@ -105,8 +105,20 @@ struct ContentView: View {
 
         await referralStore.loadReferral()
 
-        let quizDone = (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) ?? false
-        quizCompleted = authManager.onboardingCompleted || quizDone
+        let progress = try? await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid)
+        let answeredCount = progress.map { QuizCatalog.personalityAnsweredCount(in: $0.answers) } ?? 0
+        let answeredEnough = answeredCount >= QuizCatalog.onboardingSkipThreshold
+        let quizDoneFromServer = (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) ?? false
+        let quizDoneFromProgress = progress?.completed == true
+
+        if answeredEnough && !quizDoneFromServer && !quizDoneFromProgress {
+            try? await authManager.markQuizCompleted()
+        }
+
+        quizCompleted = authManager.onboardingCompleted
+            || quizDoneFromServer
+            || quizDoneFromProgress
+            || answeredEnough
         let profile = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)
         profileComplete = profile?.isCompleteForMatching ?? false
         needsBirthYear = await authManager.needsBirthYear()

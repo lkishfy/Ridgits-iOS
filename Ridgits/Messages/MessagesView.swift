@@ -210,12 +210,7 @@ struct MessagesView: View {
             MessageRequestsView(viewModel: viewModel)
         }
         .sheet(isPresented: $showSubscriptionPaywall) {
-            SubscriptionPaywallView(
-                preferredBilling: .yearly,
-                highlightTier: .plus,
-                headline: "Get Ridgits+",
-                subheadline: "Messaging requires Ridgits+ — \(ridgitsStore.plusYearlyPriceLine)/year."
-            )
+            SubscriptionPaywallView(preferredBilling: .yearly)
         }
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
             guard showPaywall else { return }

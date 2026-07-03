@@ -29,7 +29,6 @@ final class QuizViewModel: ObservableObject {
     @Published var hideAnsweredQuestions = false
     @Published var selectedCategory: String?
     @Published var cardViewMode: QuizCardViewMode = .card
-    @Published var showPreferenceSheet = false
     @Published var isSaving = false
     @Published var isLoading = false
     @Published var didComplete = false
@@ -56,10 +55,36 @@ final class QuizViewModel: ObservableObject {
     }
 
     var personalityAnsweredCount: Int {
-        answers.filter { key, record in
-            guard record.hasAnswer else { return false }
-            return questions.first(where: { $0.id == key })?.category != "Demographics"
-        }.count
+        QuizCatalog.personalityAnsweredCount(in: answers)
+    }
+
+    var totalPersonalityQuestions: Int {
+        if mode == .modify || orderedIndices.allSatisfy({ questions[$0].category != "Demographics" }) {
+            return orderedIndices.filter { questions[$0].category != "Demographics" }.count
+        }
+        return QuizCatalog.personalityQuestionCount
+    }
+
+    /// Position within the full modify quiz order (not the filtered pool).
+    var globalQuestionNumber: Int {
+        (orderedIndices.firstIndex(of: currentQuestionIndex) ?? poolPosition) + 1
+    }
+
+    var displayedQuestionTotal: Int {
+        if mode == .modify {
+            if hideAnsweredQuestions || selectedCategory != nil {
+                return max(activePool.count, 1)
+            }
+            return totalPersonalityQuestions
+        }
+        return activePool.count
+    }
+
+    var displayedQuestionNumber: Int {
+        if mode == .modify, !hideAnsweredQuestions, selectedCategory == nil {
+            return globalQuestionNumber
+        }
+        return poolPosition + 1
     }
 
     var remainingCount: Int {
@@ -201,18 +226,27 @@ final class QuizViewModel: ObservableObject {
                 importance: QuizImportance.somewhat.rawValue,
                 dealbreaker: false
             )
-            showPreferenceSheet = true
+            Task { try? await persistProgress(completed: false) }
         }
     }
 
-    func updatePreference(preferred: Set<Int>, importance: QuizImportance, dealbreaker: Bool) {
-        let questionId = currentQuestion.id
-        guard var record = answers[questionId] else { return }
+    func preparePreferenceDefaultsIfNeeded() {
+        guard var record = answers[currentQuestion.id], record.hasAnswer else { return }
+        if record.preferredAnswers.isEmpty {
+            if let multi = record.answers, !multi.isEmpty {
+                record.preferredAnswers = multi
+            } else if let single = record.answer {
+                record.preferredAnswers = [single]
+            }
+        }
+        answers[currentQuestion.id] = record
+    }
+
+    func applyPreference(preferred: Set<Int>, importance: QuizImportance) {
+        guard var record = answers[currentQuestion.id], record.hasAnswer else { return }
         record.preferredAnswers = Array(preferred).sorted()
         record.importance = importance.rawValue
-        record.dealbreaker = dealbreaker
-        answers[questionId] = record
-        showPreferenceSheet = false
+        answers[currentQuestion.id] = record
         Task { try? await persistProgress(completed: false) }
     }
 
@@ -247,7 +281,7 @@ final class QuizViewModel: ObservableObject {
         if isMultiSelectActive(for: currentQuestion) || currentQuestion.multiSelect {
             return !(record.answers ?? []).isEmpty
         }
-        return record.answer != nil && !showPreferenceSheet
+        return record.answer != nil
     }
 
     func completeQuiz() async {

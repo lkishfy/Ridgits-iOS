@@ -26,6 +26,8 @@ struct CompatibilityReadoutView: View {
                         subtitle: "Add context and photos to see how compatible you might be before you meet."
                     )
 
+                    privacyDisclaimer
+
                     if let result {
                         resultsSection(result)
                     } else {
@@ -43,12 +45,7 @@ struct CompatibilityReadoutView: View {
                 }
             }
             .sheet(isPresented: $showPaywall) {
-                SubscriptionPaywallView(
-                    preferredBilling: .yearly,
-                    highlightTier: .plus,
-                    headline: "Get Ridgits+",
-                    subheadline: "Compatibility readouts require Ridgits+ — \(ridgitsStore.plusYearlyPriceLine)/year."
-                )
+                SubscriptionPaywallView(preferredBilling: .yearly)
             }
             .task { await loadProfile() }
             .onChange(of: selectedItems) { _, items in
@@ -83,14 +80,10 @@ struct CompatibilityReadoutView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                RidgitsFormStyle.fieldLabel("Supporting Images", required: true)
-                Text("Your images are deleted after analysis is complete for privacy purposes.")
-                    .font(RidgitsTypography.caption(11))
-                    .foregroundStyle(RidgitsColors.textMuted)
-
+                RidgitsFormStyle.fieldLabel("Supporting Images", required: selectedImageData.isEmpty && !hasProfileFallbackImages)
                 PhotosPicker(selection: $selectedItems, maxSelectionCount: 4, matching: .images) {
                     uploadDropZone(
-                        count: effectiveImageCount,
+                        count: selectedImageData.count,
                         emptyLabel: "Add up to 4 images",
                         detail: "Screenshots of profile, messages, texts, etc."
                     )
@@ -98,7 +91,7 @@ struct CompatibilityReadoutView: View {
                 .disabled(isLoading)
 
                 if hasProfileFallbackImages && selectedImageData.isEmpty {
-                    Text("Or we'll use photos from your Ridgits profile.")
+                    Text("No uploads yet — we'll use \(profileImageURLs.count) photo\(profileImageURLs.count == 1 ? "" : "s") from your Ridgits profile.")
                         .font(RidgitsTypography.caption(11))
                         .foregroundStyle(RidgitsColors.textSecondary)
                 }
@@ -118,8 +111,18 @@ struct CompatibilityReadoutView: View {
         }
     }
 
-    private var effectiveImageCount: Int {
-        selectedImageData.isEmpty ? profileImageURLs.count : selectedImageData.count
+    private var privacyDisclaimer: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "lock.shield")
+                .font(.system(size: 14))
+                .foregroundStyle(RidgitsColors.textMuted)
+            Text("Your images are deleted after analysis is complete for privacy purposes.")
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(RidgitsColors.textSecondary)
+        }
+        .padding(12)
+        .background(RidgitsColors.hoverSurface)
+        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
     }
 
     private var hasProfileFallbackImages: Bool {
@@ -345,6 +348,8 @@ struct CompatibilityReadoutView: View {
 
     private func reset() {
         result = nil
+        selectedItems = []
+        selectedImageData = []
         errorMessage = nil
     }
 }

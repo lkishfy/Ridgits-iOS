@@ -206,16 +206,38 @@ struct QuizFullResultsView: View {
             }
 
             GeometryReader { geo in
+                let trackHeight: CGFloat = 8
+                let thumbSize: CGFloat = 18
+                let thumbX = max(
+                    0,
+                    min(
+                        geo.size.width - thumbSize,
+                        geo.size.width * CGFloat(percent) / 100 - thumbSize / 2
+                    )
+                )
+
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(RidgitsColors.contextBar)
+                        .fill(RidgitsColors.borderLight)
+                        .overlay(
+                            Capsule()
+                                .stroke(RidgitsColors.border, lineWidth: 1)
+                        )
+                        .frame(height: trackHeight)
+
                     Circle()
                         .fill(RidgitsColors.ctaBlack)
-                        .frame(width: 14, height: 14)
-                        .offset(x: max(0, min(geo.size.width - 14, geo.size.width * CGFloat(percent) / 100 - 7)))
+                        .frame(width: thumbSize, height: thumbSize)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white, lineWidth: 2.5)
+                        )
+                        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+                        .offset(x: thumbX)
                 }
+                .frame(maxHeight: .infinity, alignment: .center)
             }
-            .frame(height: 14)
+            .frame(height: 22)
 
             Text(dimension.detail)
                 .font(RidgitsTypography.caption(11))

@@ -1,8 +1,24 @@
 import Foundation
+import SwiftUI
 
 enum QuizMode {
     case onboarding
     case modify
+}
+
+enum QuizCategoryColors {
+    static let track = Color(hex: 0xE5E7EB)
+
+    static func color(for category: String) -> Color {
+        switch category {
+        case "Communication": return Color(hex: 0x5B9FB5)
+        case "Intimacy": return Color(hex: 0xE76F6F)
+        case "Values": return Color(hex: 0x6BA593)
+        case "Social": return Color(hex: 0xD4A574)
+        case "Commitment": return Color(hex: 0xB85C5C)
+        default: return RidgitsColors.textMuted
+        }
+    }
 }
 
 enum QuizCatalog {
@@ -50,6 +66,33 @@ enum QuizCatalog {
     ]
 
     static let minimumAnswersToComplete = 53
+
+    /// Logged-in users at or above this count skip the onboarding quiz shell.
+    static let onboardingSkipThreshold = 50
+
+    static func personalityAnsweredCount(in answers: [String: QuizAnswerRecord]) -> Int {
+        answers.filter { key, record in
+            guard record.hasAnswer else { return false }
+            guard let question = questions.first(where: { $0.id == key }) else { return false }
+            return question.category != "Demographics"
+        }.count
+    }
+
+    static var personalityQuestionCount: Int {
+        questions.filter { $0.category != "Demographics" }.count
+    }
+
+    /// Segment widths for the category progress bar.
+    static func progressSegments(mode: QuizMode) -> [(category: String, count: Int)] {
+        if mode == .onboarding {
+            return personalityCategories.map { ($0, 10) }
+        }
+
+        return personalityCategories.map { category in
+            let total = questions.filter { $0.category == category }.count
+            return (category, max(total, 1))
+        }
+    }
 
     static func index(for questionID: String) -> Int? {
         questions.firstIndex { $0.id == questionID }

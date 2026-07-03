@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum RidgitsTab: Int, CaseIterable, Identifiable {
     case home = 0
@@ -85,7 +86,7 @@ extension View {
     }
 
     func ridgitsFloatingTabBarPadding() -> some View {
-        padding(.bottom, 96)
+        padding(.bottom, 88)
     }
 }
 
@@ -129,66 +130,37 @@ struct RidgitsGlassTabBar: View {
         .frame(height: barHeight)
         .background { glassBackground }
         .clipShape(Capsule(style: .continuous))
-        .shadow(color: Color.white.opacity(0.65), radius: 1, y: -0.5)
-        .shadow(color: Color.black.opacity(0.08), radius: 20, y: 12)
-        .shadow(color: Color.black.opacity(0.04), radius: 4, y: 2)
+        .overlay {
+            Capsule(style: .continuous)
+                .strokeBorder(glassBorderGradient, lineWidth: 0.75)
+        }
+        .shadow(color: Color.black.opacity(0.14), radius: 18, y: 10)
+        .shadow(color: Color.black.opacity(0.06), radius: 2, y: 1)
         .scaleEffect(barScale, anchor: .bottom)
         .padding(.horizontal, horizontalInset)
         .animation(Self.compactAnimation, value: compactProgress)
         .animation(Self.tabSwitchAnimation, value: selectedTab)
     }
 
+    private var glassBorderGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(0.65),
+                Color.white.opacity(0.18),
+                Color.black.opacity(0.08),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
     private var glassBackground: some View {
         ZStack {
+            RidgitsVisualEffectBlur(style: .systemChromeMaterialLight)
+            // Very light tint so content behind still reads through the blur.
             Capsule(style: .continuous)
-                .fill(.ultraThinMaterial)
-
-            Capsule(style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.78),
-                            Color.white.opacity(0.42),
-                            Color.white.opacity(0.28),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            Capsule(style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.55),
-                            Color.clear,
-                        ],
-                        startPoint: .top,
-                        endPoint: .center
-                    )
-                )
-                .blendMode(.plusLighter)
-
-            Capsule(style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.95),
-                            Color.white.opacity(0.35),
-                            Color.black.opacity(0.05),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-
-            Capsule(style: .continuous)
-                .strokeBorder(Color.white.opacity(0.22), lineWidth: 0.5)
-                .blur(radius: 0.5)
-                .padding(0.5)
+                .fill(Color.white.opacity(0.08))
         }
-        .compositingGroup()
     }
 
     @ViewBuilder
@@ -220,30 +192,14 @@ struct RidgitsGlassTabBar: View {
 
     private var selectionCapsule: some View {
         ZStack {
+            RidgitsVisualEffectBlur(style: .systemThinMaterialLight)
             Capsule(style: .continuous)
-                .fill(.thinMaterial)
-
+                .fill(Color.white.opacity(0.12))
             Capsule(style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.72),
-                            Color.white.opacity(0.38),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-
-            Capsule(style: .continuous)
-                .stroke(Color.white.opacity(0.55), lineWidth: 0.75)
-
-            Capsule(style: .continuous)
-                .fill(Color.black.opacity(0.04))
-                .blendMode(.multiply)
+                .strokeBorder(Color.white.opacity(0.45), lineWidth: 0.5)
         }
         .frame(width: selectionWidth, height: selectionHeight)
-        .shadow(color: Color.black.opacity(0.06), radius: 4, y: 2)
+        .shadow(color: Color.black.opacity(0.08), radius: 3, y: 1)
     }
 
     private func badgeCount(for tab: RidgitsTab) -> Int {
@@ -285,6 +241,20 @@ struct RidgitsGlassTabBar: View {
             .contentTransition(.symbolEffect(.replace))
             .symbolEffect(.bounce, value: isSelected)
             .animation(Self.tabSwitchAnimation, value: isSelected)
+    }
+}
+
+private struct RidgitsVisualEffectBlur: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        view.backgroundColor = .clear
+        return view
+    }
+
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: style)
     }
 }
 

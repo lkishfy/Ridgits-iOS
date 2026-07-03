@@ -176,11 +176,19 @@ struct RidgitsCompatibility: Equatable, Codable, Hashable {
 
     static func fromDictionary(_ dict: [String: Any]) -> RidgitsCompatibility {
         let compat = dict["compatibility"] as? [String: Any] ?? [:]
+        let nestedOverall = parsedInt(compat["overall"])
+        let topOverall = parsedInt(dict["overall"], fallback: parsedInt(dict["compatibilityScore"]))
+        let resolvedOverall: Int
+        if nestedOverall > 0 {
+            resolvedOverall = nestedOverall
+        } else if topOverall > 0 {
+            resolvedOverall = topOverall
+        } else {
+            resolvedOverall = 0
+        }
+
         return RidgitsCompatibility(
-            overall: parsedInt(
-                compat["overall"],
-                fallback: parsedInt(dict["overall"], fallback: parsedInt(dict["compatibilityScore"]))
-            ),
+            overall: resolvedOverall,
             communication: parsedInt(compat["communication"], fallback: parsedInt(dict["communication"])),
             intimacy: parsedInt(compat["intimacy"], fallback: parsedInt(dict["intimacy"])),
             values: parsedInt(compat["values"], fallback: parsedInt(dict["values"])),
@@ -284,6 +292,16 @@ enum QuizImportance: Int, CaseIterable, Identifiable {
         case .somewhat: return "Somewhat"
         case .very: return "Very"
         case .mandatory: return "Mandatory"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .irrelevant: return "Doesn't matter"
+        case .aLittle: return "Nice to have"
+        case .somewhat: return "Matters to me"
+        case .very: return "Important"
+        case .mandatory: return "Must match"
         }
     }
 }

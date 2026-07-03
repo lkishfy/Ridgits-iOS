@@ -7,7 +7,6 @@ struct MatchesView: View {
     @EnvironmentObject private var pokeInbox: RidgitsPokeInbox
     @ObservedObject var viewModel: MatchesViewModel
     @State private var showSubscriptionPaywall = false
-    @State private var showCloseMatchesSheet = false
     @State private var composeMatch: RidgitsMatch?
     @State private var selectedMatch: RidgitsMatch?
     @State private var composeMessage = ""
@@ -91,25 +90,7 @@ struct MatchesView: View {
             )
         }
         .sheet(isPresented: $showSubscriptionPaywall) {
-            SubscriptionPaywallView(
-                preferredBilling: .yearly,
-                highlightTier: .plus,
-                headline: "Get Ridgits+",
-                subheadline: "Subscribe to message, poke, and unlock nearby matches — \(ridgitsStore.plusYearlyPriceLine)/year."
-            )
-        }
-        .sheet(isPresented: $showCloseMatchesSheet) {
-            NearbyCloseMatchesSheet(
-                matchCount: viewModel.closeMatchCount,
-                isLoading: viewModel.isLoadingNearby && viewModel.closeMatchCount == 0,
-                priceLine: ridgitsStore.plusYearlyPriceLine,
-                onSubscribe: {
-                    showCloseMatchesSheet = false
-                    showSubscriptionPaywall = true
-                }
-            )
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
+            SubscriptionPaywallView(preferredBilling: .yearly)
         }
         .sheet(item: $composeMatch) { match in
             composeSheet(for: match)
@@ -133,15 +114,11 @@ struct MatchesView: View {
         let stepped = Int((rawValue / 5.0).rounded() * 5)
 
         if RidgitsNearbyAccess.isCloseRadiusAttempt(stepped, hasExtendedRadius: hasExtendedNearby) {
-            showCloseMatchesSheet = true
+            showSubscriptionPaywall = true
             return
         }
 
         viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(stepped, hasExtendedRadius: hasExtendedNearby)
-    }
-
-    private func presentCloseMatchesSheet() {
-        showCloseMatchesSheet = true
     }
 
     @ViewBuilder
@@ -310,13 +287,8 @@ struct MatchesView: View {
         RidgitsCard {
             VStack(alignment: .leading, spacing: 12) {
                 CloseMatchesCountBadge(count: viewModel.closeMatchCount)
-                Text("Unlock close matches")
-                    .font(RidgitsTypography.headline())
-                Text("Subscribe to search closer than 25 miles and connect with people near you.")
-                    .font(RidgitsTypography.body(14))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                RidgitsPrimaryButton(title: "See who's closer") {
-                    presentCloseMatchesSheet()
+                RidgitsPrimaryButton(title: "See Matches") {
+                    showSubscriptionPaywall = true
                 }
             }
         }
@@ -489,74 +461,6 @@ private struct CloseMatchesCountBadge: View {
             .padding(.vertical, 4)
             .background(Color(hex: 0xDCFCE7))
             .clipShape(Capsule())
-    }
-}
-
-private struct NearbyCloseMatchesSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let matchCount: Int
-    let isLoading: Bool
-    let priceLine: String
-    let onSubscribe: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    if matchCount > 0 {
-                        CloseMatchesCountBadge(count: matchCount)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Close matches are a Ridgits+ perk")
-                            .font(RidgitsTypography.headline(20))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                        Text("Free search starts at 30 miles. Subscribe to see people within 25 miles.")
-                            .font(RidgitsTypography.body(14))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    }
-
-                    if isLoading {
-                        ProgressView("Finding close matches…")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 24)
-                    } else if matchCount == 0 {
-                        Text("No close matches right now — check back as more people join nearby.")
-                            .font(RidgitsTypography.body(14))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    } else {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(matchCount)")
-                                .font(.system(size: 52, weight: .bold, design: .rounded))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                            Text("compatible \(matchCount == 1 ? "person" : "people") within 25 miles")
-                                .font(RidgitsTypography.body(15))
-                                .foregroundStyle(RidgitsColors.textSecondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 8)
-                    }
-
-                    RidgitsPrimaryButton(title: "Get Ridgits+ yearly — \(priceLine)/year") {
-                        onSubscribe()
-                    }
-                    .disabled(isLoading)
-
-                    Button("Not now") { dismiss() }
-                        .font(RidgitsTypography.body(14))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                        .frame(maxWidth: .infinity)
-                }
-                .padding(20)
-            }
-            .background(RidgitsColors.feedBackground)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close") { dismiss() }
-                }
-            }
-        }
     }
 }
 

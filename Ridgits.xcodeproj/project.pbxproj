@@ -120,7 +120,7 @@
 /* Begin PBXFileReference section */
 		02DB0A4D50FB0F377B744060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		02E2DF763297D22FAA413008 /* RidgitsArchetypePack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsArchetypePack.swift; sourceTree = "<group>"; };
-		07DF792BAD9B3D9AD4656B0B /* Ridgits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Ridgits.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		07DF792BAD9B3D9AD4656B0B /* Ridgits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ridgits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C1D8E4F95CACE2E9C676B09 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsComponents.swift; sourceTree = "<group>"; };
 		1168AC77C397F24F9864845A /* RidgitsCachedProfileImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsCachedProfileImage.swift; sourceTree = "<group>"; };
@@ -573,8 +573,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 028A8F07BE442E1637F2A2F5 /* Build configuration list for PBXProject "Ridgits" */;
 			developmentRegion = en;
@@ -789,14 +787,23 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Ridgits/Ridgits.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1.0;
+				DEVELOPMENT_TEAM = TMFW88P8NL;
 				INFOPLIST_FILE = Ridgits/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RIdgits;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ridgits.app;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -864,14 +871,23 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Ridgits/Ridgits.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1.0;
+				DEVELOPMENT_TEAM = TMFW88P8NL;
 				INFOPLIST_FILE = Ridgits/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RIdgits;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ridgits.app;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

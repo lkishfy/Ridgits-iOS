@@ -25,7 +25,7 @@ struct DashboardView: View {
     @State private var fullResultsPresentation: QuizFullResultsPresentation?
     @State private var showSubscriptionPaywall = false
     @State private var subscriptionPaywallHeadline = "Choose your plan"
-    @State private var subscriptionPaywallSubheadline = "Upgrade anytime."
+    @State private var subscriptionPaywallSubheadline: String?
     @State private var subscriptionPaywallHighlight: RidgitsSubscriptionTier?
     @State private var quizIncompleteAlert = false
     @State private var packAnalysisPresentation: PackAnalysisPresentation?
@@ -447,9 +447,9 @@ struct DashboardView: View {
     }
 
     private func presentNearbySubscriptionPaywall() {
-        subscriptionPaywallHighlight = .plus
-        subscriptionPaywallHeadline = "Unlock close matches"
-        subscriptionPaywallSubheadline = "Ridgits+ yearly lets you search within 25 miles — \(ridgitsStore.plusYearlyPriceLine)/year."
+        subscriptionPaywallHighlight = nil
+        subscriptionPaywallHeadline = "Choose your plan"
+        subscriptionPaywallSubheadline = nil
         showSubscriptionPaywall = true
     }
 
@@ -498,13 +498,17 @@ struct DashboardView: View {
     private var membershipCard: some View {
         RidgitsDashboardCard {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Unlock close matches")
-                    .font(RidgitsTypography.label(15))
-                    .foregroundStyle(RidgitsColors.textHeadline)
-                Text("Free search starts at 30 miles. Ridgits+ yearly unlocks matches within 25 mi — \(ridgitsStore.plusYearlyPriceLine)/year.")
-                    .font(RidgitsTypography.body(13))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                RidgitsSquareButton(title: "Get Ridgits+ yearly", style: .filled) {
+                if matchesViewModel.closeMatchCount > 0 {
+                    Text("\(matchesViewModel.closeMatchCount) within 25 mi")
+                        .font(RidgitsTypography.caption(11))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color(hex: 0x15803D))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color(hex: 0xDCFCE7))
+                        .clipShape(Capsule())
+                }
+                RidgitsSquareButton(title: "See Matches", style: .filled) {
                     presentNearbySubscriptionPaywall()
                 }
             }

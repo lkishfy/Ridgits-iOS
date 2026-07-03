@@ -71,6 +71,21 @@ struct RidgitsSubscriptionFeature: Identifiable {
 enum RidgitsSubscriptionCatalog {
     static let subscriptionGroupId = "ridgits_membership"
 
+    private static let coreMembershipFeatures: [RidgitsSubscriptionFeature] = [
+        RidgitsSubscriptionFeature(
+            title: "Message other users",
+            detail: "Send messages and pokes to matches"
+        ),
+        RidgitsSubscriptionFeature(
+            title: "Nearby matches",
+            detail: "Search within 25 miles and unlock close matches"
+        ),
+        RidgitsSubscriptionFeature(
+            title: "Unlimited Quick Tools",
+            detail: "Analyze Profile Photos, Analyze Messages, Compatibility Reports"
+        ),
+    ]
+
     /// App Store Connect product IDs — configure in one auto-renewable subscription group (ranked for upgrades).
     static let productIds: [String: (tier: RidgitsSubscriptionTier, billing: RidgitsSubscriptionBilling)] = [
         RidgitsProductID.plusMonthly: (.plus, .monthly),
@@ -117,32 +132,16 @@ enum RidgitsSubscriptionCatalog {
         case .free:
             return []
         case .plus:
-            return [
-                RidgitsSubscriptionFeature(
-                    title: "Unlimited Quick Tools",
-                    detail: "Analyze Profile Photos, Analyze Messages, Compatibility Reports"
-                ),
-                RidgitsSubscriptionFeature(
-                    title: "Nearby matches",
-                    detail: "See compatible people within 25 miles"
-                ),
+            return coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Ridgits+ Badge", badgeTier: .plus),
             ]
         case .premium:
-            return [
-                RidgitsSubscriptionFeature(
-                    title: "Unlimited Quick Tools",
-                    detail: "Analyze Profile Photos, Analyze Messages, Compatibility Reports"
-                ),
+            return coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Premium Badge", badgeTier: .premium),
             ]
         case .ultra:
-            return [
-                RidgitsSubscriptionFeature(
-                    title: "Unlimited Quick Tools",
-                    detail: "Analyze Profile Photos, Analyze Messages, Compatibility Reports"
-                ),
+            return coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Exclusive archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Ultra Badge", badgeTier: .ultra),
