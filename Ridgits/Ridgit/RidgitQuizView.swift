@@ -109,7 +109,7 @@ struct RidgitQuizView: View {
                                             )
                                     )
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(RidgitsHapticPlainButtonStyle())
                             }
 
                             RidgitsSquareButton(

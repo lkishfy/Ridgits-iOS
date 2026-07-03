@@ -31,20 +31,40 @@ enum RidgitsFirebaseBootstrap {
     }
 
     private static func googleWebClientID() -> String? {
-        if let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
-           let secrets = NSDictionary(contentsOfFile: path) as? [String: Any],
-           let webClientID = secrets["googleWebClientID"] as? String,
-           !webClientID.isEmpty {
-            return webClientID
+        for source in [secretsWebClientID(), googleServiceWebClientID()] {
+            if let source, isValidGoogleOAuthClientID(source) {
+                return source
+            }
         }
-
-        if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
-           let plist = NSDictionary(contentsOfFile: path) as? [String: Any],
-           let webClientID = plist["WEB_CLIENT_ID"] as? String,
-           !webClientID.isEmpty {
-            return webClientID
-        }
-
         return nil
+    }
+
+    private static func secretsWebClientID() -> String? {
+        guard let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
+              let secrets = NSDictionary(contentsOfFile: path) as? [String: Any],
+              let webClientID = secrets["googleWebClientID"] as? String else {
+            return nil
+        }
+        return webClientID
+    }
+
+    private static func googleServiceWebClientID() -> String? {
+        guard let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+              let plist = NSDictionary(contentsOfFile: path) as? [String: Any],
+              let webClientID = plist["WEB_CLIENT_ID"] as? String else {
+            return nil
+        }
+        return webClientID
+    }
+
+    /// Rejects template values like `YOUR_FIREBASE_WEB_CLIENT_ID.apps.googleusercontent.com`.
+    private static func isValidGoogleOAuthClientID(_ value: String) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        if trimmed.localizedCaseInsensitiveContains("YOUR_") { return false }
+        return trimmed.range(
+            of: #"^\d+-[\w-]+\.apps\.googleusercontent\.com$"#,
+            options: .regularExpression
+        ) != nil
     }
 }

@@ -77,7 +77,7 @@ struct ReferralQuizzesSection: View {
                     .underline()
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -125,7 +125,7 @@ struct ReferralQuizzesSection: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private func referralLockButton(requiredReferrals: Int) -> some View {

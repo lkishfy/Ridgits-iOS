@@ -20,6 +20,7 @@ struct RidgitsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
                 .environmentObject(authManager)
                 .environmentObject(ridgitsStore)
                 .environmentObject(referralStore)

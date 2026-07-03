@@ -304,7 +304,7 @@ struct DashboardView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 

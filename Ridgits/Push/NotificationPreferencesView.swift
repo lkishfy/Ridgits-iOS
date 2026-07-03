@@ -89,7 +89,10 @@ struct NotificationPreferencesView: View {
     private func binding(for keyPath: WritableKeyPath<RidgitsNotificationPreferences, Bool>) -> Binding<Bool> {
         Binding(
             get: { preferences[keyPath: keyPath] },
-            set: { preferences[keyPath: keyPath] = $0 }
+            set: { newValue in
+                RidgitsHaptics.play(.selection)
+                preferences[keyPath: keyPath] = newValue
+            }
         )
     }
 

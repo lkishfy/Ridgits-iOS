@@ -40,7 +40,7 @@ struct RidgitsProfilePhotoPicker: View {
                         .stroke(RidgitsColors.border, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
             .disabled(isUploading)
 
             if let uploadError {

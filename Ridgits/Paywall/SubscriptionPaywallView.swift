@@ -123,7 +123,7 @@ struct SubscriptionPaywallView: View {
                             .foregroundStyle(billing == period ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
                             .background(billing == period ? RidgitsColors.surface : RidgitsColors.hoverSurface)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(RidgitsHapticPlainButtonStyle())
                 }
             }
             .overlay(

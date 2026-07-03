@@ -42,7 +42,7 @@ struct AdditionalArchetypesSection: View {
                         }
                         .foregroundStyle(RidgitsColors.textSecondary)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(RidgitsHapticPlainButtonStyle())
                 }
 
                 Text("Enhance your matches and agent experience")
@@ -108,7 +108,7 @@ struct AdditionalArchetypesSection: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -171,7 +171,7 @@ struct AdditionalArchetypesSection: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private func packIcon(_ pack: RidgitsArchetypePack) -> some View {

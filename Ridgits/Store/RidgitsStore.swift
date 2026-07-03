@@ -307,6 +307,7 @@ final class RidgitsStore: ObservableObject {
                 await transaction.finish()
                 await refreshEntitlements()
                 if linked {
+                    RidgitsHaptics.play(.success)
                     if transaction.productID == RidgitsProductID.nearbyYearly {
                         await applyServerAccessIfAvailable()
                     } else if RidgitsSubscriptionCatalog.tier(for: transaction.productID) != nil {

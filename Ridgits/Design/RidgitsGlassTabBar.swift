@@ -195,6 +195,9 @@ struct RidgitsGlassTabBar: View {
     private func tabButton(_ tab: RidgitsTab) -> some View {
         let isSelected = tab == selectedTab
         Button {
+            if !isSelected {
+                RidgitsHaptics.play(.selection)
+            }
             withAnimation(Self.tabSwitchAnimation) {
                 onSelect(tab)
             }
@@ -212,7 +215,7 @@ struct RidgitsGlassTabBar: View {
             .frame(height: barHeight)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private var selectionCapsule: some View {

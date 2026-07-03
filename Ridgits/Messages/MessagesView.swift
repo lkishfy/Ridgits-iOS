@@ -258,7 +258,7 @@ struct MessagesView: View {
                     }
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
@@ -402,7 +402,7 @@ private struct DMConversationRow: View {
                 }
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
 
             if showsApprove, let onApprove {
                 Button(action: onApprove) {
@@ -414,7 +414,7 @@ private struct DMConversationRow: View {
                         .background(RidgitsColors.ctaBlack)
                         .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
             }
         }
         .padding(.horizontal, 16)

@@ -3,6 +3,7 @@ import SwiftUI
 /// Interactive 3D hero stack — matches Ridgits web landing `hero-stack` with app screenshots.
 struct RidgitsHeroImageStack: View {
     @State private var isFanningOut = false
+    @State private var isFingerDown = false
     @GestureState private var dragTranslation: CGSize = .zero
 
     private let cardSize: CGFloat = 180
@@ -24,11 +25,16 @@ struct RidgitsHeroImageStack: View {
                     state = value.translation
                 }
                 .onChanged { _ in
+                    if !isFingerDown {
+                        isFingerDown = true
+                        RidgitsHaptics.play(.soft)
+                    }
                     withAnimation(.easeOut(duration: 0.25)) {
                         isFanningOut = true
                     }
                 }
                 .onEnded { _ in
+                    isFingerDown = false
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
                         isFanningOut = false
                     }

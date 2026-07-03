@@ -76,7 +76,7 @@ struct ProfileView: View {
                         .background(RidgitsColors.hoverSurface)
                         .clipShape(Circle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -188,7 +188,7 @@ struct ProfileView: View {
                         .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
 
             RidgitsDashboardCard {
                 Toggle(isOn: communityVisibilityBinding) {
@@ -238,7 +238,7 @@ struct ProfileView: View {
                         .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
 
             if ridgitsStore.hasNearbyAccess || ridgitsStore.hasWebSubscription {
                 RidgitsDashboardCard {
@@ -254,6 +254,7 @@ struct ProfileView: View {
                     }
                     .tint(RidgitsColors.ctaBlack)
                     .padding(16)
+                    .ridgitsSelectionHaptic(trigger: nearbyPresence.alertsEnabled)
                 }
             }
 
@@ -281,7 +282,7 @@ struct ProfileView: View {
                         .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
 
             NavigationLink {
                 ProfileSettingsView()
@@ -307,7 +308,7 @@ struct ProfileView: View {
                         .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
         }
     }
 
@@ -497,6 +498,7 @@ struct ProfileView: View {
             get: { profile.visibleInCommunity },
             set: { newValue in
                 guard newValue != profile.visibleInCommunity else { return }
+                RidgitsHaptics.play(.selection)
                 profile.visibleInCommunity = newValue
                 Task { await saveCommunityVisibility() }
             }

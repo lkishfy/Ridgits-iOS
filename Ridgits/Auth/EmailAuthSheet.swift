@@ -72,6 +72,7 @@ struct EmailAuthSheet: View {
                         Text("Sign Up").tag(Mode.signUp)
                     }
                     .pickerStyle(.segmented)
+                    .ridgitsSelectionHaptic(trigger: mode)
 
                     if mode == .signUp {
                         authField(title: "Birth Year", text: $birthYear, prompt: "YYYY (e.g. 1990)")

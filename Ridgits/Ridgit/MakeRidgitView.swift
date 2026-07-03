@@ -166,7 +166,7 @@ struct MakeRidgitView: View {
                     .stroke(RidgitsColors.border, style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private func ridgitRow(_ ridgit: RidgitChallenge) -> some View {
@@ -390,7 +390,7 @@ private struct RidgitEditorView: View {
                         Image(systemName: questions[index].correctAnswer == optionIndex ? "star.fill" : "star")
                             .foregroundStyle(questions[index].correctAnswer == optionIndex ? RidgitsColors.textHeadline : RidgitsColors.textMuted)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(RidgitsHapticPlainButtonStyle())
 
                     RidgitsTextField(
                         placeholder: "Option \(optionIndex + 1)",

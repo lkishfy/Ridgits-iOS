@@ -68,7 +68,7 @@ struct LoginView: View {
 
     private var authSection: some View {
         VStack(spacing: 16) {
-            Text("Community quiz-based local matching and dating simulation tools.")
+            Text("Community quiz-based matching and dating tools.")
                 .font(RidgitsTypography.body(14))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -89,7 +89,7 @@ struct LoginView: View {
                     .foregroundStyle(RidgitsColors.textHeadline)
                     .underline()
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
             .padding(.top, 4)
 
             RidgitsLegalConsentView()

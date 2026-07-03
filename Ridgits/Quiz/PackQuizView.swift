@@ -70,7 +70,10 @@ struct PackQuizView: View {
             Text(viewModel.errorMessage ?? "")
         }
         .onChange(of: viewModel.showResults) { _, completed in
-            if completed { onCompleted?() }
+            if completed {
+                RidgitsHaptics.play(.success)
+                onCompleted?()
+            }
         }
     }
 
@@ -129,7 +132,7 @@ struct PackQuizView: View {
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(RidgitsHapticPlainButtonStyle())
                         }
                     }
                 }

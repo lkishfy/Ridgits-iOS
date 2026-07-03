@@ -219,7 +219,7 @@ struct RidgitNearbyShareOverlay: View {
                     .background(Color.white.opacity(0.1))
                     .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
             }
         }
     }

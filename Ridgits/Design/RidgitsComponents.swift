@@ -28,6 +28,7 @@ struct RidgitsPrimaryButton: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
         }
+        .buttonStyle(RidgitsHapticPrimaryButtonStyle())
         .disabled(isDisabled || isLoading)
     }
 }
@@ -59,7 +60,7 @@ struct RidgitsSquareButton: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private var foreground: Color {
@@ -106,6 +107,7 @@ struct RidgitsSecondaryButton: View {
                         .stroke(RidgitsColors.border, lineWidth: 1)
                 )
         }
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 }
 
@@ -253,9 +255,7 @@ struct GoogleSignInButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button {
-            action()
-        } label: {
+        Button(action: action) {
             HStack(spacing: 12) {
                 Image("Glogo")
                     .resizable()
@@ -270,7 +270,7 @@ struct GoogleSignInButton: View {
             .background(Color.black)
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle(feedback: .medium))
     }
 }
 

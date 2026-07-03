@@ -52,6 +52,7 @@ struct QuizView: View {
         }
         .onChange(of: viewModel.didComplete) { _, completed in
             if completed {
+                RidgitsHaptics.play(.success)
                 Task {
                     if mode == .onboarding {
                         try? await authManager.markQuizCompleted()
@@ -124,7 +125,7 @@ struct QuizView: View {
                     }
                 }
                 .contentShape(Rectangle())
-                .onTapGesture {
+                .ridgitsTapHaptic {
                     if let poolIndex = viewModel.activePool.firstIndex(of: index) {
                         viewModel.poolPosition = poolIndex
                         viewModel.cardViewMode = .card
@@ -157,6 +158,7 @@ struct QuizView: View {
                 }
                 .pickerStyle(.segmented)
                 .frame(maxWidth: 160)
+                .ridgitsSelectionHaptic(trigger: viewModel.cardViewMode)
             }
 
             RidgitsSquareButton(
@@ -315,7 +317,7 @@ struct QuizView: View {
                                 .stroke(viewModel.selectedCategory == category ? RidgitsColors.ctaBlack : RidgitsColors.border, lineWidth: 1)
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(RidgitsHapticPlainButtonStyle())
                 }
             }
         }
@@ -383,10 +385,12 @@ struct QuizView: View {
                 }
                 .pickerStyle(.wheel)
                 .frame(height: 120)
+                .ridgitsSelectionHaptic(trigger: importance)
 
                 Toggle("This is a dealbreaker", isOn: $dealbreaker)
                     .font(RidgitsTypography.body())
                     .tint(RidgitsColors.ctaBlack)
+                    .ridgitsSelectionHaptic(trigger: dealbreaker)
 
                 RidgitsPrimaryButton(title: "Save", isDisabled: preferredSelection.isEmpty) {
                     viewModel.updatePreference(
@@ -433,7 +437,7 @@ struct QuizView: View {
                 )
         }
         .disabled(!enabled)
-        .buttonStyle(.plain)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private func categoryColor(_ category: String) -> Color {

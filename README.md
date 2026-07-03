@@ -25,7 +25,8 @@ See **[PAYMENTS_SETUP.md](./PAYMENTS_SETUP.md)** for App Store Connect, webhooks
 4. Add Firebase iOS app for bundle ID `com.ridgits.app` on project **`ridgits-24f2d`**
 5. Download `GoogleService-Info.plist` → `Ridgits/GoogleService-Info.plist`
 6. Copy `Secrets.example.plist` → `Secrets.plist` and add to target **Copy Bundle Resources**
-7. Update `Info.plist` URL scheme with reversed Google client ID from Firebase
+7. Update `Info.plist` URL scheme with reversed Google client ID from Firebase  
+   **Google Sign-In:** do not put placeholder OAuth client IDs in `Secrets.plist`. The app uses the iOS client from `GoogleService-Info.plist` (same as Geists). Only add optional `googleWebClientID` if Firebase Console gives you a separate Web client ID and sign-in fails without it.
 8. Enable **Sign in with Apple** capability (entitlements already included)
 9. Create IAP products in App Store Connect:
    - **Subscription group** `ridgits_membership` (ranked: Plus < Premium < Ultra):

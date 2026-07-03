@@ -259,7 +259,7 @@ struct MatchesView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
                 .popover(isPresented: $showCompatibilityFilter, arrowEdge: .top) {
                     CompatibilityFilterPopover(
                         filter: $viewModel.compatibilityFilter,
@@ -291,7 +291,7 @@ struct MatchesView: View {
                             .background(viewModel.maxDistance == preset ? RidgitsColors.ctaBlack : RidgitsColors.hoverSurface)
                             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(RidgitsHapticPlainButtonStyle())
                     .disabled(viewModel.isLoadingNearby)
                 }
             }
@@ -603,6 +603,7 @@ private struct MatchCard: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
+                    RidgitsHaptics.play(.light)
                     if locked {
                         onMessage()
                     } else {
