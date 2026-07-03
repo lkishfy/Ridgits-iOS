@@ -22,12 +22,12 @@ Rank tiers **low → high** (Apple uses this for upgrades):
 
 | Level | Tier | Product ID | Price (USD) | Duration |
 |------:|------|------------|-------------|----------|
-| 1 | Ridgits+ | `RidgitsPlusMonthly999` | $7.99 | 1 month |
+| 1 | Ridgits+ | `RidgitsPlusMonthly999` | $9.99 | 1 month |
 | 1 | Ridgits+ | `RidgitsPlusYearly6000` | $29.99 | 1 year |
 | 2 | Premium | `RidgitsPremiumMonthly1499` | $12.99 | 1 month |
-| 2 | Premium | `RidgitsPremiumYearly9900` | $49.99 | 1 year |
+| 2 | Premium | `RidgitsPremiumYearly9900` | $53.99 | 1 year |
 | 3 | Ultra | `RidgitsUltraMonthly1999` | $19.99 | 1 month |
-| 3 | Ultra | `RidgitsUltraYearly9900` | $79.99 | 1 year |
+| 3 | Ultra | `RidgitsUltraYearly9900` | $69.99 | 1 year |
 | 3 | Ultra | `RidgitsUltraYearly14900` | $149.00 | 1 year (legacy SKU — grandfather existing subscribers) |
 
 **Policy in the app:** upgrades only (higher tier). No in-app downgrades — users cancel in **Settings → Apple ID → Subscriptions**.

@@ -144,6 +144,7 @@ enum RidgitsSubscriptionCatalog {
             return coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Exclusive archetype quizzes"),
+                RidgitsSubscriptionFeature(title: "Special access to new features"),
                 RidgitsSubscriptionFeature(title: "Ultra Badge", badgeTier: .ultra),
             ]
         }
@@ -155,13 +156,13 @@ enum RidgitsSubscriptionCatalog {
         ultraYearlyVariant: UltraYearlyVariant = .standard
     ) -> String {
         switch (tier, billing) {
-        case (.plus, .monthly): return "$7.99"
+        case (.plus, .monthly): return "$9.99"
         case (.plus, .yearly): return "$29.99"
         case (.premium, .monthly): return "$12.99"
-        case (.premium, .yearly): return "$49.99"
+        case (.premium, .yearly): return "$53.99"
         case (.ultra, .monthly): return "$19.99"
         case (.ultra, .yearly):
-            return ultraYearlyVariant == .premium ? "$149" : "$79.99"
+            return ultraYearlyVariant == .premium ? "$149" : "$69.99"
         default: return ""
         }
     }
@@ -172,9 +173,9 @@ enum RidgitsSubscriptionCatalog {
     ) -> String {
         switch tier {
         case .plus: return "$2.50"
-        case .premium: return "$4.17"
+        case .premium: return "$4.50"
         case .ultra:
-            return ultraYearlyVariant == .premium ? "$12.42" : "$6.67"
+            return ultraYearlyVariant == .premium ? "$12.42" : "$5.83"
         default: return ""
         }
     }
@@ -190,14 +191,14 @@ enum RidgitsSubscriptionCatalog {
         let yearly: Double
         switch tier {
         case .plus:
-            monthly = 7.99
+            monthly = 9.99
             yearly = 29.99
         case .premium:
             monthly = 12.99
-            yearly = 49.99
+            yearly = 53.99
         case .ultra:
             monthly = 19.99
-            yearly = 79.99
+            yearly = 69.99
         default:
             return nil
         }

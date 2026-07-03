@@ -45,7 +45,7 @@ struct AdditionalArchetypesSection: View {
                     .buttonStyle(RidgitsHapticPlainButtonStyle())
                 }
 
-                Text("Enhance your matches and agent experience")
+                Text("Enhance your matches with deeper archetype insights")
                     .font(RidgitsTypography.caption(11))
                     .foregroundStyle(RidgitsColors.textSecondary)
 

@@ -7,12 +7,12 @@ enum RidgitsProductID {
     static let archetypeBundle = "RidgitsArchetypeBundle5000"
 
     // MARK: - Auto-renewable subscriptions (single subscription group in App Store Connect)
-    static let plusMonthly = "RidgitsPlusMonthly999"
+    static let plusMonthly = "RidgitsPlusMonthly999" // $9.99/mo in App Store Connect
     static let plusYearly = "RidgitsPlusYearly6000" // $29.99/year in App Store Connect
     static let premiumMonthly = "RidgitsPremiumMonthly1499"
-    static let premiumYearly = "RidgitsPremiumYearly9900"
+    static let premiumYearly = "RidgitsPremiumYearly9900" // $53.99/yr in App Store Connect
     static let ultraMonthly = "RidgitsUltraMonthly1999"
-    static let ultraYearly99 = "RidgitsUltraYearly9900"
+    static let ultraYearly99 = "RidgitsUltraYearly9900" // $69.99/yr in App Store Connect
     static let ultraYearly149 = "RidgitsUltraYearly14900"
 
     private static let packProductIds: [String: String] = [

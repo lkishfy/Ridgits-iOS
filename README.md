@@ -12,7 +12,7 @@ Native SwiftUI app for Ridgits — OkCupid-style matching questions, Geists-styl
 - **Profile** — View/edit profile with square web styling; onboarding uses `ProfileSetupView`
 - **Ridgit** — Create custom quiz challenges free on web (1 without subscription); on iOS: 1 (free/+), 3 (Premium), 10 (Ultra)
 - **Nearby pings** — Bluetooth/local-network discovery (MultipeerConnectivity) alerts when another Ridgits member is close (requires nearby access)
-- **IAP (StoreKit 2)** — Auto-renewable memberships: **Ridgits+** ($7.99/mo · $29.99/yr), **Premium** ($12.99/mo · $49.99/yr), **Ultra** ($19.99/mo · $79.99/yr). Upgrades only in-app; cancel via Apple. Plus nearby access ($29.99/yr) and archetype packs.
+- **IAP (StoreKit 2)** — Auto-renewable memberships: **Ridgits+** ($9.99/mo · $29.99/yr), **Premium** ($12.99/mo · $53.99/yr), **Ultra** ($19.99/mo · $69.99/yr). Upgrades only in-app; cancel via Apple. Plus nearby access ($29.99/yr) and archetype packs.
 
 See **[PAYMENTS_SETUP.md](./PAYMENTS_SETUP.md)** for App Store Connect, webhooks, and sandbox testing.
 - **Push engagement** — FCM remote notifications for pokes, messages, expiring chats, reminders; see **[NOTIFICATIONS_SETUP.md](./NOTIFICATIONS_SETUP.md)**
@@ -30,9 +30,9 @@ See **[PAYMENTS_SETUP.md](./PAYMENTS_SETUP.md)** for App Store Connect, webhooks
 8. Enable **Sign in with Apple** capability (entitlements already included)
 9. Create IAP products in App Store Connect:
    - **Subscription group** `ridgits_membership` (ranked: Plus < Premium < Ultra):
-     - `RidgitsPlusMonthly999` $7.99/mo · `RidgitsPlusYearly6000` $49.99/yr
-     - `RidgitsPremiumMonthly1499` $12.99/mo · `RidgitsPremiumYearly9900` $49.99/yr
-     - `RidgitsUltraMonthly1999` $19.99/mo · `RidgitsUltraYearly9900` $79.99/yr · `RidgitsUltraYearly14900` $149/yr (legacy)
+     - `RidgitsPlusMonthly999` $9.99/mo · `RidgitsPlusYearly6000` $29.99/yr
+     - `RidgitsPremiumMonthly1499` $12.99/mo · `RidgitsPremiumYearly9900` $53.99/yr
+     - `RidgitsUltraMonthly1999` $19.99/mo · `RidgitsUltraYearly9900` $69.99/yr · `RidgitsUltraYearly14900` $149/yr (legacy)
    - `RidgitsNearbyYear2999` — Non-Renewing Subscription, 1 year, $29.99
    - Archetype pack non-consumables + `RidgitsArchetypeBundle5000`
 
