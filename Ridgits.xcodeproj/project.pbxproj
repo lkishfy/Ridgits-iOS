@@ -1,0 +1,564 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0D4D5BBE55E408545FA8BD89 /* AppleSignInNonce.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A57C16B287148340DD5B79 /* AppleSignInNonce.swift */; };
+		14A94371D51B0733755639A8 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D9859145D608A07A50BDDFD /* MessagesView.swift */; };
+		167CD503E48BF17B7ECEF1ED /* RidgitsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */; };
+		16D08A6E61200405EE7EB161 /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */; };
+		1ADCDA08BB13CB55A44888BD /* RidgitsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBEB969F4453F62BD799982 /* RidgitsStore.swift */; };
+		1D592B846B14F405668EE84A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252F8418EE1CC2484B211CDD /* ContentView.swift */; };
+		1EEDEE7572F53051C1030EE9 /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C92AC49659E2868940B46F /* QuizView.swift */; };
+		209B65138F80914728B6DE21 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 675F27058B0EC67440241C3F /* FirebaseCore */; };
+		36C17DB5A978ECAF31A1BCF0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1D9574D7FAB4F09CB3C43CBC /* GoogleService-Info.plist */; };
+		42C36DCFC8AFAC2E945C939B /* MatchesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B18D21B7D932940E8248F6 /* MatchesView.swift */; };
+		5454FF470DFF6EC9A7C68B2D /* RidgitsAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18CA5C81426306AFE76D916 /* RidgitsAPIClient.swift */; };
+		69EF9CC0435A7AFBFE8F61AB /* RidgitsFirebaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA8943D6B67FCBD1EB556772 /* RidgitsFirebaseClient.swift */; };
+		69F79317BA74BD63BF18CD39 /* RidgitsProductID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A095B20572525147B85D1D /* RidgitsProductID.swift */; };
+		6AF1B86EDBCED3D8BFC2B5F1 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F82945B9BA2E2DFC95102D4D /* FirebaseFirestore */; };
+		7B14CBDA8361B02455CA7181 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77B6CA24E9F62CF6C8C185C /* AuthManager.swift */; };
+		7D5B214325FF9EA90A2F850D /* RidgitsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C885678211DF9A31049C50DC /* RidgitsModels.swift */; };
+		83A11966B318AD48C2C82869 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F4CFC12B5334639E03A439 /* LocationManager.swift */; };
+		88E23B25FEF5B0B84065E3E0 /* RidgitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C012308069A29AC80D2321 /* RidgitsApp.swift */; };
+		89492A3071E466C1D9C34FC2 /* RidgitsTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D71B5B93F5D5907DE500364 /* RidgitsTheme.swift */; };
+		95DF487F2E36D6D41C5AB048 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 79ADF8278A5FA59F57D63033 /* FirebaseAuth */; };
+		979424F31D6849A9424A751E /* Secrets.example.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6ECDCDFD0FADD9BEC6C18137 /* Secrets.example.plist */; };
+		A5E33D43545C5FFD2ED50AA3 /* RidgitsLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F37C73DF3EB87F2610A164 /* RidgitsLogoView.swift */; };
+		B2077D8713B985637FAC4606 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = EBA8CCEACD72FE9C8F1DD07E /* GoogleSignIn */; };
+		BABF033B1381E541C81DA2A4 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = 24EE0BC1134EF8779378AE23 /* Secrets.plist */; };
+		BE1918D934F9A9B680E821C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02DB0A4D50FB0F377B744060 /* Assets.xcassets */; };
+		CB461460EA1200879D1BAC12 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9CFD391D965DC4214A38478 /* DashboardView.swift */; };
+		CDB05C083F057FE66CCAF804 /* QuizData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E2AF679ACCC8DCAC38A0D3 /* QuizData.swift */; };
+		DFFE61B72C164E6DB5431134 /* NearbyPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B428FC9FF54F28CB4AA60D28 /* NearbyPaywallView.swift */; };
+		E7E009B45965B5B850FA2337 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBD03EA351B2A15F2AB2CDF /* LoginView.swift */; };
+		FE4C7C7B340D6319E524616B /* QuizViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3348363D362965897C89290 /* QuizViewModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		02DB0A4D50FB0F377B744060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		07DF792BAD9B3D9AD4656B0B /* Ridgits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Ridgits.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsComponents.swift; sourceTree = "<group>"; };
+		167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
+		1D9574D7FAB4F09CB3C43CBC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		24EE0BC1134EF8779378AE23 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Secrets.plist; sourceTree = "<group>"; };
+		252F8418EE1CC2484B211CDD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		27F37C73DF3EB87F2610A164 /* RidgitsLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsLogoView.swift; sourceTree = "<group>"; };
+		2D71B5B93F5D5907DE500364 /* RidgitsTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsTheme.swift; sourceTree = "<group>"; };
+		6DBD03EA351B2A15F2AB2CDF /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		6ECDCDFD0FADD9BEC6C18137 /* Secrets.example.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Secrets.example.plist; sourceTree = "<group>"; };
+		75A57C16B287148340DD5B79 /* AppleSignInNonce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInNonce.swift; sourceTree = "<group>"; };
+		7A72990588E4661A760608CD /* Ridgits.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ridgits.entitlements; sourceTree = "<group>"; };
+		7AE03420C987C04FD9093F84 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8D9859145D608A07A50BDDFD /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
+		98C92AC49659E2868940B46F /* QuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
+		9EBEB969F4453F62BD799982 /* RidgitsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsStore.swift; sourceTree = "<group>"; };
+		B428FC9FF54F28CB4AA60D28 /* NearbyPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyPaywallView.swift; sourceTree = "<group>"; };
+		B9CFD391D965DC4214A38478 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		C2B18D21B7D932940E8248F6 /* MatchesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchesView.swift; sourceTree = "<group>"; };
+		C3348363D362965897C89290 /* QuizViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizViewModel.swift; sourceTree = "<group>"; };
+		C7F4CFC12B5334639E03A439 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		C885678211DF9A31049C50DC /* RidgitsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsModels.swift; sourceTree = "<group>"; };
+		D3A095B20572525147B85D1D /* RidgitsProductID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsProductID.swift; sourceTree = "<group>"; };
+		D4E2AF679ACCC8DCAC38A0D3 /* QuizData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizData.swift; sourceTree = "<group>"; };
+		D77B6CA24E9F62CF6C8C185C /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		DA8943D6B67FCBD1EB556772 /* RidgitsFirebaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsFirebaseClient.swift; sourceTree = "<group>"; };
+		E18CA5C81426306AFE76D916 /* RidgitsAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsAPIClient.swift; sourceTree = "<group>"; };
+		E2C012308069A29AC80D2321 /* RidgitsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AFAB0D8FF07C43245D4BF35F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95DF487F2E36D6D41C5AB048 /* FirebaseAuth in Frameworks */,
+				209B65138F80914728B6DE21 /* FirebaseCore in Frameworks */,
+				6AF1B86EDBCED3D8BFC2B5F1 /* FirebaseFirestore in Frameworks */,
+				B2077D8713B985637FAC4606 /* GoogleSignIn in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		191A10E4ADBB2F9B3D722312 /* Messages */ = {
+			isa = PBXGroup;
+			children = (
+				8D9859145D608A07A50BDDFD /* MessagesView.swift */,
+			);
+			path = Messages;
+			sourceTree = "<group>";
+		};
+		1D1C292FB790A7826188E6FF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				07DF792BAD9B3D9AD4656B0B /* Ridgits.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		32A130CA910C4FBD9729A639 /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */,
+				27F37C73DF3EB87F2610A164 /* RidgitsLogoView.swift */,
+				2D71B5B93F5D5907DE500364 /* RidgitsTheme.swift */,
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		5E47A88BA744D5AC40E789E2 /* Ridgits */ = {
+			isa = PBXGroup;
+			children = (
+				02DB0A4D50FB0F377B744060 /* Assets.xcassets */,
+				252F8418EE1CC2484B211CDD /* ContentView.swift */,
+				1D9574D7FAB4F09CB3C43CBC /* GoogleService-Info.plist */,
+				7AE03420C987C04FD9093F84 /* Info.plist */,
+				7A72990588E4661A760608CD /* Ridgits.entitlements */,
+				E2C012308069A29AC80D2321 /* RidgitsApp.swift */,
+				6ECDCDFD0FADD9BEC6C18137 /* Secrets.example.plist */,
+				24EE0BC1134EF8779378AE23 /* Secrets.plist */,
+				7CC8FE6FF17AE531DED2FAFF /* Auth */,
+				D15A60BF2ED11E52D45E33ED /* Dashboard */,
+				32A130CA910C4FBD9729A639 /* Design */,
+				C0FF62CC6C06963D75C8EE89 /* Location */,
+				DC71DA896A05CEC3BC7BAC8A /* Matches */,
+				191A10E4ADBB2F9B3D722312 /* Messages */,
+				B920636F18B3F6C8CF6203A7 /* Models */,
+				C5CA8DF5C7B2B5DFCDBE1FAC /* Paywall */,
+				7EACC2E649AAAD703721088B /* Profile */,
+				64E8294B7C230B0E62328607 /* Quiz */,
+				D4B11FC664C68A63637F9EE0 /* Services */,
+				77324C8F8EEEAA36036EC47F /* Store */,
+			);
+			path = Ridgits;
+			sourceTree = "<group>";
+		};
+		64E8294B7C230B0E62328607 /* Quiz */ = {
+			isa = PBXGroup;
+			children = (
+				D4E2AF679ACCC8DCAC38A0D3 /* QuizData.swift */,
+				98C92AC49659E2868940B46F /* QuizView.swift */,
+				C3348363D362965897C89290 /* QuizViewModel.swift */,
+			);
+			path = Quiz;
+			sourceTree = "<group>";
+		};
+		77324C8F8EEEAA36036EC47F /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				D3A095B20572525147B85D1D /* RidgitsProductID.swift */,
+				9EBEB969F4453F62BD799982 /* RidgitsStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		7CC8FE6FF17AE531DED2FAFF /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				75A57C16B287148340DD5B79 /* AppleSignInNonce.swift */,
+				D77B6CA24E9F62CF6C8C185C /* AuthManager.swift */,
+				6DBD03EA351B2A15F2AB2CDF /* LoginView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		7EACC2E649AAAD703721088B /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		A4C20CCF4FD48C13B4E3D64E = {
+			isa = PBXGroup;
+			children = (
+				5E47A88BA744D5AC40E789E2 /* Ridgits */,
+				1D1C292FB790A7826188E6FF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B920636F18B3F6C8CF6203A7 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C885678211DF9A31049C50DC /* RidgitsModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		C0FF62CC6C06963D75C8EE89 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				C7F4CFC12B5334639E03A439 /* LocationManager.swift */,
+			);
+			path = Location;
+			sourceTree = "<group>";
+		};
+		C5CA8DF5C7B2B5DFCDBE1FAC /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				B428FC9FF54F28CB4AA60D28 /* NearbyPaywallView.swift */,
+			);
+			path = Paywall;
+			sourceTree = "<group>";
+		};
+		D15A60BF2ED11E52D45E33ED /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				B9CFD391D965DC4214A38478 /* DashboardView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		D4B11FC664C68A63637F9EE0 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				E18CA5C81426306AFE76D916 /* RidgitsAPIClient.swift */,
+				DA8943D6B67FCBD1EB556772 /* RidgitsFirebaseClient.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DC71DA896A05CEC3BC7BAC8A /* Matches */ = {
+			isa = PBXGroup;
+			children = (
+				C2B18D21B7D932940E8248F6 /* MatchesView.swift */,
+			);
+			path = Matches;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C03C80D184A643C0224670AC /* Ridgits */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4F7DA4AE07BC2F888E0CCE7 /* Build configuration list for PBXNativeTarget "Ridgits" */;
+			buildPhases = (
+				69B1A9A6296CB905C5024187 /* Sources */,
+				11556B0CB0E7387D37E5CCC9 /* Resources */,
+				AFAB0D8FF07C43245D4BF35F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Ridgits;
+			packageProductDependencies = (
+				79ADF8278A5FA59F57D63033 /* FirebaseAuth */,
+				675F27058B0EC67440241C3F /* FirebaseCore */,
+				F82945B9BA2E2DFC95102D4D /* FirebaseFirestore */,
+				EBA8CCEACD72FE9C8F1DD07E /* GoogleSignIn */,
+			);
+			productName = Ridgits;
+			productReference = 07DF792BAD9B3D9AD4656B0B /* Ridgits.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		881F8CE01B5B00ABF4924C68 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 028A8F07BE442E1637F2A2F5 /* Build configuration list for PBXProject "Ridgits" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = A4C20CCF4FD48C13B4E3D64E;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				6C932E4D857DF6F9D9550B9A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				6F7F33E89237648C796C959A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1D1C292FB790A7826188E6FF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C03C80D184A643C0224670AC /* Ridgits */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		11556B0CB0E7387D37E5CCC9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE1918D934F9A9B680E821C1 /* Assets.xcassets in Resources */,
+				36C17DB5A978ECAF31A1BCF0 /* GoogleService-Info.plist in Resources */,
+				979424F31D6849A9424A751E /* Secrets.example.plist in Resources */,
+				BABF033B1381E541C81DA2A4 /* Secrets.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		69B1A9A6296CB905C5024187 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D4D5BBE55E408545FA8BD89 /* AppleSignInNonce.swift in Sources */,
+				7B14CBDA8361B02455CA7181 /* AuthManager.swift in Sources */,
+				1D592B846B14F405668EE84A /* ContentView.swift in Sources */,
+				CB461460EA1200879D1BAC12 /* DashboardView.swift in Sources */,
+				83A11966B318AD48C2C82869 /* LocationManager.swift in Sources */,
+				E7E009B45965B5B850FA2337 /* LoginView.swift in Sources */,
+				42C36DCFC8AFAC2E945C939B /* MatchesView.swift in Sources */,
+				14A94371D51B0733755639A8 /* MessagesView.swift in Sources */,
+				DFFE61B72C164E6DB5431134 /* NearbyPaywallView.swift in Sources */,
+				16D08A6E61200405EE7EB161 /* ProfileSetupView.swift in Sources */,
+				CDB05C083F057FE66CCAF804 /* QuizData.swift in Sources */,
+				1EEDEE7572F53051C1030EE9 /* QuizView.swift in Sources */,
+				FE4C7C7B340D6319E524616B /* QuizViewModel.swift in Sources */,
+				5454FF470DFF6EC9A7C68B2D /* RidgitsAPIClient.swift in Sources */,
+				88E23B25FEF5B0B84065E3E0 /* RidgitsApp.swift in Sources */,
+				167CD503E48BF17B7ECEF1ED /* RidgitsComponents.swift in Sources */,
+				69EF9CC0435A7AFBFE8F61AB /* RidgitsFirebaseClient.swift in Sources */,
+				A5E33D43545C5FFD2ED50AA3 /* RidgitsLogoView.swift in Sources */,
+				7D5B214325FF9EA90A2F850D /* RidgitsModels.swift in Sources */,
+				69F79317BA74BD63BF18CD39 /* RidgitsProductID.swift in Sources */,
+				1ADCDA08BB13CB55A44888BD /* RidgitsStore.swift in Sources */,
+				89492A3071E466C1D9C34FC2 /* RidgitsTheme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		154B441931052B14371B0B6D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2B09EEB8ED52A4B180686232 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Ridgits/Ridgits.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Ridgits/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ridgits.app;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		7B0224195044E325691F7505 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FA408F8BEF54D52B953CAACE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Ridgits/Ridgits.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Ridgits/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ridgits.app;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		028A8F07BE442E1637F2A2F5 /* Build configuration list for PBXProject "Ridgits" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				154B441931052B14371B0B6D /* Debug */,
+				7B0224195044E325691F7505 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F4F7DA4AE07BC2F888E0CCE7 /* Build configuration list for PBXNativeTarget "Ridgits" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA408F8BEF54D52B953CAACE /* Debug */,
+				2B09EEB8ED52A4B180686232 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		6C932E4D857DF6F9D9550B9A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+		6F7F33E89237648C796C959A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		675F27058B0EC67440241C3F /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6C932E4D857DF6F9D9550B9A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		79ADF8278A5FA59F57D63033 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6C932E4D857DF6F9D9550B9A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		EBA8CCEACD72FE9C8F1DD07E /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6F7F33E89237648C796C959A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		F82945B9BA2E2DFC95102D4D /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6C932E4D857DF6F9D9550B9A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 881F8CE01B5B00ABF4924C68 /* Project object */;
+}

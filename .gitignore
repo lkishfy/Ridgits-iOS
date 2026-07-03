@@ -1,0 +1,6 @@
+Ridgits/Secrets.plist
+Ridgits/GoogleService-Info.plist
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.DS_Store
