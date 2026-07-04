@@ -64,6 +64,7 @@
 		6C20876A2E1C98E07F8A9CFE /* MatchProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC03E620748060EB5F52FF58 /* MatchProfileView.swift */; };
 		6C774222F03F834A8CA2CBEB /* RidgitsProfileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAA319A356BC1DDD352399C /* RidgitsProfileCache.swift */; };
 		6D9F92BECACF116150243162 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1D8E4F95CACE2E9C676B09 /* ProfileView.swift */; };
+		E7F6A5B4C3D2E1F0A9B8C7D6 /* RidgitsQuizBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A3B2C1D0E9F8A7B6C5D4E3 /* RidgitsQuizBadge.swift */; };
 		7B14CBDA8361B02455CA7181 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77B6CA24E9F62CF6C8C185C /* AuthManager.swift */; };
 		7C1E037BE4FC362F863C212C /* RidgitsAppLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E0634B98D5BB9A09E6BE19 /* RidgitsAppLinks.swift */; };
 		7C226DE1737EE2F0FE71E8A9 /* StartConversationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046E227683D0E1EE438F12A6 /* StartConversationSheet.swift */; };
@@ -228,6 +229,7 @@
 		F2D559400E25AFCDA5FD3C77 /* MatchesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchesViewModel.swift; sourceTree = "<group>"; };
 		F43A6DA4C8F51EB3C2C56592 /* PackQuizScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackQuizScoring.swift; sourceTree = "<group>"; };
 		F5DE4F272D9148F4448D0835 /* NotificationPreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPreferencesView.swift; sourceTree = "<group>"; };
+		F8A3B2C1D0E9F8A7B6C5D4E3 /* RidgitsQuizBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsQuizBadge.swift; sourceTree = "<group>"; };
 		FF8E8203096BA9734713E5FD /* QuizCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -393,6 +395,7 @@
 				81E3815F13C4EEB0F3D68137 /* ProfileSettingsView.swift */,
 				167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */,
 				0C1D8E4F95CACE2E9C676B09 /* ProfileView.swift */,
+				F8A3B2C1D0E9F8A7B6C5D4E3 /* RidgitsQuizBadge.swift */,
 				DDDC9CE126FFE8BC00343B43 /* RidgitsProfilePhotoPicker.swift */,
 			);
 			path = Profile;
@@ -678,6 +681,7 @@
 				E172E41F803A83AE8A935F58 /* ProfileSettingsView.swift in Sources */,
 				16D08A6E61200405EE7EB161 /* ProfileSetupView.swift in Sources */,
 				6D9F92BECACF116150243162 /* ProfileView.swift in Sources */,
+				E7F6A5B4C3D2E1F0A9B8C7D6 /* RidgitsQuizBadge.swift in Sources */,
 				2F523EA7CF4592655E1247A7 /* QuizArchetypeCalculator.swift in Sources */,
 				9F1F84F51DC47CF186859BE1 /* QuizCatalog.swift in Sources */,
 				0D2959B3F90264D9F28285BC /* QuizFullResultsView.swift in Sources */,

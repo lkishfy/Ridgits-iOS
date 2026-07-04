@@ -65,12 +65,6 @@ struct SubscriptionPaywallView: View {
                     .font(RidgitsTypography.body(13))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .frame(maxWidth: .infinity)
-
-                    Text("Upgrades only — cancel anytime in Apple Subscriptions. Downgrades take effect after your current period ends.")
-                        .font(RidgitsTypography.caption(11))
-                        .foregroundStyle(RidgitsColors.textMuted)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, showsDragIndicator ? 0 : 12)

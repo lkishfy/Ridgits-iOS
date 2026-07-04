@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct MatchProfileView: View {
     @Environment(\.dismiss) private var dismiss
@@ -9,6 +10,7 @@ struct MatchProfileView: View {
     let onPoke: () -> Void
 
     @State private var profile: RidgitsUserProfile?
+    @State private var compatibility = RidgitsCompatibility.empty
     @State private var isLoadingProfile = true
 
     private var sentPoke: Bool {
@@ -19,6 +21,9 @@ struct MatchProfileView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 heroSection
+                if !displayQuizBadges.isEmpty {
+                    ProfileQuizBadgesSection(badges: displayQuizBadges)
+                }
                 compatibilitySection
                 aboutSection
                 if !displayInterests.isEmpty {
@@ -53,6 +58,10 @@ struct MatchProfileView: View {
         profile?.aspirations ?? ""
     }
 
+    private var displayQuizBadges: [RidgitsQuizBadge] {
+        profile?.completedQuizBadges ?? []
+    }
+
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             RidgitsCachedProfileImage(remoteURL: match.image.isEmpty ? nil : match.image) {
@@ -70,7 +79,7 @@ struct MatchProfileView: View {
                     .minimumScaleFactor(0.85)
                 RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 18)
                 Spacer(minLength: 0)
-                RidgitsCompatibilityBadge(percent: match.compatibility.overall)
+                RidgitsCompatibilityBadge(percent: compatibility.overall)
             }
 
             if let miles = match.distanceMiles {
@@ -94,11 +103,11 @@ struct MatchProfileView: View {
                     .font(RidgitsTypography.label(15))
                     .foregroundStyle(RidgitsColors.textHeadline)
 
-                dimensionRow("Communication", match.compatibility.communication)
-                dimensionRow("Relational Depth", match.compatibility.intimacy)
-                dimensionRow("Values", match.compatibility.values)
-                dimensionRow("Social", match.compatibility.social)
-                dimensionRow("Life Direction", match.compatibility.commitment)
+                dimensionRow("Communication", compatibility.communication)
+                dimensionRow("Relational Depth", compatibility.intimacy)
+                dimensionRow("Values", compatibility.values)
+                dimensionRow("Social", compatibility.social)
+                dimensionRow("Life Direction", compatibility.commitment)
             }
             .padding(16)
         }
@@ -230,6 +239,17 @@ struct MatchProfileView: View {
     private func loadProfile() async {
         isLoadingProfile = true
         defer { isLoadingProfile = false }
+
+        compatibility = match.compatibility.withDerivedOverallIfNeeded()
+        if !compatibility.hasScores,
+           let uid = Auth.auth().currentUser?.uid,
+           let calculated = await RidgitsQuizCompatibility.compatibilityBetween(
+               currentUserId: uid,
+               otherUserId: match.userId
+           ) {
+            compatibility = calculated
+        }
+
         profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: match.userId)
     }
 }

@@ -28,13 +28,15 @@ final class MessagingViewModel: ObservableObject {
     }
 
     var awaitingApproval: [RidgitsConversation] {
-        sortedByRecency(conversations.filter(\.isOutgoingPending))
+        sortedByRecency(conversations.filter { $0.isOutgoingPending || $0.isOutgoingDeclined })
     }
 
     var activeConversations: [RidgitsConversation] {
         sortedByRecency(
             conversations.filter { conversation in
-                !conversation.isIncomingPending && !conversation.isOutgoingPending
+                !conversation.isIncomingPending
+                    && !conversation.isOutgoingPending
+                    && !conversation.isOutgoingDeclined
                     && (conversation.status == .active || conversation.status == .pending)
             }
         )
@@ -114,6 +116,32 @@ final class MessagingViewModel: ObservableObject {
     func approve(_ conversation: RidgitsConversation) async {
         do {
             try await RidgitsFirebaseClient.shared.approveConversation(conversationId: conversation.id)
+        } catch let ridgitsError as RidgitsError {
+            handleMessagingError(ridgitsError)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func decline(_ conversation: RidgitsConversation) async {
+        do {
+            try await RidgitsFirebaseClient.shared.declineConversation(conversationId: conversation.id)
+            if selectedConversation?.id == conversation.id {
+                selectedConversation = nil
+            }
+        } catch let ridgitsError as RidgitsError {
+            handleMessagingError(ridgitsError)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func withdraw(_ conversation: RidgitsConversation) async {
+        do {
+            try await RidgitsFirebaseClient.shared.withdrawConversation(conversationId: conversation.id)
+            if selectedConversation?.id == conversation.id {
+                selectedConversation = nil
+            }
         } catch let ridgitsError as RidgitsError {
             handleMessagingError(ridgitsError)
         } catch {
@@ -267,6 +295,9 @@ struct MessagesView: View {
                 },
                 onPokeBack: { poke in
                     await pokeBack(poke)
+                },
+                onDeletePoke: { poke in
+                    await deleteReceivedPoke(poke)
                 }
             )
         }
@@ -314,7 +345,7 @@ struct MessagesView: View {
             }
         } message: {
             if let match = pokeConfirmMatch {
-                Text("Send a poke to \(match.name)? This uses 1 credit and can't be undone.")
+                Text(matchesViewModel.pokeConfirmationMessage(for: match.name))
             }
         }
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
@@ -412,18 +443,19 @@ struct MessagesView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 8)
 
-            ForEach(pokeInbox.receivedPokesSorted) { poke in
-                PokeInboxRow(
-                    poke: poke,
-                    sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
-                    onViewProfile: {
-                        Task { await openPokeProfile(poke) }
-                    },
-                    onPokeBack: {
-                        Task { await pokeBack(poke) }
-                    }
-                )
-            }
+            SwipeablePokeInboxList(
+                pokes: pokeInbox.receivedPokesSorted,
+                sentPokeIdsByUser: pokeInbox.sentPokeIdsByUser,
+                onViewProfile: { poke in
+                    Task { await openPokeProfile(poke) }
+                },
+                onPokeBack: { poke in
+                    Task { await pokeBack(poke) }
+                },
+                onDelete: { poke in
+                    Task { await deleteReceivedPoke(poke) }
+                }
+            )
 
             if !viewModel.activeConversations.isEmpty {
                 Divider()
@@ -486,6 +518,15 @@ struct MessagesView: View {
 
         guard let match = await matchesViewModel.resolveMatch(for: poke.fromUserId) else { return }
         await requestPoke(for: match)
+    }
+
+    @MainActor
+    private func deleteReceivedPoke(_ poke: RidgitsPoke) async {
+        do {
+            try await RidgitsAPIClient.shared.dismissReceivedPoke(pokeId: poke.id)
+        } catch {
+            viewModel.errorMessage = error.localizedDescription
+        }
     }
 
     @MainActor
@@ -559,6 +600,7 @@ private struct MessageRequestsView: View {
     @Binding var composeMatch: RidgitsMatch?
     let onViewPokeProfile: (RidgitsPoke) async -> Void
     let onPokeBack: (RidgitsPoke) async -> Void
+    let onDeletePoke: (RidgitsPoke) async -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showSubscriptionPaywall = false
 
@@ -578,20 +620,21 @@ private struct MessageRequestsView: View {
 
                     if !pokeInbox.receivedPokesSorted.isEmpty {
                         requestsSectionHeader("Pokes")
-                        ForEach(pokeInbox.receivedPokesSorted) { poke in
-                            PokeInboxRow(
-                                poke: poke,
-                                sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
-                                onViewProfile: {
-                                    dismiss()
-                                    Task { await onViewPokeProfile(poke) }
-                                },
-                                onPokeBack: {
-                                    dismiss()
-                                    Task { await onPokeBack(poke) }
-                                }
-                            )
-                        }
+                        SwipeablePokeInboxList(
+                            pokes: pokeInbox.receivedPokesSorted,
+                            sentPokeIdsByUser: pokeInbox.sentPokeIdsByUser,
+                            onViewProfile: { poke in
+                                dismiss()
+                                Task { await onViewPokeProfile(poke) }
+                            },
+                            onPokeBack: { poke in
+                                dismiss()
+                                Task { await onPokeBack(poke) }
+                            },
+                            onDelete: { poke in
+                                Task { await onDeletePoke(poke) }
+                            }
+                        )
                     }
 
                     if !viewModel.pendingIncoming.isEmpty {
@@ -607,6 +650,10 @@ private struct MessageRequestsView: View {
                                         return
                                     }
                                     Task { await viewModel.approve(convo) }
+                                },
+                                showsDecline: true,
+                                onDecline: {
+                                    Task { await viewModel.decline(convo) }
                                 }
                             ) {
                                 viewModel.selectConversation(convo)
@@ -621,7 +668,11 @@ private struct MessageRequestsView: View {
                             DMConversationRow(
                                 conversation: convo,
                                 subtitleOverride: convo.lastMessage ?? "Waiting for them to approve",
-                                statusLabel: "Pending"
+                                statusLabel: convo.isOutgoingDeclined ? "Declined" : "Pending",
+                                showsWithdraw: true,
+                                onWithdraw: {
+                                    Task { await viewModel.withdraw(convo) }
+                                }
                             ) {
                                 viewModel.selectConversation(convo)
                                 dismiss()
@@ -656,6 +707,42 @@ private struct MessageRequestsView: View {
             .padding(.horizontal, 16)
             .padding(.top, 20)
             .padding(.bottom, 8)
+    }
+}
+
+private struct SwipeablePokeInboxList: View {
+    let pokes: [RidgitsPoke]
+    let sentPokeIdsByUser: [String: String]
+    let onViewProfile: (RidgitsPoke) -> Void
+    let onPokeBack: (RidgitsPoke) -> Void
+    let onDelete: (RidgitsPoke) -> Void
+
+    private let rowHeight: CGFloat = 76
+
+    var body: some View {
+        List {
+            ForEach(pokes) { poke in
+                PokeInboxRow(
+                    poke: poke,
+                    sentPokeBack: sentPokeIdsByUser[poke.fromUserId] != nil,
+                    onViewProfile: { onViewProfile(poke) },
+                    onPokeBack: { onPokeBack(poke) }
+                )
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        onDelete(poke)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.white)
+            }
+        }
+        .listStyle(.plain)
+        .scrollDisabled(true)
+        .frame(height: rowHeight * CGFloat(pokes.count))
     }
 }
 
@@ -747,6 +834,10 @@ private struct DMConversationRow: View {
     var statusLabel: String?
     var showsApprove: Bool = false
     var onApprove: (() -> Void)?
+    var showsDecline: Bool = false
+    var onDecline: (() -> Void)?
+    var showsWithdraw: Bool = false
+    var onWithdraw: (() -> Void)?
     let onTap: () -> Void
 
     private var isUnread: Bool { conversation.unreadCount > 0 }
@@ -771,6 +862,28 @@ private struct DMConversationRow: View {
                         .padding(.vertical, 8)
                         .background(RidgitsColors.ctaBlack)
                         .clipShape(Capsule())
+                }
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
+            }
+
+            if showsDecline, let onDecline {
+                Button(action: onDecline) {
+                    Text("Decline")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
+            }
+
+            if showsWithdraw, let onWithdraw {
+                Button(action: onWithdraw) {
+                    Text("Withdraw")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.destructive)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
                 }
                 .buttonStyle(RidgitsHapticPlainButtonStyle())
             }
@@ -930,12 +1043,37 @@ struct ConversationDetailView: View {
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .padding()
             } else if conversation.isIncomingPending {
-                RidgitsPrimaryButton(title: "Approve conversation") {
-                    guard ridgitsStore.hasPlusMembership else {
-                        viewModel.showPaywallPrompt = true
-                        return
+                VStack(spacing: 12) {
+                    RidgitsPrimaryButton(title: "Approve conversation") {
+                        guard ridgitsStore.hasPlusMembership else {
+                            viewModel.showPaywallPrompt = true
+                            return
+                        }
+                        Task { await viewModel.approve(conversation) }
                     }
-                    Task { await viewModel.approve(conversation) }
+                    Button("Decline") {
+                        Task { await viewModel.decline(conversation) }
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                }
+                .padding()
+            } else if conversation.isOutgoingPending || conversation.isOutgoingDeclined {
+                VStack(spacing: 8) {
+                    Text(
+                        conversation.isOutgoingDeclined
+                            ? "They declined your message request."
+                            : "Waiting for them to approve your message."
+                    )
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .multilineTextAlignment(.center)
+
+                    Button("Withdraw request") {
+                        Task { await viewModel.withdraw(conversation) }
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.destructive)
                 }
                 .padding()
             }

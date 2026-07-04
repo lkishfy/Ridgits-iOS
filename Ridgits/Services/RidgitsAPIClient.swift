@@ -124,6 +124,22 @@ final class RidgitsAPIClient {
         )
     }
 
+    func declineConversation(conversationId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/messaging/decline",
+            method: "POST",
+            body: ["conversationId": conversationId]
+        )
+    }
+
+    func withdrawConversation(conversationId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/messaging/withdraw",
+            method: "POST",
+            body: ["conversationId": conversationId]
+        )
+    }
+
     func sendMessage(conversationId: String, message: String) async throws {
         _ = try await authorizedRequest(
             path: "/api/messaging/send",
@@ -224,6 +240,14 @@ final class RidgitsAPIClient {
     func unpoke(pokeId: String) async throws {
         _ = try await authorizedRequest(
             path: "/api/pokes/unpoke",
+            method: "POST",
+            body: ["pokeId": pokeId]
+        )
+    }
+
+    func dismissReceivedPoke(pokeId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/pokes/dismiss",
             method: "POST",
             body: ["pokeId": pokeId]
         )

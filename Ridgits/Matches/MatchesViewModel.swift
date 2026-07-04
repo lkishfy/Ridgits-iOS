@@ -21,15 +21,25 @@ final class MatchesViewModel: ObservableObject {
     private var rawNationwideMatches: [RidgitsMatch] = []
     private var lastPoolAccessKey: String?
     private var nearbyLoadTask: Task<Void, Never>?
+    private var resolvedMatchCache: [String: RidgitsMatch] = [:]
 
     func fetchRadius(access: RidgitsNearbySearchAccess) -> Int {
         RidgitsNearbyAccess.clampRadius(maxDistance, access: access)
     }
 
+    private func enrichDistances(_ matches: [RidgitsMatch]) -> [RidgitsMatch] {
+        matches.map { match in
+            guard match.distanceMiles == nil else { return match }
+            guard let pooled = nearbyPool.first(where: { $0.userId == match.userId }),
+                  let miles = pooled.distanceMiles else { return match }
+            return match.withDistanceMiles(miles)
+        }
+    }
+
     func hydrateFromCache(uid: String, access: RidgitsNearbySearchAccess) {
         if let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 10) {
             rawNationwideMatches = cached
-            nationwideMatches = compatibilityFilter.filtered(cached)
+            nationwideMatches = compatibilityFilter.filtered(enrichDistances(cached))
         }
 
         guard let pool = RidgitsMatchesCache.shared.nearbyPool(for: uid),
@@ -38,8 +48,14 @@ final class MatchesViewModel: ObservableObject {
         }
 
         nearbyPool = pool.matches
-        closeMatchCount = pool.closeMatchCount
+        closeMatchCount = access.showsCloseMatchTeaser ? pool.closeMatchCount : 0
         applyDisplayedRadius(access: access)
+        refreshNationwideDistances()
+    }
+
+    private func refreshNationwideDistances() {
+        guard !rawNationwideMatches.isEmpty else { return }
+        nationwideMatches = compatibilityFilter.filtered(enrichDistances(rawNationwideMatches))
     }
 
     func applyDisplayedRadius(access: RidgitsNearbySearchAccess) {
@@ -57,7 +73,7 @@ final class MatchesViewModel: ObservableObject {
 
     func onCompatibilityFilterChanged(access: RidgitsNearbySearchAccess) {
         applyDisplayedRadius(access: access)
-        nationwideMatches = compatibilityFilter.filtered(rawNationwideMatches)
+        nationwideMatches = compatibilityFilter.filtered(enrichDistances(rawNationwideMatches))
     }
 
     func resetCompatibilityFilter(access: RidgitsNearbySearchAccess) {
@@ -76,7 +92,11 @@ final class MatchesViewModel: ObservableObject {
     func resolveMatch(for userId: String) async -> RidgitsMatch? {
         if let existing = nearbyPool.first(where: { $0.userId == userId })
             ?? rawNationwideMatches.first(where: { $0.userId == userId }) {
-            return existing
+            return enrichDistances([existing]).first ?? existing
+        }
+
+        if let cached = resolvedMatchCache[userId] {
+            return enrichDistances([cached]).first ?? cached
         }
 
         var profile = RidgitsPublicProfileCache.shared.profile(for: userId)
@@ -89,24 +109,28 @@ final class MatchesViewModel: ObservableObject {
 
         let name = profile.name.trimmingCharacters(in: .whitespacesAndNewlines)
         let about = profile.about.trimmingCharacters(in: .whitespacesAndNewlines)
+        let compatibility = await fetchCompatibility(with: userId) ?? .empty
 
-        return RidgitsMatch(
+        let match = RidgitsMatch(
             id: userId,
             userId: userId,
             name: name.isEmpty ? "Ridgits member" : name,
             image: profile.image,
             location: profile.location,
             distanceMiles: nil,
-            compatibility: RidgitsCompatibility(
-                overall: 0,
-                communication: 0,
-                intimacy: 0,
-                values: 0,
-                social: 0,
-                commitment: 0
-            ),
+            compatibility: compatibility,
             about: about.isEmpty ? nil : about,
             subscriptionTier: profile.subscriptionTier
+        )
+        resolvedMatchCache[userId] = match
+        return match
+    }
+
+    private func fetchCompatibility(with otherUserId: String) async -> RidgitsCompatibility? {
+        guard let myUid = Auth.auth().currentUser?.uid else { return nil }
+        return await RidgitsQuizCompatibility.compatibilityBetween(
+            currentUserId: myUid,
+            otherUserId: otherUserId
         )
     }
 
@@ -161,7 +185,7 @@ final class MatchesViewModel: ObservableObject {
                     limit: 10,
                     forceRefresh: forceRefresh
                 )
-                nationwideMatches = compatibilityFilter.filtered(rawNationwideMatches)
+                nationwideMatches = compatibilityFilter.filtered(enrichDistances(rawNationwideMatches))
             }
 
             if Task.isCancelled { return }
@@ -202,6 +226,8 @@ final class MatchesViewModel: ObservableObject {
             nearbyPool = cached.matches
             closeMatchCount = access.showsCloseMatchTeaser ? cached.closeMatchCount : 0
             applyDisplayedRadius(access: access)
+            refreshNationwideDistances()
+            await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
             return
         }
 
@@ -223,8 +249,10 @@ final class MatchesViewModel: ObservableObject {
             )
             guard !Task.isCancelled else { return }
             nearbyPool = result.matches
-            closeMatchCount = access.showsCloseMatchTeaser ? result.closeMatchCount : 0
+            closeMatchCount = access.showsCloseMatchTeaser ? max(0, result.closeMatchCount) : 0
             applyDisplayedRadius(access: access)
+            refreshNationwideDistances()
+            await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
             errorMessage = nil
         } catch is CancellationError {
             return
@@ -232,6 +260,28 @@ final class MatchesViewModel: ObservableObject {
             if !Task.isCancelled {
                 errorMessage = error.localizedDescription
             }
+        }
+    }
+
+    /// Accurate count of compatible matches within the close-match threshold (free-user teaser).
+    private func refreshCloseMatchCount(access: RidgitsNearbySearchAccess, forceRefresh: Bool) async {
+        guard access.showsCloseMatchTeaser else {
+            closeMatchCount = 0
+            return
+        }
+
+        do {
+            let preview = try await RidgitsFirebaseClient.shared.findMatches(
+                maxDistance: RidgitsNearbyAccess.closeMatchesThresholdMiles,
+                forceRefresh: forceRefresh,
+                previewCloseMatches: true
+            )
+            guard !Task.isCancelled else { return }
+            closeMatchCount = max(0, preview.closeMatchCount)
+        } catch is CancellationError {
+            return
+        } catch {
+            closeMatchCount = 0
         }
     }
 
@@ -251,6 +301,12 @@ final class MatchesViewModel: ObservableObject {
             return .noCredits
         }
         return .ready
+    }
+
+    func pokeConfirmationMessage(for matchName: String) -> String {
+        let balance = pokeCredits?.balance ?? 0
+        let leftLabel = balance == 1 ? "1 poke left" : "\(balance) pokes left"
+        return "You have \(leftLabel). Send one to \(matchName)? This can't be undone."
     }
 
     func sendPoke(to match: RidgitsMatch) async {

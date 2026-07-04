@@ -334,3 +334,36 @@ enum RidgitsQuizCompatibility {
         }
     }
 }
+
+extension RidgitsCompatibilityScores {
+    var asRidgitsCompatibility: RidgitsCompatibility {
+        RidgitsCompatibility(
+            overall: overall,
+            communication: communication,
+            intimacy: intimacy,
+            values: values,
+            social: social,
+            commitment: commitment
+        )
+    }
+}
+
+extension RidgitsQuizCompatibility {
+    static func compatibilityBetween(currentUserId: String, otherUserId: String) async -> RidgitsCompatibility? {
+        do {
+            guard let myProgress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: currentUserId),
+                  myProgress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: myProgress.answers),
+                  let otherProgress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: otherUserId),
+                  otherProgress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: otherProgress.answers) else {
+                return nil
+            }
+
+            return calculate(
+                input(from: myProgress),
+                input(from: otherProgress)
+            ).asRidgitsCompatibility.withDerivedOverallIfNeeded()
+        } catch {
+            return nil
+        }
+    }
+}

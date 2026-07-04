@@ -24,6 +24,7 @@ final class QuizViewModel: ObservableObject {
     @Published var activePool: [Int]
     @Published var poolPosition = 0
     @Published var answers: [String: QuizAnswerRecord] = [:]
+    @Published var dealbreakerEngaged: Set<String> = []
     @Published var activeMultiSelect: Set<String> = []
     @Published var freePassesRemaining = 3
     @Published var hideAnsweredQuestions = false
@@ -32,7 +33,11 @@ final class QuizViewModel: ObservableObject {
     @Published var isSaving = false
     @Published var isLoading = false
     @Published var didComplete = false
+    @Published var updatedResultsPresentation: QuizFullResultsPresentation?
     @Published var errorMessage: String?
+
+    private var previousArchetypeName: String?
+    private var autoAdvanceTask: Task<Void, Never>?
 
     init(mode: QuizMode = .onboarding) {
         self.mode = mode
@@ -120,11 +125,15 @@ final class QuizViewModel: ObservableObject {
             if let progress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid) {
                 answers = progress.answers
                 freePassesRemaining = progress.freePassesRemaining
+                dealbreakerEngaged = Set(progress.answers.keys)
                 if mode == .modify {
                     poolPosition = min(progress.currentQuestion, max(activePool.count - 1, 0))
                 } else if progress.currentQuestion > 0 {
                     poolPosition = min(progress.currentQuestion, max(activePool.count - 1, 0))
                 }
+            }
+            if mode == .modify, let archetype = await RidgitsFirebaseClient.shared.fetchQuizArchetype(uid: uid) {
+                previousArchetypeName = archetype.name
             }
             refreshActivePool()
             syncFreePasses()
@@ -152,12 +161,14 @@ final class QuizViewModel: ObservableObject {
     }
 
     func selectCategory(_ category: String?) {
+        autoAdvanceTask?.cancel()
         selectedCategory = category
         poolPosition = 0
         refreshActivePool()
     }
 
     func toggleHideAnswered(_ hidden: Bool) {
+        autoAdvanceTask?.cancel()
         hideAnsweredQuestions = hidden
         poolPosition = 0
         refreshActivePool()
@@ -189,10 +200,20 @@ final class QuizViewModel: ObservableObject {
         }
     }
 
+    func canSelectAnswer(for question: QuizQuestion) -> Bool {
+        if let record = answers[question.id], record.hasAnswer { return true }
+        return dealbreakerEngaged.contains(question.id)
+    }
+
     func toggleDealbreaker(for question: QuizQuestion) {
-        guard var record = answers[question.id], record.hasAnswer else { return }
+        var record = answers[question.id] ?? QuizAnswerRecord(
+            preferredAnswers: [],
+            importance: QuizImportance.somewhat.rawValue,
+            dealbreaker: false
+        )
         record.dealbreaker.toggle()
         answers[question.id] = record
+        dealbreakerEngaged.insert(question.id)
         Task { try? await persistProgress(completed: false) }
     }
 
@@ -220,12 +241,52 @@ final class QuizViewModel: ObservableObject {
             syncFreePasses()
             Task { try? await persistProgress(completed: false) }
         } else {
+            let previousAnswer = answers[question.id]?.answer
+            let existingDealbreaker = answers[question.id]?.dealbreaker ?? false
             answers[question.id] = QuizAnswerRecord(
                 answer: optionValue,
                 preferredAnswers: [optionValue],
                 importance: QuizImportance.somewhat.rawValue,
-                dealbreaker: false
+                dealbreaker: existingDealbreaker
             )
+            Task { try? await persistProgress(completed: false) }
+            if previousAnswer != optionValue {
+                scheduleAutoAdvanceAfterSingleSelect()
+            }
+        }
+    }
+
+    private func scheduleAutoAdvanceAfterSingleSelect() {
+        autoAdvanceTask?.cancel()
+        autoAdvanceTask = Task {
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            guard !Task.isCancelled else { return }
+            advanceAfterSingleSelectAnswer()
+            autoAdvanceTask = nil
+        }
+    }
+
+    private func advanceAfterSingleSelectAnswer() {
+        guard canAdvance else { return }
+
+        if hideAnsweredQuestions {
+            refreshActivePool()
+            if activePool.isEmpty {
+                if mode == .modify || canFinish {
+                    Task { await completeQuiz() }
+                }
+                return
+            }
+            Task { try? await persistProgress(completed: false) }
+            return
+        }
+
+        if isLastInPool {
+            if mode == .modify || canFinish {
+                Task { await completeQuiz() }
+            }
+        } else {
+            poolPosition += 1
             Task { try? await persistProgress(completed: false) }
         }
     }
@@ -251,6 +312,7 @@ final class QuizViewModel: ObservableObject {
     }
 
     func goNext() {
+        autoAdvanceTask?.cancel()
         guard canAdvance else { return }
         if isLastInPool {
             if mode == .modify || canFinish {
@@ -263,10 +325,12 @@ final class QuizViewModel: ObservableObject {
     }
 
     func goBack() {
+        autoAdvanceTask?.cancel()
         poolPosition = max(0, poolPosition - 1)
     }
 
     func skipQuestion() {
+        autoAdvanceTask?.cancel()
         if isLastInPool {
             if mode == .modify || canFinish {
                 Task { await completeQuiz() }
@@ -294,10 +358,31 @@ final class QuizViewModel: ObservableObject {
         defer { isSaving = false }
         do {
             try await persistProgress(completed: true, uid: uid)
+            if mode == .modify {
+                updatedResultsPresentation = buildFullResultsPresentation()
+            }
             didComplete = true
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    func buildFullResultsPresentation() -> QuizFullResultsPresentation {
+        let archetype = QuizArchetypeCalculator.calculate(answers: answers, questions: questions)
+        let progress = LoadedQuizProgress(
+            answers: answers,
+            currentQuestion: poolPosition,
+            completed: true,
+            freePassesRemaining: freePassesRemaining
+        )
+        return QuizFullResultsPresentation(
+            archetypeName: archetype?.name ?? "Your Archetype",
+            archetypeDescription: archetype?.description ?? "",
+            scores: RidgitsQuizCompatibility.dimensionAverages(from: progress),
+            profile: nil,
+            insights: RidgitsQuizCompatibility.insights(from: progress),
+            previousArchetypeName: previousArchetypeName
+        )
     }
 
     func persistProgress(completed: Bool, uid: String? = nil) async throws {

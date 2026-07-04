@@ -7,6 +7,7 @@ struct QuizFullResultsPresentation: Identifiable {
     let scores: RidgitsCompatibilityScores
     let profile: RidgitsUserProfile?
     let insights: [String]
+    var previousArchetypeName: String?
 }
 
 struct QuizFullResultsView: View {
@@ -17,6 +18,14 @@ struct QuizFullResultsView: View {
     let scores: RidgitsCompatibilityScores
     let profile: RidgitsUserProfile?
     let insights: [String]
+    var previousArchetypeName: String?
+    var showsUpdatedTitle = false
+    var embedInNavigationStack = true
+    var onDone: (() -> Void)?
+
+    private var navigationTitle: String {
+        showsUpdatedTitle ? "Updated Results" : "Full Results"
+    }
 
     private let dimensions: [QuizDimensionDisplay] = [
         QuizDimensionDisplay(
@@ -52,29 +61,68 @@ struct QuizFullResultsView: View {
     ]
 
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    archetypeSection
-                    if hasProfileContent {
-                        profileSection
+        if embedInNavigationStack {
+            NavigationStack {
+                resultsContent
+                    .navigationTitle(navigationTitle)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") { finish() }
+                                .foregroundStyle(RidgitsColors.textSecondary)
+                        }
                     }
-                    dimensionsSection
-                    if !insights.isEmpty {
-                        aboutYouSection
-                    }
-                }
-                .padding(16)
             }
-            .background(RidgitsColors.feedBackground)
-            .navigationTitle("Full Results")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                        .foregroundStyle(RidgitsColors.textSecondary)
+        } else {
+            resultsContent
+        }
+    }
+
+    private var resultsContent: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                if showsArchetypeChangeBanner {
+                    archetypeChangeBanner
+                }
+                archetypeSection
+                if hasProfileContent {
+                    profileSection
+                }
+                dimensionsSection
+                if !insights.isEmpty {
+                    aboutYouSection
                 }
             }
+            .padding(16)
+        }
+        .background(RidgitsColors.feedBackground)
+    }
+
+    private var showsArchetypeChangeBanner: Bool {
+        guard let previousArchetypeName, !previousArchetypeName.isEmpty else { return false }
+        return previousArchetypeName != archetypeName
+    }
+
+    private var archetypeChangeBanner: some View {
+        RidgitsDashboardCard {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Archetype updated")
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Text("You were \(previousArchetypeName ?? ""). You're now \(archetypeName).")
+                    .font(RidgitsTypography.body(13))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .lineSpacing(3)
+            }
+            .padding(14)
+        }
+    }
+
+    private func finish() {
+        if let onDone {
+            onDone()
+        } else {
+            dismiss()
         }
     }
 

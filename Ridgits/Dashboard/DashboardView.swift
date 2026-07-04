@@ -260,7 +260,7 @@ struct DashboardView: View {
             } message: {
                 Text("Finish your personality quiz to view full results and compare profiles.")
             }
-            .sheet(isPresented: $showModifyQuiz, onDismiss: {
+            .fullScreenCover(isPresented: $showModifyQuiz, onDismiss: {
                 Task { await handleModifyQuizDismissed() }
             }) {
                 QuizView(mode: .modify) {
@@ -528,7 +528,12 @@ struct DashboardView: View {
             }
         }
 
-        profileCode = await RidgitsFirebaseClient.shared.fetchProfileCode(uid: uid)
+        if profileCode == nil, let cachedCode = RidgitsProfileCache.shared.profileCode(for: uid) {
+            profileCode = cachedCode
+        }
+        if let code = await RidgitsFirebaseClient.shared.fetchProfileCode(uid: uid) {
+            profileCode = code
+        }
         packProfile = await RidgitsFirebaseClient.shared.fetchPackProfile(uid: uid)
 
         refreshNearbyPresence()
@@ -555,6 +560,10 @@ struct DashboardView: View {
         guard let uid = authManager.currentUser?.uid else { return }
         if profile == nil, let cached = RidgitsProfileCache.shared.profile(for: uid) {
             profile = cached
+        }
+        if profileCode == nil, let cachedCode = RidgitsProfileCache.shared.profileCode(for: uid) {
+            profileCode = cachedCode
+            refreshNearbyPresence()
         }
     }
 

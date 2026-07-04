@@ -8,6 +8,7 @@ final class RidgitsFirebaseClient {
 
     private let db = Firestore.firestore()
     private let api = RidgitsAPIClient.shared
+    private var profileRefreshTasks: [String: Task<Void, Never>] = [:]
 
     private init() {}
 
@@ -21,7 +22,7 @@ final class RidgitsFirebaseClient {
         case .cacheFirst:
             if let cached = RidgitsProfileCache.shared.profile(for: uid) {
                 if RidgitsProfileCache.shared.isStale(uid: uid) {
-                    Task { try? await self.fetchUserProfile(uid: uid, policy: .networkOnly) }
+                    scheduleProfileRefresh(uid: uid)
                 }
                 return cached
             }
@@ -106,6 +107,7 @@ final class RidgitsFirebaseClient {
             ],
             merge: true
         )
+        await syncCompletedQuizBadges(uid: uid)
         RidgitsMatchesCache.shared.clearNationwide(uid: uid)
         return true
     }
@@ -227,6 +229,9 @@ final class RidgitsFirebaseClient {
         }
 
         try await db.collection("quizProgress").document(uid).setData(payload, merge: true)
+        if completed {
+            await syncCompletedQuizBadges(uid: uid)
+        }
         RidgitsMatchesCache.shared.clearNationwide(uid: uid)
     }
 
@@ -277,7 +282,29 @@ final class RidgitsFirebaseClient {
         return nil
     }
 
-    func fetchProfileCode(uid: String) async -> String? {
+    func fetchProfileCode(uid: String, policy: ProfileFetchPolicy = .cacheFirst) async -> String? {
+        switch policy {
+        case .cacheFirst:
+            if let cached = RidgitsProfileCache.shared.profileCode(for: uid) {
+                return cached
+            }
+            return await fetchProfileCode(uid: uid, policy: .networkOnly)
+        case .networkOnly:
+            guard let code = await fetchProfileCodeFromFirestore(uid: uid) else { return nil }
+            RidgitsProfileCache.shared.saveProfileCode(code, uid: uid)
+            return code
+        }
+    }
+
+    private func scheduleProfileRefresh(uid: String) {
+        guard profileRefreshTasks[uid] == nil else { return }
+        profileRefreshTasks[uid] = Task {
+            try? await fetchUserProfile(uid: uid, policy: .networkOnly)
+            profileRefreshTasks[uid] = nil
+        }
+    }
+
+    private func fetchProfileCodeFromFirestore(uid: String) async -> String? {
         guard let snapshot = try? await db.collection("profileCodes")
             .whereField("userId", isEqualTo: uid)
             .limit(to: 1)
@@ -422,6 +449,28 @@ final class RidgitsFirebaseClient {
         ]
 
         try await db.collection("users").document(uid).setData(payload, merge: true)
+        await syncCompletedQuizBadges(uid: uid)
+    }
+
+    func syncCompletedQuizBadges(uid: String) async {
+        let packProfile = await fetchPackProfile(uid: uid)
+        let progress = try? await fetchQuizProgress(uid: uid)
+        let personalityCompleted = progress.map {
+            $0.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: $0.answers)
+        } ?? false
+        let badges = RidgitsQuizBadgeBuilder.badges(
+            packProfile: packProfile,
+            personalityQuizCompleted: personalityCompleted
+        )
+        let payload: [String: Any] = [
+            "completedQuizBadges": badges.map(\.firestorePayload),
+        ]
+        try? await db.collection("users").document(uid).setData(payload, merge: true)
+        try? await db.collection("publicProfiles").document(uid).setData(payload, merge: true)
+        if var cached = RidgitsProfileCache.shared.profile(for: uid) {
+            cached.completedQuizBadges = badges
+            RidgitsProfileCache.shared.save(cached)
+        }
     }
 
     func fetchRidgits(userId: String) async -> [RidgitChallenge] {
@@ -616,6 +665,14 @@ final class RidgitsFirebaseClient {
 
     func approveConversation(conversationId: String) async throws {
         try await api.approveConversation(conversationId: conversationId)
+    }
+
+    func declineConversation(conversationId: String) async throws {
+        try await api.declineConversation(conversationId: conversationId)
+    }
+
+    func withdrawConversation(conversationId: String) async throws {
+        try await api.withdrawConversation(conversationId: conversationId)
     }
 
     func sendMessage(conversationId: String, message: String) async throws {

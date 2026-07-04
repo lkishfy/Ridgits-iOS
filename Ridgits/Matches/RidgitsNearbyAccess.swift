@@ -47,30 +47,58 @@ struct RidgitsNearbySearchAccess: Equatable {
     var showsCloseMatchTeaser: Bool {
         !hasMembership
     }
+
+    /// Subscription tier to upsell when a locked radius preset is tapped.
+    func lockedRadiusPaywallTier(for preset: Int) -> RidgitsSubscriptionTier {
+        RidgitsNearbyAccess.paywallTier(forLockedPreset: preset, access: self)
+    }
 }
 
 enum RidgitsNearbyAccess {
     /// Free users cannot see matches closer than this.
-    static let closeMatchesThresholdMiles = 25
+    static let closeMatchesThresholdMiles = 30
 
-    /// Ridgits+ search floor (mi).
+    /// Ridgits+ minimum search radius (mi).
     static let plusMinRadiusMiles = 25
 
-    /// Badge count: "N within 25 mi" — upsell for free users.
-    static let closeMatchesBadgeMiles = 25
+    /// Ridgits Premium unlocks these closer presets (mi).
+    static let premiumRadiusPresetMiles: Set<Int> = [0, 10]
 
-    static let unsubscribedMinRadiusMiles = 25
+    /// Free users can search between 50 and 150 miles without subscribing.
+    static let unsubscribedMinRadiusMiles = 50
     static let unsubscribedMaxRadiusMiles = 150
 
     static let subscribedMaxRadiusMiles = 150
 
     static let defaultRadiusMiles = 50
 
-    /// Quick-select and slider snap points (mi).
-    static let radiusPresetMiles = [25, 50, 100, 150]
+    /// Quick-select chips (mi). Tier rules gate which values are selectable.
+    static let radiusPresetMiles = [0, 10, 25, 50, 150]
 
-    static func snapToPresetMiles(_ radius: Int) -> Int {
+    static func snapToPresetMiles(_ radius: Int, access: RidgitsNearbySearchAccess) -> Int {
         radiusPresetMiles.min(by: { abs($0 - radius) < abs($1 - radius) }) ?? radius
+    }
+
+    static func selectablePresets(for access: RidgitsNearbySearchAccess) -> [Int] {
+        radiusPresetMiles.filter { !isLockedPreset($0, access: access) }
+    }
+
+    static func isLockedPreset(_ preset: Int, access: RidgitsNearbySearchAccess) -> Bool {
+        if !access.hasMembership {
+            return preset <= plusMinRadiusMiles
+        }
+        if access.tier == .plus {
+            return premiumRadiusPresetMiles.contains(preset)
+        }
+        return false
+    }
+
+    /// Which subscription tier unlocks a locked preset.
+    static func paywallTier(forLockedPreset preset: Int, access: RidgitsNearbySearchAccess) -> RidgitsSubscriptionTier {
+        if premiumRadiusPresetMiles.contains(preset) {
+            return .premium
+        }
+        return .plus
     }
 
     static func minRadiusMiles(access: RidgitsNearbySearchAccess) -> Int {
@@ -82,23 +110,28 @@ enum RidgitsNearbyAccess {
     }
 
     static func clampRadius(_ radius: Int, access: RidgitsNearbySearchAccess) -> Int {
-        let snapped = snapToPresetMiles(radius)
+        let snapped = snapToPresetMiles(radius, access: access)
+        if isLockedPreset(snapped, access: access) {
+            return max(defaultRadiusMiles, access.minRadiusMiles)
+        }
         return min(
             maxRadiusMiles(access: access),
-            max(minRadiusMiles(access: access), snapped)
+            max(access.minRadiusMiles, snapped)
         )
     }
 
-    /// Free users hitting a radius below 25 mi should see the paywall.
-    static func isCloseRadiusAttempt(_ radius: Int, access: RidgitsNearbySearchAccess) -> Bool {
-        !access.hasMembership && radius < closeMatchesThresholdMiles
+    static func isLockedRadius(_ radius: Int, access: RidgitsNearbySearchAccess) -> Bool {
+        isLockedPreset(radius, access: access)
     }
 
-    static func closeMatches(from matches: [RidgitsMatch]) -> [RidgitsMatch] {
-        matches.filter { match in
-            guard let miles = match.distanceMiles else { return false }
-            return miles >= 0 && miles < Double(closeMatchesBadgeMiles)
+    /// Human-readable search band, e.g. "30–50 miles" when a close-match floor applies.
+    static func radiusRangeLabel(maxRadius: Int, access: RidgitsNearbySearchAccess) -> String {
+        let capped = clampRadius(maxRadius, access: access)
+        let floor = access.closeMatchFloorMiles
+        if floor > 0, capped > floor {
+            return "\(floor)–\(capped) miles"
         }
+        return "within \(capped) miles"
     }
 
     static func poolFetchRadius(access: RidgitsNearbySearchAccess) -> Int {
@@ -114,13 +147,55 @@ enum RidgitsNearbyAccess {
         let floor = access.closeMatchFloorMiles
         return pool.filter { match in
             guard let miles = match.distanceMiles else {
-                return access.hasMembership && floor == 0
+                return floor == 0
             }
-            if floor > 0 && miles > 0 && miles < Double(floor) {
+            if floor > 0 && miles < Double(floor) {
                 return false
             }
             return miles <= Double(clamped)
         }
+    }
+
+    /// Minimum distance (mi) the user's tier can message.
+    static func messageDistanceFloor(for tier: RidgitsSubscriptionTier) -> Int {
+        switch tier {
+        case .premium, .ultra:
+            return 0
+        case .plus:
+            return plusMinRadiusMiles
+        default:
+            return closeMatchesThresholdMiles
+        }
+    }
+
+    /// Subscription tier to upsell when messaging someone at this distance.
+    static func messagingUpsellTier(forDistanceMiles miles: Double?) -> RidgitsSubscriptionTier {
+        guard let miles else { return .plus }
+        if miles < Double(plusMinRadiusMiles) { return .premium }
+        return .plus
+    }
+
+    static func requiresUpgradeToMessage(
+        personAtDistanceMiles miles: Double?,
+        access: RidgitsNearbySearchAccess
+    ) -> Bool {
+        if !access.hasMembership { return true }
+        guard let miles else { return false }
+        return miles < Double(messageDistanceFloor(for: access.tier))
+    }
+
+    static func messagingPaywallCopy(forDistanceMiles miles: Double?) -> (headline: String, subheadline: String) {
+        let tier = messagingUpsellTier(forDistanceMiles: miles)
+        let headline = "Upgrade to message this person"
+        let subheadline: String
+        if tier == .premium {
+            subheadline = "Premium unlocks messaging for matches within 10 and 0 miles."
+        } else if let miles, miles < Double(closeMatchesThresholdMiles) {
+            subheadline = "Ridgits+ lets you message matches within \(closeMatchesThresholdMiles) miles."
+        } else {
+            subheadline = "Subscribe to send message requests on Ridgits."
+        }
+        return (headline, subheadline)
     }
 }
 

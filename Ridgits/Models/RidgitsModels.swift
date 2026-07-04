@@ -17,6 +17,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     var subscriptionTier: String
     /// When false, the user is hidden from discovery and cannot send pokes or messages.
     var visibleInCommunity: Bool
+    var completedQuizBadges: [RidgitsQuizBadge]
 
     var isCompleteForMatching: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -37,7 +38,8 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             id: uid, name: "", location: "", age: nil, image: "",
             about: "", interests: [], aspirations: "", additionalImages: [],
             socialHandle: "", ageRangeMin: nil, ageRangeMax: nil, subscriptionTier: "free",
-            visibleInCommunity: true
+            visibleInCommunity: true,
+            completedQuizBadges: []
         )
     }
 
@@ -56,8 +58,14 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             ageRangeMin: data["ageRangeMin"] as? Int ?? (data["ageRangeMin"] as? String).flatMap(Int.init),
             ageRangeMax: data["ageRangeMax"] as? Int ?? (data["ageRangeMax"] as? String).flatMap(Int.init),
             subscriptionTier: data["subscriptionTier"] as? String ?? "free",
-            visibleInCommunity: data["visibleInCommunity"] as? Bool ?? true
+            visibleInCommunity: data["visibleInCommunity"] as? Bool ?? true,
+            completedQuizBadges: Self.parseCompletedQuizBadges(from: data)
         )
+    }
+
+    private static func parseCompletedQuizBadges(from data: [String: Any]) -> [RidgitsQuizBadge] {
+        guard let raw = data["completedQuizBadges"] as? [[String: Any]] else { return [] }
+        return raw.compactMap { RidgitsQuizBadge.from(data: $0) }
     }
 
     func ridgitSnapshot() -> [String: Any] {
@@ -150,6 +158,20 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
     let compatibility: RidgitsCompatibility
     let about: String?
     let subscriptionTier: String?
+
+    func withDistanceMiles(_ miles: Double?) -> RidgitsMatch {
+        RidgitsMatch(
+            id: id,
+            userId: userId,
+            name: name,
+            image: image,
+            location: location,
+            distanceMiles: miles,
+            compatibility: compatibility,
+            about: about,
+            subscriptionTier: subscriptionTier
+        )
+    }
 }
 
 struct RidgitsCompatibility: Equatable, Codable, Hashable {
@@ -172,6 +194,24 @@ struct RidgitsCompatibility: Equatable, Codable, Hashable {
             social: social,
             commitment: commitment
         )
+    }
+
+    static let empty = RidgitsCompatibility(
+        overall: 0,
+        communication: 0,
+        intimacy: 0,
+        values: 0,
+        social: 0,
+        commitment: 0
+    )
+
+    var hasScores: Bool {
+        overall > 0
+            || communication > 0
+            || intimacy > 0
+            || values > 0
+            || social > 0
+            || commitment > 0
     }
 
     static func fromDictionary(_ dict: [String: Any]) -> RidgitsCompatibility {
@@ -230,6 +270,7 @@ enum ConversationStatus: String, Codable {
     case active
     case expired
     case blocked
+    case declined
 }
 
 struct RidgitsConversation: Identifiable, Equatable, Codable {
@@ -248,6 +289,7 @@ struct RidgitsConversation: Identifiable, Equatable, Codable {
     let unreadCount: Int
     let isIncomingPending: Bool
     let isOutgoingPending: Bool
+    let isOutgoingDeclined: Bool
 
     var isExpired: Bool {
         status == .expired || (expiresAt.map { $0 <= Date() } ?? false)
@@ -432,7 +474,8 @@ extension RidgitsConversation {
             otherUserSubscriptionTier: otherUserSubscriptionTier,
             unreadCount: (data["unreadCounts"] as? [String: Int])?[currentUserId] ?? 0,
             isIncomingPending: status == .pending && initiatorId != currentUserId && !approvedByMe,
-            isOutgoingPending: status == .pending && initiatorId == currentUserId && !approvedByOther
+            isOutgoingPending: status == .pending && initiatorId == currentUserId && !approvedByOther,
+            isOutgoingDeclined: status == .declined && initiatorId == currentUserId
         )
     }
 
@@ -452,7 +495,8 @@ extension RidgitsConversation {
             otherUserSubscriptionTier: subscriptionTier ?? otherUserSubscriptionTier,
             unreadCount: unreadCount,
             isIncomingPending: isIncomingPending,
-            isOutgoingPending: isOutgoingPending
+            isOutgoingPending: isOutgoingPending,
+            isOutgoingDeclined: isOutgoingDeclined
         )
     }
 

@@ -8,6 +8,7 @@ struct QuizView: View {
     @State private var importance: QuizImportance = .somewhat
     @State private var showCategorySheet = false
     @State private var preferencePanelExpanded = false
+    @State private var updatedResultsProfile: RidgitsUserProfile?
 
     var mode: QuizMode
     var onCompleted: (() -> Void)?
@@ -25,7 +26,9 @@ struct QuizView: View {
             ZStack {
                 RidgitsColors.feedBackground.ignoresSafeArea()
 
-                if viewModel.isLoading {
+                if let presentation = viewModel.updatedResultsPresentation {
+                    updatedResultsView(presentation)
+                } else if viewModel.isLoading {
                     ProgressView("Loading your quiz…")
                 } else if mode == .modify && viewModel.cardViewMode == .list {
                     modifyListMode
@@ -34,14 +37,14 @@ struct QuizView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
+            .toolbar { quizToolbarContent }
             .sheet(isPresented: $showCategorySheet) {
                 categoryBrowseSheet
             }
         }
         .task { await viewModel.bootstrap() }
         .onDisappear {
-            guard mode == .modify else { return }
+            guard mode == .modify, !viewModel.didComplete else { return }
             Task { await viewModel.persistDraftOnExit() }
         }
         .onChange(of: viewModel.currentQuestionIndex) { _, _ in
@@ -57,9 +60,9 @@ struct QuizView: View {
                             try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
                         }
                         await referralStore.qualifyReferralIfNeeded()
+                        onCompleted?()
+                        onDismiss?()
                     }
-                    onCompleted?()
-                    onDismiss?()
                 }
             }
         }
@@ -67,6 +70,51 @@ struct QuizView: View {
             Button("OK") { viewModel.errorMessage = nil }
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    private func updatedResultsView(_ presentation: QuizFullResultsPresentation) -> some View {
+        QuizFullResultsView(
+            archetypeName: presentation.archetypeName,
+            archetypeDescription: presentation.archetypeDescription,
+            scores: presentation.scores,
+            profile: updatedResultsProfile ?? presentation.profile,
+            insights: presentation.insights,
+            previousArchetypeName: presentation.previousArchetypeName,
+            showsUpdatedTitle: true,
+            embedInNavigationStack: false,
+            onDone: finishUpdatedResults
+        )
+        .task(id: viewModel.didComplete) {
+            guard updatedResultsProfile == nil,
+                  let uid = authManager.currentUser?.uid else { return }
+            updatedResultsProfile = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)
+        }
+    }
+
+    private func finishUpdatedResults() {
+        Task {
+            if let uid = authManager.currentUser?.uid {
+                _ = try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
+            }
+            onCompleted?()
+            onDismiss?()
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var quizToolbarContent: some ToolbarContent {
+        if viewModel.updatedResultsPresentation != nil {
+            ToolbarItem(placement: .principal) {
+                Text("Updated Results")
+                    .font(RidgitsTypography.label(13))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") { finishUpdatedResults() }
+                    .font(RidgitsTypography.label(12))
+            }
+        } else {
+            toolbarContent
         }
     }
 
@@ -92,7 +140,13 @@ struct QuizView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                modifyToolbarMenu
+                Group {
+                    if #available(iOS 26.0, *) {
+                        modifyToolbarMenu.sharedBackgroundVisibility(.hidden)
+                    } else {
+                        modifyToolbarMenu
+                    }
+                }
             }
         } else {
             ToolbarItem(placement: .principal) {
@@ -144,10 +198,20 @@ struct QuizView: View {
             }
             .disabled(viewModel.isSaving || !viewModel.canFinish)
         } label: {
-            Image(systemName: "ellipsis.circle")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(RidgitsColors.textHeadline)
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(RidgitsColors.surface)
+                )
+                .overlay(
+                    Circle()
+                        .stroke(RidgitsColors.border, lineWidth: 1)
+                )
         }
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private var usesModernQuizLayout: Bool {
@@ -310,43 +374,34 @@ struct QuizView: View {
         VStack(spacing: 8) {
             categoryProgressHeader
 
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
-                    categoryActiveBadge
-                    quizHeaderNav
+            HStack(alignment: .center, spacing: 12) {
+                quizNavIconButton(
+                    systemName: "arrow.left",
+                    accessibilityLabel: "Back",
+                    isEnabled: viewModel.poolPosition > 0
+                ) {
+                    viewModel.goBack()
                 }
-
-                Spacer()
 
                 Text("Question \(viewModel.displayedQuestionNumber) of \(viewModel.displayedQuestionTotal)")
                     .font(RidgitsTypography.caption(11))
                     .foregroundStyle(RidgitsColors.textMuted)
-                    .padding(.top, 6)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+
+                quizNavIconButton(
+                    systemName: viewModel.isLastInPool && mode == .onboarding ? "checkmark" : "arrow.right",
+                    accessibilityLabel: viewModel.isLastInPool && mode == .onboarding ? "Finish" : "Next",
+                    isEnabled: viewModel.canAdvance
+                ) {
+                    viewModel.goNext()
+                }
             }
             .padding(.horizontal, 20)
         }
         .padding(.vertical, 10)
         .background(RidgitsColors.surface)
         .overlay(Rectangle().frame(height: 1).foregroundStyle(RidgitsColors.border), alignment: .bottom)
-    }
-
-    private var categoryActiveBadge: some View {
-        let category = viewModel.currentQuestion.category
-        let color = QuizCategoryColors.color(for: category)
-
-        return HStack(spacing: 6) {
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-            Text(category)
-                .font(RidgitsTypography.label(12))
-                .fontWeight(.semibold)
-                .foregroundStyle(color)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(color.opacity(0.12))
-        .clipShape(Capsule())
     }
 
     private var progressSegmentMode: QuizMode {
@@ -431,35 +486,47 @@ struct QuizView: View {
     }
 
     private var modifyFeatureChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                let record = viewModel.answers[viewModel.currentQuestion.id]
-                let hasAnswer = record?.hasAnswer == true
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        let record = viewModel.answers[viewModel.currentQuestion.id]
 
-                modifyFeatureChip(
-                    title: "Dealbreaker",
-                    icon: "exclamationmark.triangle.fill",
-                    active: record?.dealbreaker == true,
-                    enabled: hasAnswer,
-                    activeColor: RidgitsColors.destructive
-                ) {
-                    viewModel.toggleDealbreaker(for: viewModel.currentQuestion)
+                        modifyFeatureChip(
+                            title: "Dealbreaker",
+                            icon: "exclamationmark.triangle.fill",
+                            active: record?.dealbreaker == true,
+                            enabled: true,
+                            activeColor: RidgitsColors.destructive
+                        ) {
+                            viewModel.toggleDealbreaker(for: viewModel.currentQuestion)
+                        }
+
+                        modifyFeatureChip(
+                            title: multiSelectChipTitle,
+                            icon: "checklist",
+                            active: viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
+                            enabled: viewModel.canActivateMultiSelect(for: viewModel.currentQuestion) ||
+                                viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
+                            activeColor: Color(hex: 0xC2410C)
+                        ) {
+                            viewModel.activateMultiSelect(for: viewModel.currentQuestion)
+                        }
+                    }
                 }
 
-                modifyFeatureChip(
-                    title: multiSelectChipTitle,
-                    icon: "checklist",
-                    active: viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
-                    enabled: viewModel.canActivateMultiSelect(for: viewModel.currentQuestion) ||
-                        viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
-                    activeColor: Color(hex: 0xC2410C)
-                ) {
-                    viewModel.activateMultiSelect(for: viewModel.currentQuestion)
+                if mode != .modify {
+                    modifyIconFeatureChip(
+                        icon: "forward.end",
+                        accessibilityLabel: "Skip"
+                    ) {
+                        viewModel.skipQuestion()
+                    }
                 }
+            }
 
-                if viewModel.isMultiSelectActive(for: viewModel.currentQuestion) {
-                    modifyListTag("Tap multiple answers", tint: RidgitsColors.textSecondary)
-                }
+            if viewModel.isMultiSelectActive(for: viewModel.currentQuestion) {
+                modifyListTag("Tap multiple answers", tint: RidgitsColors.textSecondary)
             }
         }
     }
@@ -485,7 +552,9 @@ struct QuizView: View {
                     .font(.system(size: 11, weight: .semibold))
                 Text(title)
                     .font(RidgitsTypography.caption(11))
+                    .lineLimit(1)
             }
+            .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(active ? .white : (enabled ? RidgitsColors.textHeadline : RidgitsColors.textMuted))
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -498,6 +567,31 @@ struct QuizView: View {
         }
         .disabled(!enabled)
         .buttonStyle(RidgitsHapticPlainButtonStyle())
+        .layoutPriority(1)
+    }
+
+    private func modifyIconFeatureChip(
+        icon: String,
+        accessibilityLabel: String,
+        enabled: Bool = true,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(enabled ? RidgitsColors.textHeadline : RidgitsColors.textMuted)
+                .frame(width: 34, height: 34)
+                .background(RidgitsColors.surface)
+                .overlay(
+                    Capsule()
+                        .stroke(RidgitsColors.border, lineWidth: 1)
+                )
+                .clipShape(Capsule())
+        }
+        .disabled(!enabled)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
+        .layoutPriority(1)
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private var categoryBrowseSheet: some View {
@@ -527,7 +621,10 @@ struct QuizView: View {
     }
 
     private var optionsList: some View {
-        VStack(spacing: usesModernQuizLayout ? 12 : 10) {
+        let canSelectAnswers = !usesModernQuizLayout ||
+            viewModel.canSelectAnswer(for: viewModel.currentQuestion)
+
+        return VStack(spacing: usesModernQuizLayout ? 12 : 10) {
             ForEach(viewModel.currentQuestion.options) { option in
                 let selected = viewModel.isSelected(option.value, for: viewModel.currentQuestion)
                 Button {
@@ -552,10 +649,12 @@ struct QuizView: View {
                     .background(selected ? RidgitsColors.ctaBlack : RidgitsColors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                            .stroke(selected ? RidgitsColors.ctaBlack : RidgitsColors.border, lineWidth: selected ? 2 : 1)
+                            .stroke(selected ? RidgitsColors.ctaBlack : RidgitsColors.optionBorder, lineWidth: selected ? 2 : 1)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                 }
+                .disabled(!canSelectAnswers)
+                .opacity(canSelectAnswers ? 1 : 0.45)
             }
         }
     }
@@ -615,34 +714,6 @@ struct QuizView: View {
         .padding(.top, mode == .modify ? 0 : 8)
     }
 
-    private var quizHeaderNav: some View {
-        HStack(spacing: 18) {
-            quizNavIconButton(
-                systemName: "chevron.backward",
-                accessibilityLabel: "Back",
-                isEnabled: viewModel.poolPosition > 0
-            ) {
-                viewModel.goBack()
-            }
-
-            quizNavIconButton(
-                systemName: "arrow.right",
-                accessibilityLabel: "Skip",
-                isEnabled: true
-            ) {
-                viewModel.skipQuestion()
-            }
-
-            quizNavIconButton(
-                systemName: viewModel.isLastInPool && mode == .onboarding ? "checkmark" : "chevron.forward",
-                accessibilityLabel: viewModel.isLastInPool && mode == .onboarding ? "Finish" : "Next",
-                isEnabled: viewModel.canAdvance
-            ) {
-                viewModel.goNext()
-            }
-        }
-    }
-
     private func quizNavIconButton(
         systemName: String,
         accessibilityLabel: String,
@@ -651,13 +722,21 @@ struct QuizView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(isEnabled ? RidgitsColors.textSecondary : RidgitsColors.textMuted.opacity(0.35))
-                .frame(width: 32, height: 32)
-                .contentShape(Circle())
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(isEnabled ? RidgitsColors.textHeadline : RidgitsColors.textMuted)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(isEnabled ? RidgitsColors.surface : RidgitsColors.feedBackground)
+                )
+                .overlay(
+                    Circle()
+                        .stroke(RidgitsColors.border, lineWidth: 1)
+                )
         }
         .disabled(!isEnabled)
-        .buttonStyle(RidgitsCircularIconButtonStyle())
+        .opacity(isEnabled ? 1 : 0.5)
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
         .accessibilityLabel(accessibilityLabel)
     }
 
@@ -700,13 +779,20 @@ struct QuizView: View {
         return "Next"
     }
 
+    private var preferenceDrawerHeaderHeight: CGFloat { 48 }
+
+    private var preferenceDrawerExpandedHeight: CGFloat {
+        UIScreen.main.bounds.height - 120
+    }
+
     private var preferencePanelMaxHeight: CGFloat {
-        // Expand high enough to show ideal-answer options without feeling buried at the bottom.
-        UIScreen.main.bounds.height * 0.85 - 52
+        preferenceDrawerExpandedHeight - preferenceDrawerHeaderHeight
     }
 
     private var preferenceBottomDrawer: some View {
         VStack(spacing: 0) {
+            preferenceDrawerHeader
+
             if preferencePanelExpanded {
                 ScrollView {
                     preferencePanelContent
@@ -715,53 +801,69 @@ struct QuizView: View {
                         .padding(.bottom, 20)
                 }
                 .frame(maxHeight: preferencePanelMaxHeight)
-                .background(RidgitsColors.surface)
             }
-
-            Button {
-                RidgitsHaptics.play(.light)
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    if preferencePanelExpanded {
-                        preferencePanelExpanded = false
-                    } else {
-                        viewModel.preparePreferenceDefaultsIfNeeded()
-                        syncPreferenceStateFromRecord()
-                        if preferredSelection.isEmpty, let record = viewModel.answers[viewModel.currentQuestion.id] {
-                            if let multi = record.answers {
-                                preferredSelection = Set(multi)
-                            } else if let single = record.answer {
-                                preferredSelection = [single]
-                            }
-                        }
-                        preferencePanelExpanded = true
-                    }
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Text("Choose Their Ideal Answer")
-                        .font(RidgitsTypography.label(12))
-                        .foregroundStyle(RidgitsColors.textHeadline)
-                        .textCase(.uppercase)
-                    Text("Optional")
-                        .font(RidgitsTypography.caption(10))
-                        .foregroundStyle(RidgitsColors.textMuted)
-                        .textCase(.uppercase)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(RidgitsColors.textMuted)
-                        .rotationEffect(.degrees(preferencePanelExpanded ? 180 : 0))
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .padding(.horizontal, 20)
-                .background(Color(hex: 0xF0F0F0))
-            }
-            .buttonStyle(RidgitsHapticPlainButtonStyle())
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: preferencePanelExpanded ? preferenceDrawerExpandedHeight : nil, alignment: .top)
         .background(RidgitsColors.surface)
-        .overlay(Rectangle().frame(height: 1).foregroundStyle(Color(hex: 0x999999)), alignment: .top)
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: RidgitsRadius.md,
+                topTrailingRadius: RidgitsRadius.md
+            )
+        )
+        .overlay(
+            UnevenRoundedRectangle(
+                topLeadingRadius: RidgitsRadius.md,
+                topTrailingRadius: RidgitsRadius.md
+            )
+            .stroke(Color(hex: 0x999999), lineWidth: 1),
+            alignment: .top
+        )
         .shadow(color: .black.opacity(preferencePanelExpanded ? 0.14 : 0), radius: 16, y: -6)
         .animation(.easeInOut(duration: 0.25), value: preferencePanelExpanded)
+    }
+
+    private var preferenceDrawerHeader: some View {
+        Button {
+            RidgitsHaptics.play(.light)
+            withAnimation(.easeInOut(duration: 0.25)) {
+                if preferencePanelExpanded {
+                    preferencePanelExpanded = false
+                } else {
+                    viewModel.preparePreferenceDefaultsIfNeeded()
+                    syncPreferenceStateFromRecord()
+                    if preferredSelection.isEmpty, let record = viewModel.answers[viewModel.currentQuestion.id] {
+                        if let multi = record.answers {
+                            preferredSelection = Set(multi)
+                        } else if let single = record.answer {
+                            preferredSelection = [single]
+                        }
+                    }
+                    preferencePanelExpanded = true
+                }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text("Choose Their Ideal Answer")
+                    .font(RidgitsTypography.label(12))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .textCase(.uppercase)
+                Text("Optional")
+                    .font(RidgitsTypography.caption(10))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .textCase(.uppercase)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .rotationEffect(.degrees(preferencePanelExpanded ? 180 : 0))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 20)
+            .background(Color(hex: 0xF0F0F0))
+        }
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
     private var preferencePanelContent: some View {

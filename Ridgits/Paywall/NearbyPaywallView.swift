@@ -6,7 +6,7 @@ struct NearbyPaywallView: View {
     @Environment(\.dismiss) private var dismiss
 
     var nearbyCount: Int = 0
-    var radiusMiles: Int = 25
+    var radiusMiles: Int = 30
 
     var body: some View {
         NavigationStack {

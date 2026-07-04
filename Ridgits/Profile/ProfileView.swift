@@ -3,13 +3,12 @@ import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
-    @EnvironmentObject private var nearbyPresence: RidgitsNearbyPresenceService
     @EnvironmentObject private var ridgitsStore: RidgitsStore
     @State private var profile = RidgitsUserProfile.empty(uid: "")
+    @State private var quizBadges: [RidgitsQuizBadge] = []
     @State private var isEditing = false
     @State private var interestDraft = ""
     @State private var isSaving = false
-    @State private var isUpdatingVisibility = false
     @State private var isLoading = true
     @State private var statusMessage: String?
     var body: some View {
@@ -156,6 +155,11 @@ struct ProfileView: View {
                         RidgitsSectionDivider()
                         profileSection(title: "Aspirations", body: profile.aspirations)
                     }
+
+                    if !quizBadges.isEmpty {
+                        RidgitsSectionDivider()
+                        ProfileQuizBadgesSection(badges: quizBadges)
+                    }
                 }
                 .padding(16)
             }
@@ -190,24 +194,6 @@ struct ProfileView: View {
             }
             .buttonStyle(RidgitsHapticPlainButtonStyle())
 
-            RidgitsDashboardCard {
-                Toggle(isOn: communityVisibilityBinding) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Visible in Community")
-                            .font(RidgitsTypography.label(14))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                        Text(profile.visibleInCommunity
-                             ? "Others can discover you and you can send pokes and messages."
-                             : "You're browsing privately — hidden from discovery.")
-                            .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    }
-                }
-                .tint(RidgitsColors.ctaBlack)
-                .disabled(isUpdatingVisibility)
-                .padding(16)
-            }
-
             if let statusMessage, !isEditing {
                 Text(statusMessage)
                     .font(RidgitsTypography.caption(12))
@@ -239,19 +225,6 @@ struct ProfileView: View {
                 )
             }
             .buttonStyle(RidgitsHapticPlainButtonStyle())
-
-            if ridgitsStore.hasNearbyAccess || ridgitsStore.hasWebSubscription {
-                RidgitsDashboardCard {
-                    Toggle(isOn: $nearbyPresence.alertsEnabled) {
-                        Text("Get a notification when another Ridgits member is close, and you're near them.")
-                            .font(RidgitsTypography.label(14))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                    }
-                    .tint(RidgitsColors.ctaBlack)
-                    .padding(16)
-                    .ridgitsSelectionHaptic(trigger: nearbyPresence.alertsEnabled)
-                }
-            }
 
             NavigationLink {
                 ProfileSettingsView()
@@ -332,33 +305,6 @@ struct ProfileView: View {
                         text: $profile.aspirations,
                         axis: .vertical,
                         lineLimit: 2...4
-                    )
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Privacy Settings")
-                        .font(RidgitsTypography.headline(16))
-                        .foregroundStyle(RidgitsColors.textHeadline)
-
-                    HStack(alignment: .top, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Visible in Community")
-                                .font(RidgitsTypography.label(14))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                            Text("When enabled, other users can discover you and you can send pokes and messages. Turn this off to browse privately.")
-                                .font(RidgitsTypography.caption(12))
-                                .foregroundStyle(RidgitsColors.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        Toggle("", isOn: $profile.visibleInCommunity)
-                            .labelsHidden()
-                            .tint(RidgitsColors.ctaBlack)
-                    }
-                    .padding(14)
-                    .background(RidgitsColors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                            .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
                     )
                 }
 
@@ -463,39 +409,6 @@ struct ProfileView: View {
         }
     }
 
-    private var communityVisibilityBinding: Binding<Bool> {
-        Binding(
-            get: { profile.visibleInCommunity },
-            set: { newValue in
-                guard newValue != profile.visibleInCommunity else { return }
-                RidgitsHaptics.play(.selection)
-                profile.visibleInCommunity = newValue
-                Task { await saveCommunityVisibility() }
-            }
-        )
-    }
-
-    @MainActor
-    private func saveCommunityVisibility() async {
-        let savedValue = profile.visibleInCommunity
-        isUpdatingVisibility = true
-        defer { isUpdatingVisibility = false }
-        do {
-            try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
-            statusMessage = nil
-            nearbyPresence.updateEligibility(
-                isSignedIn: authManager.userIsLoggedIn,
-                profileComplete: profile.isCompleteForMatching && profile.visibleInCommunity,
-                hasNearbyAccess: ridgitsStore.hasExtendedNearbyRadius || ridgitsStore.hasWebSubscription,
-                displayName: profile.name,
-                profileCode: nil
-            )
-        } catch {
-            profile.visibleInCommunity = !savedValue
-            statusMessage = error.localizedDescription
-        }
-    }
-
     @MainActor
     private func loadProfile() async {
         guard let uid = authManager.currentUser?.uid else { return }
@@ -514,6 +427,20 @@ struct ProfileView: View {
             if !loaded.hasBasicProfile {
                 isEditing = true
             }
+        }
+
+        async let packProfile = RidgitsFirebaseClient.shared.fetchPackProfile(uid: uid)
+        let progress = try? await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid)
+        let personalityCompleted = progress.map {
+            $0.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: $0.answers)
+        } ?? false
+        quizBadges = RidgitsQuizBadgeBuilder.badges(
+            packProfile: await packProfile,
+            personalityQuizCompleted: personalityCompleted
+        )
+        if quizBadges != profile.completedQuizBadges {
+            await RidgitsFirebaseClient.shared.syncCompletedQuizBadges(uid: uid)
+            profile.completedQuizBadges = quizBadges
         }
     }
 

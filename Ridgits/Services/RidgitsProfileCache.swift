@@ -5,6 +5,7 @@ import UIKit
 private struct CachedProfileRecord: Codable {
     var profile: RidgitsUserProfile
     var fetchedAt: Date
+    var profileCode: String?
 }
 
 @MainActor
@@ -26,17 +27,35 @@ final class RidgitsProfileCache {
         return record.profile
     }
 
+    func profileCode(for uid: String) -> String? {
+        guard let record = loadRecord(for: uid),
+              let code = record.profileCode,
+              !code.isEmpty else { return nil }
+        return code
+    }
+
     func isStale(uid: String) -> Bool {
         guard let record = loadRecord(for: uid) else { return true }
         return Date().timeIntervalSince(record.fetchedAt) > refreshInterval
     }
 
     func save(_ profile: RidgitsUserProfile) {
-        let record = CachedProfileRecord(profile: profile, fetchedAt: Date())
-        guard let url = profileRecordURL(for: profile.id),
-              let data = try? JSONEncoder().encode(record) else { return }
-        try? data.write(to: url, options: .atomic)
+        var record = loadRecord(for: profile.id) ?? CachedProfileRecord(profile: profile, fetchedAt: Date())
+        record.profile = profile
+        record.fetchedAt = Date()
+        writeRecord(record, for: profile.id)
         scheduleImagePrefetch(remoteURL: profile.image)
+    }
+
+    func saveProfileCode(_ code: String, uid: String) {
+        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        var record = loadRecord(for: uid) ?? CachedProfileRecord(
+            profile: RidgitsUserProfile.empty(uid: uid),
+            fetchedAt: .distantPast
+        )
+        record.profileCode = trimmed
+        writeRecord(record, for: uid)
     }
 
     func clear(uid: String? = nil) {
@@ -136,6 +155,12 @@ final class RidgitsProfileCache {
         guard let url = profileRecordURL(for: uid),
               let data = try? Data(contentsOf: url) else { return nil }
         return try? JSONDecoder().decode(CachedProfileRecord.self, from: data)
+    }
+
+    private func writeRecord(_ record: CachedProfileRecord, for uid: String) {
+        guard let url = profileRecordURL(for: uid),
+              let data = try? JSONEncoder().encode(record) else { return }
+        try? data.write(to: url, options: .atomic)
     }
 
     private func hash(_ value: String) -> String {
