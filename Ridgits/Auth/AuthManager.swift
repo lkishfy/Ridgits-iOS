@@ -227,6 +227,8 @@ final class AuthManager: ObservableObject {
         if let birthYear {
             payload["birthYear"] = birthYear
             payload["age"] = Calendar.current.component(.year, from: Date()) - birthYear
+            payload["ageVerificationConfirmed"] = true
+            payload["ageVerifiedAt"] = ISO8601DateFormatter().string(from: Date())
         }
         try await Firestore.firestore().collection("users").document(uid).setData(payload, merge: true)
     }

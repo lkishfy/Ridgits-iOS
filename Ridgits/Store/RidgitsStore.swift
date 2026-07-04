@@ -12,10 +12,24 @@ struct RidgitsAccess {
     var subscriptionBillingPeriod: String?
     var isSubscribed: Bool = false
     var isLoading: Bool = true
+    var identityVerificationStatus: String = "none"
+    var profilePhotoIdentityMatchStatus: String = "none"
+    var canSubscribe: Bool = false
+    var canMessage: Bool = false
 
     var membershipTier: RidgitsSubscriptionTier {
         RidgitsSubscriptionTier.from(stored: subscriptionTier)
     }
+
+    var isIdentityVerified: Bool {
+        identityVerificationStatus == "verified"
+    }
+}
+
+private struct PendingSubscriptionPurchase {
+    let tier: RidgitsSubscriptionTier
+    let billing: RidgitsSubscriptionBilling
+    let ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant
 }
 
 @MainActor
@@ -25,6 +39,7 @@ final class RidgitsStore: ObservableObject {
     @Published private(set) var isLoadingProducts = false
     @Published private(set) var isPurchasing = false
     @Published var purchaseError: String?
+    @Published var showIdentityVerification = false
 
     var hasNearbyAccess: Bool { access.hasNearbyAccess }
     var isLoadingAccess: Bool { access.isLoading }
@@ -41,6 +56,8 @@ final class RidgitsStore: ObservableObject {
     }
 
     private var transactionListenerTask: Task<Void, Never>?
+    private var pendingSubscriptionPurchase: PendingSubscriptionPurchase?
+    private var identityVerificationContinuation: CheckedContinuation<Bool, Never>?
 
     init() {
         transactionListenerTask = Task { await listenForTransactions() }
@@ -182,7 +199,62 @@ final class RidgitsStore: ObservableObject {
             purchaseError = "This plan isn't available right now. Try again shortly."
             return false
         }
+
+        pendingSubscriptionPurchase = PendingSubscriptionPurchase(
+            tier: tier,
+            billing: billing,
+            ultraYearlyVariant: ultraYearlyVariant
+        )
+
+        guard await ensureIdentityVerified() else {
+            pendingSubscriptionPurchase = nil
+            return false
+        }
+        let purchased = await purchase(product: product)
+        pendingSubscriptionPurchase = nil
+        return purchased
+    }
+
+    func completeIdentityVerificationFlow(success: Bool) {
+        showIdentityVerification = false
+        identityVerificationContinuation?.resume(returning: success)
+        identityVerificationContinuation = nil
+    }
+
+    func resumePendingSubscriptionPurchaseIfNeeded() async -> Bool {
+        guard let pending = pendingSubscriptionPurchase else { return false }
+        guard await ensureIdentityVerified() else { return false }
+        guard let product = subscriptionProduct(
+            tier: pending.tier,
+            billing: pending.billing,
+            ultraYearlyVariant: pending.ultraYearlyVariant
+        ) else {
+            purchaseError = "This plan isn't available right now. Try again shortly."
+            return false
+        }
+        pendingSubscriptionPurchase = nil
         return await purchase(product: product)
+    }
+
+    private func ensureIdentityVerified() async -> Bool {
+        do {
+            let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
+            access.identityVerificationStatus = status.identityVerificationStatus
+            access.profilePhotoIdentityMatchStatus = status.profilePhotoIdentityMatchStatus
+            access.canSubscribe = status.canSubscribe
+            access.canMessage = status.canMessage
+            if status.isFullyVerifiedForSubscribe {
+                return true
+            }
+        } catch {
+            purchaseError = error.localizedDescription
+            return false
+        }
+
+        return await withCheckedContinuation { continuation in
+            identityVerificationContinuation = continuation
+            showIdentityVerification = true
+        }
     }
 
     func showManageSubscriptions() async {
@@ -367,6 +439,15 @@ final class RidgitsStore: ObservableObject {
                 access.isSubscribed = false
                 access.subscriptionTier = "free"
             }
+
+            if let identityStatus = account.identityVerificationStatus {
+                access.identityVerificationStatus = identityStatus
+            }
+            if let matchStatus = account.profilePhotoIdentityMatchStatus {
+                access.profilePhotoIdentityMatchStatus = matchStatus
+            }
+            access.canSubscribe = account.canSubscribe ?? access.isIdentityVerified
+            access.canMessage = account.canMessage ?? false
         } catch {
             // Keep StoreKit entitlements if the API is unreachable.
         }

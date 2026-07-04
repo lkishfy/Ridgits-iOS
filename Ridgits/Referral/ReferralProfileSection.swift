@@ -53,7 +53,7 @@ struct ReferralProfileSection: View {
                     .font(RidgitsTypography.headline(20))
                     .foregroundStyle(RidgitsColors.textHeadline)
             }
-            Text("When a friend finishes their quiz, you unlock a free special quiz — up to \(RidgitsReferralLimits.maxReferrals) total.")
+            Text("When a friend finishes their quiz, you both unlock a free special quiz — up to \(RidgitsReferralLimits.maxReferrals) friends you refer.")
                 .font(RidgitsTypography.body(13))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)

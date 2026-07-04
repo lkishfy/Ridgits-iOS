@@ -45,6 +45,17 @@ enum RidgitsAppLinks {
         URL(string: "\(urlScheme)://invite?ref=\(code.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? code)")!
     }
 
+    static let identityCompleteURL = URL(string: "\(urlScheme)://identity/complete")!
+
+    static let identityVerificationCompleteNotification = Notification.Name("ridgits.identityVerificationComplete")
+
+    static func isIdentityCompleteURL(_ url: URL?) -> Bool {
+        guard let url else { return false }
+        return url.scheme?.lowercased() == urlScheme
+            && url.host?.lowercased() == "identity"
+            && url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/")).lowercased() == "complete"
+    }
+
     static func parseReferralCode(from url: URL) -> String? {
         if url.scheme?.lowercased() == urlScheme, url.host?.lowercased() == "invite" {
             if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),

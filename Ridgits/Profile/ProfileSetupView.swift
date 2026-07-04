@@ -6,6 +6,7 @@ struct ProfileSetupView: View {
     @State private var profile: RidgitsUserProfile
     @State private var interestDraft = ""
     @State private var isSaving = false
+    @State private var profilePhotoMatchMessage: String?
 
     var onComplete: () -> Void
 
@@ -70,6 +71,12 @@ struct ProfileSetupView: View {
                                 Task { await save() }
                             }
                             .disabled(!profile.isCompleteForMatching || isSaving)
+
+                            if let profilePhotoMatchMessage {
+                                Text(profilePhotoMatchMessage)
+                                    .font(RidgitsTypography.caption(12))
+                                    .foregroundStyle(RidgitsColors.destructive)
+                            }
                         }
                         .padding(16)
                     }
@@ -101,10 +108,14 @@ struct ProfileSetupView: View {
 
     private func save() async {
         isSaving = true
+        profilePhotoMatchMessage = nil
         defer { isSaving = false }
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
-            onComplete()
+            profilePhotoMatchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded()
+            if profilePhotoMatchMessage == nil {
+                onComplete()
+            }
         } catch {}
     }
 }

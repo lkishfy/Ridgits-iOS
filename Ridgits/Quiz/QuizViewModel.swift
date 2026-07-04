@@ -114,7 +114,10 @@ final class QuizViewModel: ObservableObject {
     }
 
     var canFinish: Bool {
-        personalityAnsweredCount >= QuizCatalog.minimumAnswersToComplete
+        let required = mode == .onboarding
+            ? QuizCatalog.onboardingSkipThreshold
+            : QuizCatalog.minimumAnswersToComplete
+        return personalityAnsweredCount >= required
     }
 
     func bootstrap() async {
@@ -201,6 +204,7 @@ final class QuizViewModel: ObservableObject {
     }
 
     func canSelectAnswer(for question: QuizQuestion) -> Bool {
+        if mode == .onboarding { return true }
         if let record = answers[question.id], record.hasAnswer { return true }
         return dealbreakerEngaged.contains(question.id)
     }
@@ -313,6 +317,10 @@ final class QuizViewModel: ObservableObject {
 
     func goNext() {
         autoAdvanceTask?.cancel()
+        if mode == .onboarding && canFinish {
+            Task { await completeQuiz() }
+            return
+        }
         guard canAdvance else { return }
         if isLastInPool {
             if mode == .modify || canFinish {
@@ -351,7 +359,7 @@ final class QuizViewModel: ObservableObject {
     func completeQuiz() async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard mode == .modify || canFinish else {
-            errorMessage = "Answer at least \(QuizCatalog.minimumAnswersToComplete) questions to finish."
+            errorMessage = "Answer at least \(QuizCatalog.onboardingSkipThreshold) questions to finish."
             return
         }
         isSaving = true
@@ -406,6 +414,12 @@ final class QuizViewModel: ObservableObject {
 
     /// Saves in-progress edits when leaving modify mode without clearing quiz completion.
     func persistDraftOnExit() async {
+        try? await persistProgress(completed: false)
+    }
+
+    /// Cancels pending auto-advance and persists the current question index + answers.
+    func saveProgressForExit() async {
+        autoAdvanceTask?.cancel()
         try? await persistProgress(completed: false)
     }
 

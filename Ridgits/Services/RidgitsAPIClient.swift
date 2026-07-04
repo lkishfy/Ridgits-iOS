@@ -6,6 +6,13 @@ struct RidgitsAccountAccess: Decodable {
     let subscriptionExpiresAt: String?
     let subscriptionSource: String?
     let subscriptionTier: String?
+    let identityVerificationStatus: String?
+    let identityVerifiedAt: String?
+    let profilePhotoIdentityMatchStatus: String?
+    let profilePhotoIdentityMatchAt: String?
+    let profilePhotoIdentityMatchScore: Double?
+    let canSubscribe: Bool?
+    let canMessage: Bool?
 }
 
 struct RidgitsLinkPurchaseResult: Decodable {
@@ -48,8 +55,33 @@ final class RidgitsAPIClient {
             hasNearbyAccess: data["hasNearbyAccess"] as? Bool ?? false,
             subscriptionExpiresAt: data["subscriptionExpiresAt"] as? String,
             subscriptionSource: data["subscriptionSource"] as? String,
-            subscriptionTier: data["subscriptionTier"] as? String
+            subscriptionTier: data["subscriptionTier"] as? String,
+            identityVerificationStatus: data["identityVerificationStatus"] as? String,
+            identityVerifiedAt: data["identityVerifiedAt"] as? String,
+            profilePhotoIdentityMatchStatus: data["profilePhotoIdentityMatchStatus"] as? String,
+            profilePhotoIdentityMatchAt: data["profilePhotoIdentityMatchAt"] as? String,
+            profilePhotoIdentityMatchScore: data["profilePhotoIdentityMatchScore"] as? Double,
+            canSubscribe: data["canSubscribe"] as? Bool,
+            canMessage: data["canMessage"] as? Bool
         )
+    }
+
+    func fetchIdentityStatus() async throws -> RidgitsIdentityStatus {
+        let data = try await authorizedRequest(path: "/api/identity/status", method: "GET", body: nil)
+        let json = try JSONSerialization.data(withJSONObject: data)
+        return try JSONDecoder().decode(RidgitsIdentityStatus.self, from: json)
+    }
+
+    func createIdentityVerificationSession() async throws -> RidgitsIdentitySessionResponse {
+        let data = try await authorizedRequest(path: "/api/identity/session", method: "POST", body: [:])
+        let json = try JSONSerialization.data(withJSONObject: data)
+        return try JSONDecoder().decode(RidgitsIdentitySessionResponse.self, from: json)
+    }
+
+    func matchProfilePhotoToIdentity() async throws -> RidgitsProfilePhotoMatchResult {
+        let data = try await authorizedRequest(path: "/api/identity/match-profile-photo", method: "POST", body: [:])
+        let json = try JSONSerialization.data(withJSONObject: data)
+        return try JSONDecoder().decode(RidgitsProfilePhotoMatchResult.self, from: json)
     }
 
     func linkPurchase(

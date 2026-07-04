@@ -7,7 +7,7 @@ enum RidgitsReferralLimits {
     static let qualificationWindowDays = 14
 
     static var referredUserQualificationMotivation: String {
-        "Finish your personality quiz within \(qualificationWindowDays) days of signing up so your friend unlocks a free special quiz."
+        "Finish your personality quiz within \(qualificationWindowDays) days of signing up and you'll both unlock a free special quiz."
     }
 
     static func gateTitle(for slot: Int) -> String {
@@ -134,7 +134,7 @@ enum RidgitsReferralLocalService {
     }
 
     private static func shareMessage(for code: String) -> String {
-        "Join me on Ridgits — use my code \(code) when you sign up. Finish your personality quiz within \(RidgitsReferralLimits.qualificationWindowDays) days and I'll unlock a free special quiz. https://ridgits.com/invite?ref=\(code)"
+        "Join me on Ridgits — use my code \(code) when you sign up. Finish your personality quiz within \(RidgitsReferralLimits.qualificationWindowDays) days and you'll both unlock a free special quiz. https://ridgits.com/invite?ref=\(code)"
     }
 }
 

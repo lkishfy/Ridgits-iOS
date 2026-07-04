@@ -15,6 +15,8 @@ final class MessagingViewModel: ObservableObject {
     @Published var showPaywallPrompt = false
     /// Set when the server requires birth year on file — present `BirthYearPromptView`.
     @Published var showBirthYearPrompt = false
+    @Published var showIdentityVerificationPrompt = false
+    @Published var showProfilePhotoMatchPrompt = false
     @Published var isFlagging = false
     @Published var flagSuccessMessage: String?
 
@@ -84,6 +86,15 @@ final class MessagingViewModel: ObservableObject {
             showPaywallPrompt = true
         } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
             showBirthYearPrompt = true
+            return
+        } else if ridgitsError.code == "IDENTITY_VERIFICATION_REQUIRED" {
+            showIdentityVerificationPrompt = true
+            return
+        } else if ridgitsError.code == "PHONE_VERIFICATION_REQUIRED" {
+            showIdentityVerificationPrompt = true
+            return
+        } else if ridgitsError.code == "PROFILE_PHOTO_IDENTITY_MISMATCH" {
+            showProfilePhotoMatchPrompt = true
             return
         }
         errorMessage = ridgitsError.localizedDescription
@@ -231,6 +242,8 @@ struct MessagesView: View {
     @State private var showRequests = false
     @State private var showSubscriptionPaywall = false
     @State private var showBirthYearPrompt = false
+    @State private var showIdentityVerification = false
+    @State private var showProfilePhotoMatchAlert = false
     @State private var composeMatch: RidgitsMatch?
     @State private var composeMessage = ""
     @State private var pokeProfileMatch: RidgitsMatch?
@@ -321,6 +334,14 @@ struct MessagesView: View {
             }
             .environmentObject(authManager)
         }
+        .sheet(isPresented: $showIdentityVerification) {
+            IdentityVerificationView { success in
+                showIdentityVerification = false
+                if success {
+                    Task { await ridgitsStore.refreshAccessInBackground() }
+                }
+            }
+        }
         .sheet(isPresented: $showPokePackPaywall) {
             PokePackPaywallView {
                 Task { await matchesViewModel.refreshPokeCredits() }
@@ -358,11 +379,32 @@ struct MessagesView: View {
             viewModel.showBirthYearPrompt = false
             showBirthYearPrompt = true
         }
+        .onChange(of: viewModel.showIdentityVerificationPrompt) { _, showPrompt in
+            guard showPrompt else { return }
+            viewModel.showIdentityVerificationPrompt = false
+            showIdentityVerification = true
+        }
+        .onChange(of: viewModel.showProfilePhotoMatchPrompt) { _, showPrompt in
+            guard showPrompt else { return }
+            viewModel.showProfilePhotoMatchPrompt = false
+            showProfilePhotoMatchAlert = true
+        }
+        .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Update your profile photo in the Profile tab with a clear photo of your face, similar to your ID verification selfie, then try messaging again.")
+        }
         .task(id: incomingPokeProfile?.id) {
             await openIncomingPokeIfNeeded()
         }
         .alert("Couldn't send message", isPresented: Binding(
-            get: { viewModel.errorMessage != nil && !viewModel.showPaywallPrompt && !viewModel.showBirthYearPrompt },
+            get: {
+                viewModel.errorMessage != nil
+                    && !viewModel.showPaywallPrompt
+                    && !viewModel.showBirthYearPrompt
+                    && !viewModel.showIdentityVerificationPrompt
+                    && !viewModel.showProfilePhotoMatchPrompt
+            },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
             Button("OK") { viewModel.errorMessage = nil }

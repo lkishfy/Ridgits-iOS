@@ -451,7 +451,11 @@ struct ProfileView: View {
         defer { isSaving = false }
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
-            isEditing = false
+            if let matchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded() {
+                statusMessage = matchMessage
+            } else {
+                isEditing = false
+            }
         } catch {
             statusMessage = error.localizedDescription
         }

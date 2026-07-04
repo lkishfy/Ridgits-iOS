@@ -27,6 +27,7 @@ struct EmailAuthSheet: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var birthYear = ""
+    @State private var confirmOver18 = false
     @State private var localError: String?
     @State private var isSubmitting = false
 
@@ -77,9 +78,7 @@ struct EmailAuthSheet: View {
                     if mode == .signUp {
                         authField(title: "Birth Year", text: $birthYear, prompt: "YYYY (e.g. 1990)")
                             .keyboardType(.numberPad)
-                        Text("You must be at least 18 years old to use Ridgits.")
-                            .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(RidgitsColors.textMuted)
+                        RidgitsAgeVerificationConsent(confirmOver18: $confirmOver18)
                     }
 
                     authField(title: "Email", text: $email, prompt: "you@example.com")
@@ -116,7 +115,7 @@ struct EmailAuthSheet: View {
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedEmail.isEmpty, !password.isEmpty else { return false }
         if mode == .signUp {
-            return !birthYear.isEmpty && !confirmPassword.isEmpty
+            return !birthYear.isEmpty && !confirmPassword.isEmpty && confirmOver18
         }
         return true
     }
@@ -181,6 +180,9 @@ struct EmailAuthSheet: View {
     private func validateSignUp(email: String) -> String? {
         if email.isEmpty || password.isEmpty || confirmPassword.isEmpty || birthYear.isEmpty {
             return "All fields are required."
+        }
+        if !confirmOver18 {
+            return RidgitsAgeVerificationCopy.confirmRequired
         }
         if isDisposableEmail(email) {
             return "Please use a valid, permanent email address."

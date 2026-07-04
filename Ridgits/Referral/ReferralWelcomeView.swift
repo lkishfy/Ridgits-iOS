@@ -22,7 +22,7 @@ struct ReferralWelcomeView: View {
                 .foregroundStyle(RidgitsColors.textHeadline)
                 .padding(.top, 20)
 
-            Text("Got a friend's invite code? Enter it below. When you finish your personality quiz, they'll unlock a free special quiz — up to \(RidgitsReferralLimits.maxReferrals) friends.")
+            Text("Got a friend's invite code? Enter it below. When you finish your personality quiz, you'll both unlock a free special quiz.")
                 .font(RidgitsTypography.body(15))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .padding(.top, 10)

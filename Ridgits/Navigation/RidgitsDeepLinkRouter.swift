@@ -6,7 +6,14 @@ final class RidgitsDeepLinkRouter: ObservableObject {
     @Published private(set) var pendingRidgitId: String?
     @Published private(set) var pendingRoute: RidgitsEngagementRoute?
 
+    @Published private(set) var identityReturnReceived = false
+
     func handle(_ url: URL) -> Bool {
+        if RidgitsAppLinks.isIdentityCompleteURL(url) {
+            identityReturnReceived = true
+            NotificationCenter.default.post(name: RidgitsAppLinks.identityVerificationCompleteNotification, object: nil)
+            return true
+        }
         if let referralCode = RidgitsAppLinks.parseReferralCode(from: url) {
             if let uid = FirebaseAuth.Auth.auth().currentUser?.uid {
                 RidgitsReferralStorage.savePendingCode(referralCode, firebaseUid: uid)

@@ -8,67 +8,88 @@ struct BirthYearPromptView: View {
     @EnvironmentObject private var authManager: AuthManager
 
     @State private var birthYear = ""
+    @State private var confirmOver18 = false
     @State private var errorMessage: String?
     @State private var isSubmitting = false
 
     let onComplete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Spacer()
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("What year were you born?")
+                    .font(RidgitsTypography.headline(22))
+                    .foregroundStyle(RidgitsColors.textHeadline)
 
-            Text("What year were you born?")
-                .font(RidgitsTypography.headline(22))
-                .foregroundStyle(RidgitsColors.textHeadline)
+                Text("Ridgits is for adults 18 and older. We use your birth year to confirm your age.")
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
 
-            Text("Ridgits is for adults 18 and older. We use this to confirm your age.")
-                .font(RidgitsTypography.body(14))
-                .foregroundStyle(RidgitsColors.textSecondary)
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(RidgitsTypography.caption(13))
+                        .foregroundStyle(RidgitsColors.destructive)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RidgitsColors.destructive.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+                }
 
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(RidgitsTypography.caption(13))
-                    .foregroundStyle(RidgitsColors.destructive)
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RidgitsColors.destructive.opacity(0.08))
+                TextField("YYYY (e.g. 1990)", text: $birthYear)
+                    .keyboardType(.numberPad)
+                    .font(RidgitsTypography.body(16))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(RidgitsColors.inputSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                            .stroke(RidgitsColors.inputBorder, lineWidth: 1)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+
+                RidgitsAgeVerificationConsent(confirmOver18: $confirmOver18)
+
+                RidgitsPrimaryButton(
+                    title: "Continue",
+                    isLoading: isSubmitting,
+                    isDisabled: !canSubmit
+                ) {
+                    Task { await submit() }
+                }
             }
-
-            TextField("YYYY (e.g. 1990)", text: $birthYear)
-                .keyboardType(.numberPad)
-                .font(RidgitsTypography.body(16))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(RidgitsColors.inputSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                        .stroke(RidgitsColors.inputBorder, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
-
-            RidgitsPrimaryButton(
-                title: "Continue",
-                isLoading: isSubmitting,
-                isDisabled: birthYear.trimmingCharacters(in: .whitespaces).count != 4
-            ) {
-                Task { await submit() }
-            }
-
-            Spacer()
-            Spacer()
+            .padding(24)
         }
-        .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(RidgitsColors.feedBackground)
     }
 
+    private var canSubmit: Bool {
+        birthYear.trimmingCharacters(in: .whitespaces).count == 4 && confirmOver18
+    }
+
     @MainActor
     private func submit() async {
+        guard confirmOver18 else {
+            errorMessage = RidgitsAgeVerificationCopy.confirmRequired
+            return
+        }
+
         guard let year = Int(birthYear) else {
             errorMessage = "Please enter a valid birth year."
             return
         }
+
+        let currentYear = Calendar.current.component(.year, from: Date())
+        let age = currentYear - year
+        if age < 18 {
+            errorMessage = "You must be at least 18 years old to use Ridgits."
+            return
+        }
+        if age > 120 || year < 1900 {
+            errorMessage = "Please enter a valid birth year."
+            return
+        }
+
         errorMessage = nil
         isSubmitting = true
         defer { isSubmitting = false }

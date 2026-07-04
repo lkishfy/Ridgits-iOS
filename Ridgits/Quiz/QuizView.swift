@@ -9,6 +9,8 @@ struct QuizView: View {
     @State private var showCategorySheet = false
     @State private var preferencePanelExpanded = false
     @State private var updatedResultsProfile: RidgitsUserProfile?
+    @State private var showSignOutConfirmation = false
+    @State private var isSigningOut = false
 
     var mode: QuizMode
     var onCompleted: (() -> Void)?
@@ -35,8 +37,15 @@ struct QuizView: View {
                 } else {
                     cardMode
                 }
+
+                if preferencePanelExpanded {
+                    preferenceFullScreenPanel
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
+            .animation(.easeInOut(duration: 0.25), value: preferencePanelExpanded)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar(preferencePanelExpanded ? .hidden : .visible, for: .navigationBar)
             .toolbar { quizToolbarContent }
             .sheet(isPresented: $showCategorySheet) {
                 categoryBrowseSheet
@@ -44,8 +53,8 @@ struct QuizView: View {
         }
         .task { await viewModel.bootstrap() }
         .onDisappear {
-            guard mode == .modify, !viewModel.didComplete else { return }
-            Task { await viewModel.persistDraftOnExit() }
+            guard !viewModel.didComplete else { return }
+            Task { await viewModel.saveProgressForExit() }
         }
         .onChange(of: viewModel.currentQuestionIndex) { _, _ in
             preferencePanelExpanded = false
@@ -70,6 +79,31 @@ struct QuizView: View {
             Button("OK") { viewModel.errorMessage = nil }
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+        .confirmationDialog(
+            "Sign out of Ridgits?",
+            isPresented: $showSignOutConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Sign Out", role: .destructive) {
+                Task { await signOutFromQuiz() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Your quiz progress will be saved so you can pick up where you left off.")
+        }
+    }
+
+    @MainActor
+    private func signOutFromQuiz() async {
+        guard !isSigningOut else { return }
+        isSigningOut = true
+        defer { isSigningOut = false }
+        await viewModel.saveProgressForExit()
+        do {
+            try authManager.signOut()
+        } catch {
+            viewModel.errorMessage = error.localizedDescription
         }
     }
 
@@ -124,7 +158,7 @@ struct QuizView: View {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Close") {
                     Task {
-                        await viewModel.persistDraftOnExit()
+                        await viewModel.saveProgressForExit()
                         onDismiss?()
                     }
                 }
@@ -140,12 +174,9 @@ struct QuizView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Group {
-                    if #available(iOS 26.0, *) {
-                        modifyToolbarMenu.sharedBackgroundVisibility(.hidden)
-                    } else {
-                        modifyToolbarMenu
-                    }
+                HStack(spacing: 4) {
+                    signOutButton
+                    modifyToolbarMenu
                 }
             }
         } else {
@@ -154,16 +185,29 @@ struct QuizView: View {
                     VStack(spacing: 2) {
                         Text("Personality Quiz")
                             .font(RidgitsTypography.label(13))
-                        Text("\(viewModel.personalityAnsweredCount) of \(viewModel.totalPersonalityQuestions) answered")
+                        Text(onboardingProgressSubtitle)
                             .font(RidgitsTypography.caption(10))
                             .foregroundStyle(RidgitsColors.textMuted)
+                            .multilineTextAlignment(.center)
                     }
                 } else {
                     Text("Personality Quiz")
                         .font(RidgitsTypography.label(13))
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                signOutButton
+            }
         }
+    }
+
+    private var signOutButton: some View {
+        Button("Sign Out") {
+            showSignOutConfirmation = true
+        }
+        .font(RidgitsTypography.label(12))
+        .foregroundStyle(RidgitsColors.textSecondary)
+        .disabled(isSigningOut || viewModel.isLoading)
     }
 
     private var modifyToolbarMenu: some View {
@@ -240,7 +284,14 @@ struct QuizView: View {
                 .padding(.vertical, usesModernQuizLayout ? 16 : 20)
             }
 
-            quizBottomChrome
+            if mode != .onboarding {
+                quizBottomChrome
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if mode == .onboarding && showsPreferencePanel && !preferencePanelExpanded {
+                onboardingPreferenceCollapsedBar
+            }
         }
         .onAppear { syncPreferenceStateFromRecord() }
     }
@@ -257,9 +308,9 @@ struct QuizView: View {
                 footer
             }
 
-            if showsPreferencePanel {
-                preferenceBottomDrawer
-                    .padding(.bottom, preferencePanelExpanded ? 0 : (showsPrimaryFooter ? quizPrimaryFooterHeight : 0))
+            if showsPreferencePanel && !preferencePanelExpanded {
+                preferenceCollapsedBar
+                    .padding(.bottom, showsPrimaryFooter ? quizPrimaryFooterHeight : 0)
             }
         }
     }
@@ -372,6 +423,15 @@ struct QuizView: View {
 
     private var modifyCompactProgress: some View {
         VStack(spacing: 8) {
+            if mode == .onboarding,
+               viewModel.personalityAnsweredCount < QuizCatalog.onboardingSkipThreshold {
+                Text("Answer at least \(QuizCatalog.onboardingSkipThreshold) questions to unlock your personality results.")
+                    .font(RidgitsTypography.caption(11))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+            }
+
             categoryProgressHeader
 
             HStack(alignment: .center, spacing: 12) {
@@ -390,9 +450,9 @@ struct QuizView: View {
                     .multilineTextAlignment(.center)
 
                 quizNavIconButton(
-                    systemName: viewModel.isLastInPool && mode == .onboarding ? "checkmark" : "arrow.right",
-                    accessibilityLabel: viewModel.isLastInPool && mode == .onboarding ? "Finish" : "Next",
-                    isEnabled: viewModel.canAdvance
+                    systemName: mode == .onboarding && viewModel.canFinish ? "checkmark" : "arrow.right",
+                    accessibilityLabel: mode == .onboarding && viewModel.canFinish ? "Finish" : "Next",
+                    isEnabled: viewModel.canAdvance || (mode == .onboarding && viewModel.canFinish)
                 ) {
                     viewModel.goNext()
                 }
@@ -620,8 +680,19 @@ struct QuizView: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
+    private var onboardingProgressSubtitle: String {
+        let answered = viewModel.personalityAnsweredCount
+        let required = QuizCatalog.onboardingSkipThreshold
+        if answered >= required {
+            return "\(answered) answered · Results unlocked"
+        }
+        let remaining = required - answered
+        return "\(answered) of \(required) answered · \(remaining) more to see your results"
+    }
+
     private var optionsList: some View {
-        let canSelectAnswers = !usesModernQuizLayout ||
+        let canSelectAnswers = mode == .onboarding ||
+            !usesModernQuizLayout ||
             viewModel.canSelectAnswer(for: viewModel.currentQuestion)
 
         return VStack(spacing: usesModernQuizLayout ? 12 : 10) {
@@ -779,32 +850,30 @@ struct QuizView: View {
         return "Next"
     }
 
-    private var preferenceDrawerHeaderHeight: CGFloat { 48 }
-
-    private var preferenceDrawerExpandedHeight: CGFloat {
-        UIScreen.main.bounds.height - 120
-    }
-
-    private var preferencePanelMaxHeight: CGFloat {
-        preferenceDrawerExpandedHeight - preferenceDrawerHeaderHeight
-    }
-
-    private var preferenceBottomDrawer: some View {
-        VStack(spacing: 0) {
-            preferenceDrawerHeader
-
-            if preferencePanelExpanded {
-                ScrollView {
-                    preferencePanelContent
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                        .padding(.bottom, 20)
-                }
-                .frame(maxHeight: preferencePanelMaxHeight)
+    private var preferenceCollapsedBar: some View {
+        Button {
+            openPreferencePanel()
+        } label: {
+            HStack(spacing: 8) {
+                Text("Choose Their Ideal Answer")
+                    .font(RidgitsTypography.label(12))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .textCase(.uppercase)
+                Text("Optional")
+                    .font(RidgitsTypography.caption(10))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .textCase(.uppercase)
+                Image(systemName: "chevron.up")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textMuted)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 20)
+            .background(Color(hex: 0xF0F0F0))
         }
+        .buttonStyle(RidgitsHapticPlainButtonStyle())
         .frame(maxWidth: .infinity)
-        .frame(height: preferencePanelExpanded ? preferenceDrawerExpandedHeight : nil, alignment: .top)
         .background(RidgitsColors.surface)
         .clipShape(
             UnevenRoundedRectangle(
@@ -820,29 +889,13 @@ struct QuizView: View {
             .stroke(Color(hex: 0x999999), lineWidth: 1),
             alignment: .top
         )
-        .shadow(color: .black.opacity(preferencePanelExpanded ? 0.14 : 0), radius: 16, y: -6)
-        .animation(.easeInOut(duration: 0.25), value: preferencePanelExpanded)
+        .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
     }
 
-    private var preferenceDrawerHeader: some View {
+    /// Onboarding-only bar pinned to the physical bottom edge (no gap below the home indicator).
+    private var onboardingPreferenceCollapsedBar: some View {
         Button {
-            RidgitsHaptics.play(.light)
-            withAnimation(.easeInOut(duration: 0.25)) {
-                if preferencePanelExpanded {
-                    preferencePanelExpanded = false
-                } else {
-                    viewModel.preparePreferenceDefaultsIfNeeded()
-                    syncPreferenceStateFromRecord()
-                    if preferredSelection.isEmpty, let record = viewModel.answers[viewModel.currentQuestion.id] {
-                        if let multi = record.answers {
-                            preferredSelection = Set(multi)
-                        } else if let single = record.answer {
-                            preferredSelection = [single]
-                        }
-                    }
-                    preferencePanelExpanded = true
-                }
-            }
+            openPreferencePanel()
         } label: {
             HStack(spacing: 8) {
                 Text("Choose Their Ideal Answer")
@@ -853,20 +906,109 @@ struct QuizView: View {
                     .font(RidgitsTypography.caption(10))
                     .foregroundStyle(RidgitsColors.textMuted)
                     .textCase(.uppercase)
-                Image(systemName: "chevron.down")
+                Image(systemName: "chevron.up")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(RidgitsColors.textMuted)
-                    .rotationEffect(.degrees(preferencePanelExpanded ? 180 : 0))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.top, 16)
             .padding(.horizontal, 20)
-            .background(Color(hex: 0xF0F0F0))
+            .padding(.bottom, 18)
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
+        .frame(maxWidth: .infinity)
+        .background {
+            UnevenRoundedRectangle(
+                topLeadingRadius: RidgitsRadius.md,
+                topTrailingRadius: RidgitsRadius.md
+            )
+            .fill(Color(hex: 0xF0F0F0))
+            .ignoresSafeArea(edges: .bottom)
+        }
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(
+                topLeadingRadius: RidgitsRadius.md,
+                topTrailingRadius: RidgitsRadius.md
+            )
+            .stroke(Color(hex: 0x999999), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
     }
 
-    private var preferencePanelContent: some View {
+    private var preferenceFullScreenPanel: some View {
+        VStack(spacing: 0) {
+            preferenceFullScreenHeader
+
+            ScrollView {
+                preferencePanelScrollContent
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 20)
+            }
+
+            preferencePanelSaveFooter
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RidgitsColors.surface.ignoresSafeArea())
+    }
+
+    private var preferenceFullScreenHeader: some View {
+        HStack(spacing: 12) {
+            Button {
+                closePreferencePanel()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(RidgitsColors.hoverSurface)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+            .accessibilityLabel("Dismiss")
+
+            VStack(spacing: 2) {
+                Text("Choose Their Ideal Answer")
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .textCase(.uppercase)
+                Text("Optional")
+                    .font(RidgitsTypography.caption(10))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .textCase(.uppercase)
+            }
+
+            Spacer(minLength: 36)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(hex: 0xF0F0F0))
+    }
+
+    private func openPreferencePanel() {
+        RidgitsHaptics.play(.light)
+        viewModel.preparePreferenceDefaultsIfNeeded()
+        syncPreferenceStateFromRecord()
+        if preferredSelection.isEmpty, let record = viewModel.answers[viewModel.currentQuestion.id] {
+            if let multi = record.answers {
+                preferredSelection = Set(multi)
+            } else if let single = record.answer {
+                preferredSelection = [single]
+            }
+        }
+        withAnimation(.easeInOut(duration: 0.25)) {
+            preferencePanelExpanded = true
+        }
+    }
+
+    private func closePreferencePanel() {
+        RidgitsHaptics.play(.light)
+        withAnimation(.easeInOut(duration: 0.25)) {
+            preferencePanelExpanded = false
+        }
+    }
+
+    private var preferencePanelScrollContent: some View {
         let question = viewModel.currentQuestion
         let record = viewModel.answers[question.id]
 
@@ -956,18 +1098,20 @@ struct QuizView: View {
                     .buttonStyle(RidgitsHapticPlainButtonStyle())
                 }
             }
-
-            RidgitsPrimaryButton(
-                title: "Save",
-                isDisabled: preferredSelection.isEmpty
-            ) {
-                viewModel.applyPreference(preferred: preferredSelection, importance: importance)
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    preferencePanelExpanded = false
-                }
-            }
-            .padding(.top, 4)
         }
+    }
+
+    private var preferencePanelSaveFooter: some View {
+        RidgitsPrimaryButton(
+            title: "Save",
+            isDisabled: preferredSelection.isEmpty
+        ) {
+            viewModel.applyPreference(preferred: preferredSelection, importance: importance)
+            closePreferencePanel()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(RidgitsColors.surface)
     }
 
     private func syncPreferenceStateFromRecord() {

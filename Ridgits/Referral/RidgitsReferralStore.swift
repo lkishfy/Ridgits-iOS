@@ -21,7 +21,7 @@ final class RidgitsReferralStore: ObservableObject {
     var redeemedReferralStatusMessage: String {
         switch referralProfile?.redeemedReferralStatus {
         case "granted":
-            return "Referral complete. Your friend unlocked a free special quiz."
+            return "Referral complete. You and your friend both unlocked a free special quiz."
         case "expired":
             return "Your last referral expired. Enter a new code below."
         case "pending":
