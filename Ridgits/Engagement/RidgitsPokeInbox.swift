@@ -38,6 +38,18 @@ final class RidgitsPokeInbox: ObservableObject {
         receivedPokes.filter(\.isActionable).count
     }
 
+    /// Received pokes, newest first (for Messages inbox).
+    var receivedPokesSorted: [RidgitsPoke] {
+        receivedPokes.sorted {
+            ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast)
+        }
+    }
+
+    /// Unseen / not-yet-visited pokes (badge + priority inbox rows).
+    var actionableReceivedPokes: [RidgitsPoke] {
+        receivedPokesSorted.filter(\.isActionable)
+    }
+
     private var receivedListener: ListenerRegistration?
     private var sentListener: ListenerRegistration?
 

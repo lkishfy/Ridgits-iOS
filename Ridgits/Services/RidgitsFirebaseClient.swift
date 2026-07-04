@@ -439,14 +439,40 @@ final class RidgitsFirebaseClient {
         return RidgitChallenge.from(id: doc.documentID, data: data)
     }
 
+    func fetchActiveRidgitIds(uid: String) async -> [String] {
+        guard let doc = try? await db.collection("users").document(uid).getDocument(),
+              let data = doc.data(),
+              let ids = data["activeRidgitIds"] as? [String] else { return [] }
+        return ids
+    }
+
+    func saveActiveRidgitIds(uid: String, ids: [String]) async throws {
+        try await db.collection("users").document(uid).setData(["activeRidgitIds": ids], merge: true)
+    }
+
+    func addActiveRidgitId(uid: String, ridgitId: String, limit: Int) async throws {
+        var ids = await fetchActiveRidgitIds(uid: uid)
+        guard !ids.contains(ridgitId), ids.count < limit else { return }
+        ids.append(ridgitId)
+        try await saveActiveRidgitIds(uid: uid, ids: ids)
+    }
+
+    func removeActiveRidgitId(uid: String, ridgitId: String) async throws {
+        var ids = await fetchActiveRidgitIds(uid: uid)
+        ids.removeAll { $0 == ridgitId }
+        try await saveActiveRidgitIds(uid: uid, ids: ids)
+    }
+
     func saveRidgit(
         id: String?,
         userId: String,
         title: String,
         questions: [RidgitQuestion],
-        profile: RidgitsUserProfile
+        profile: RidgitsUserProfile,
+        activeSlotLimit: Int? = nil
     ) async throws -> RidgitChallenge {
         let docRef = id.map { db.collection("ridgits").document($0) } ?? db.collection("ridgits").document()
+        let isNew = id == nil
         let shareableLink = RidgitsAppLinks.ridgitURL(id: docRef.documentID).absoluteString
         let payload: [String: Any] = [
             "title": title,
@@ -457,14 +483,18 @@ final class RidgitsFirebaseClient {
             "createdAt": FieldValue.serverTimestamp(),
         ]
         try await docRef.setData(payload, merge: true)
+        if isNew, let activeSlotLimit {
+            try await addActiveRidgitId(uid: userId, ridgitId: docRef.documentID, limit: activeSlotLimit)
+        }
         guard let saved = await fetchRidgit(id: docRef.documentID) else {
             throw RidgitsError.server("Could not save ridgit.")
         }
         return saved
     }
 
-    func deleteRidgit(id: String) async throws {
+    func deleteRidgit(id: String, userId: String) async throws {
         try await db.collection("ridgits").document(id).delete()
+        try await removeActiveRidgitId(uid: userId, ridgitId: id)
     }
 
     /// Reads the private `birthYear` field off `users/{uid}` (not part of `publicProfiles`).
@@ -523,7 +553,7 @@ final class RidgitsFirebaseClient {
 
     func findNearbyPool(
         poolRadius: Int,
-        hasExtendedRadius: Bool,
+        poolAccessKey: String,
         forceRefresh: Bool = false
     ) async throws -> RidgitsNearbyMatchesResult {
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -533,7 +563,7 @@ final class RidgitsFirebaseClient {
         if !forceRefresh,
            let cached = RidgitsMatchesCache.shared.nearbyPool(for: uid),
            cached.poolRadius >= poolRadius,
-           cached.hasExtendedRadius == hasExtendedRadius,
+           cached.poolAccessKey == poolAccessKey,
            !RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid) {
             return RidgitsNearbyMatchesResult(
                 matches: cached.matches,
@@ -546,7 +576,7 @@ final class RidgitsFirebaseClient {
             result.matches,
             closeMatchCount: result.closeMatchCount,
             poolRadius: poolRadius,
-            hasExtendedRadius: hasExtendedRadius,
+            poolAccessKey: poolAccessKey,
             uid: uid
         )
         return result
@@ -594,6 +624,10 @@ final class RidgitsFirebaseClient {
 
     func markConversationRead(conversationId: String) async throws {
         try await api.markConversationRead(conversationId: conversationId)
+    }
+
+    func flagConversation(conversationId: String, reason: String) async throws {
+        try await api.flagConversation(conversationId: conversationId, reason: reason)
     }
 
     func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {

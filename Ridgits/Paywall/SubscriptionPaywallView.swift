@@ -5,16 +5,18 @@ struct SubscriptionPaywallView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
     @Environment(\.dismiss) private var dismiss
 
-    var preferredBilling: RidgitsSubscriptionBilling = .yearly
     /// When set, only this tier is shown (e.g. Ridgits+ upsell from messaging or quick tools).
     var highlightTier: RidgitsSubscriptionTier?
     var headline: String?
     var subheadline: String?
+    /// Custom drag handle for sheet presentations only; hidden when pushed from Profile.
+    var showsDragIndicator: Bool
 
-    @State private var billing: RidgitsSubscriptionBilling
     @State private var ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant = .standard
+    @State private var selectedBilling: RidgitsSubscriptionBilling = .yearly
 
     private let tiers: [RidgitsSubscriptionTier] = [.plus, .premium, .ultra]
+    private var billing: RidgitsSubscriptionBilling { .yearly }
 
     private var displayedTiers: [RidgitsSubscriptionTier] {
         if let highlightTier { return [highlightTier] }
@@ -22,24 +24,30 @@ struct SubscriptionPaywallView: View {
     }
 
     init(
-        preferredBilling: RidgitsSubscriptionBilling = .yearly,
+        preferredBilling _: RidgitsSubscriptionBilling = .yearly,
         highlightTier: RidgitsSubscriptionTier? = nil,
         headline: String? = nil,
-        subheadline: String? = nil
+        subheadline: String? = nil,
+        showsDragIndicator: Bool = true
     ) {
-        self.preferredBilling = preferredBilling
         self.highlightTier = highlightTier
         self.headline = headline
         self.subheadline = subheadline
-        _billing = State(initialValue: preferredBilling)
+        self.showsDragIndicator = showsDragIndicator
     }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            if showsDragIndicator {
+                sheetDragIndicator
+            }
+
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     header
-                    billingToggle
+                    if RidgitsSubscriptionCatalog.offersMonthlySubscriptions {
+                        billingToggle
+                    }
 
                     ForEach(displayedTiers) { tier in
                         tierCard(tier)
@@ -64,18 +72,23 @@ struct SubscriptionPaywallView: View {
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
                 }
-                .padding(16)
+                .padding(.horizontal, 20)
+                .padding(.top, showsDragIndicator ? 0 : 12)
+                .padding(.bottom, 32)
             }
-            .background(RidgitsColors.feedBackground)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                }
-            }
-            .task { await ridgitsStore.loadProducts() }
         }
+        .background(RidgitsColors.feedBackground)
+        .modifier(SubscriptionPaywallSheetPresentation(showsDragIndicator: showsDragIndicator))
+        .task { await ridgitsStore.loadProducts() }
+    }
+
+    private var sheetDragIndicator: some View {
+        Capsule()
+            .fill(RidgitsColors.textMuted.opacity(0.35))
+            .frame(width: 36, height: 5)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity)
     }
 
     private var header: some View {
@@ -85,6 +98,10 @@ struct SubscriptionPaywallView: View {
                 .foregroundStyle(RidgitsColors.textHeadline)
             if let subheadline, !subheadline.isEmpty {
                 Text(subheadline)
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+            } else if !RidgitsSubscriptionCatalog.offersMonthlySubscriptions {
+                Text("All plans are billed yearly.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
             }
@@ -114,16 +131,16 @@ struct SubscriptionPaywallView: View {
             }
 
             HStack(spacing: 0) {
-                ForEach(RidgitsSubscriptionBilling.allCases) { period in
+                ForEach(RidgitsSubscriptionCatalog.purchaseBillingOptions) { period in
                     Button {
-                        billing = period
+                        selectedBilling = period
                     } label: {
                         Text(period.label)
                             .font(RidgitsTypography.label(12))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .foregroundStyle(billing == period ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
-                            .background(billing == period ? RidgitsColors.surface : RidgitsColors.hoverSurface)
+                            .foregroundStyle(selectedBilling == period ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
+                            .background(selectedBilling == period ? RidgitsColors.surface : RidgitsColors.hoverSurface)
                     }
                     .buttonStyle(RidgitsHapticPlainButtonStyle())
                 }
@@ -137,25 +154,25 @@ struct SubscriptionPaywallView: View {
     }
 
     private func tierCard(_ tier: RidgitsSubscriptionTier) -> some View {
+        let activeBilling = RidgitsSubscriptionCatalog.offersMonthlySubscriptions ? selectedBilling : billing
         let isCurrent = ridgitsStore.isMembershipActive && ridgitsStore.membershipTier == tier
         let canUpgrade = ridgitsStore.canUpgrade(to: tier)
-        let isSupersededByCurrentPlan = ridgitsStore.isMembershipActive && ridgitsStore.membershipTier.rank > tier.rank
-        let resolvedUltraVariant = tier == .ultra && billing == .yearly ? ultraYearlyVariant : .standard
+        let resolvedUltraVariant = tier == .ultra && activeBilling == .yearly ? ultraYearlyVariant : .standard
         let price = ridgitsStore.priceLine(
             tier: tier,
-            billing: billing,
+            billing: activeBilling,
             ultraYearlyVariant: resolvedUltraVariant
         )
-        let usesYearlyMonthlyEquivalent = billing == .yearly && tier != .free
+        let usesYearlyMonthlyEquivalent = activeBilling == .yearly && tier != .free
         let displayPrice = usesYearlyMonthlyEquivalent
             ? RidgitsSubscriptionCatalog.yearlyMonthlyEquivalent(
                 for: tier,
                 ultraYearlyVariant: resolvedUltraVariant
             )
             : price
-        let priceSuffix = billing == .monthly || usesYearlyMonthlyEquivalent ? "/month" : "/year"
-        let yearlyTotal = billing == .yearly ? price : nil
-        let yearlyDiscount = billing == .yearly
+        let priceSuffix = activeBilling == .monthly || usesYearlyMonthlyEquivalent ? "/month" : "/year"
+        let yearlyTotal = activeBilling == .yearly ? price : nil
+        let yearlyDiscount = activeBilling == .yearly
             ? RidgitsSubscriptionCatalog.yearlyDiscountBadge(for: tier)
             : nil
 
@@ -186,7 +203,7 @@ struct SubscriptionPaywallView: View {
                                 .font(RidgitsTypography.caption(12))
                                 .foregroundStyle(RidgitsColors.textSecondary)
                         }
-                        if billing == .yearly, let yearlyTotal, usesYearlyMonthlyEquivalent {
+                        if activeBilling == .yearly, let yearlyTotal, usesYearlyMonthlyEquivalent {
                             Text("Billed \(yearlyTotal)/year")
                                 .font(RidgitsTypography.caption(11))
                                 .foregroundStyle(RidgitsColors.textMuted)
@@ -231,7 +248,7 @@ struct SubscriptionPaywallView: View {
                     }
                 }
 
-                if tier == .ultra && billing == .yearly && ridgitsStore.shouldShowUltraYearlyVariantPicker(isCurrentPlan: isCurrent) {
+                if tier == .ultra && activeBilling == .yearly && ridgitsStore.shouldShowUltraYearlyVariantPicker(isCurrentPlan: isCurrent) {
                     Picker("Ultra yearly", selection: $ultraYearlyVariant) {
                         Text(ridgitsStore.priceLine(tier: .ultra, billing: .yearly, ultraYearlyVariant: .standard) + "/yr")
                             .tag(RidgitsSubscriptionCatalog.UltraYearlyVariant.standard)
@@ -258,7 +275,7 @@ struct SubscriptionPaywallView: View {
                         Task {
                             let success = await ridgitsStore.purchaseSubscription(
                                 tier: tier,
-                                billing: billing,
+                                billing: activeBilling,
                                 ultraYearlyVariant: ultraYearlyVariant
                             )
                             if success { dismiss() }
@@ -284,6 +301,20 @@ struct SubscriptionPaywallView: View {
         case .premium: return "Get Premium"
         case .ultra: return "Get Ultra"
         default: return "Subscribe"
+        }
+    }
+}
+
+private struct SubscriptionPaywallSheetPresentation: ViewModifier {
+    let showsDragIndicator: Bool
+
+    func body(content: Content) -> some View {
+        if showsDragIndicator {
+            content
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+        } else {
+            content
         }
     }
 }

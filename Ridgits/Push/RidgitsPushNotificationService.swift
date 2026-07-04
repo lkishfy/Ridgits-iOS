@@ -5,7 +5,7 @@ import FirebaseMessaging
 
 enum RidgitsEngagementRoute: Equatable {
     case home
-    case matches(pokeFromUserId: String?)
+    case matches(pokeFromUserId: String?, pokeId: String?)
     case messages(conversationId: String?)
     case ridgit(id: String)
     case pack(id: String)
@@ -131,7 +131,10 @@ final class RidgitsPushNotificationService: NSObject, ObservableObject {
         case "messages":
             return .messages(conversationId: data["conversationId"] as? String)
         case "matches":
-            return .matches(pokeFromUserId: data["fromUserId"] as? String)
+            return .matches(
+                pokeFromUserId: data["fromUserId"] as? String,
+                pokeId: data["pokeId"] as? String
+            )
         case "ridgit":
             if let ridgitId = data["ridgitId"] as? String { return .ridgit(id: ridgitId) }
             return nil
@@ -140,7 +143,10 @@ final class RidgitsPushNotificationService: NSObject, ObservableObject {
                 return .messages(conversationId: conversationId)
             }
             if data["pokeId"] != nil || data["fromUserId"] != nil {
-                return .matches(pokeFromUserId: data["fromUserId"] as? String)
+                return .matches(
+                    pokeFromUserId: data["fromUserId"] as? String,
+                    pokeId: data["pokeId"] as? String
+                )
             }
             return .home
         }

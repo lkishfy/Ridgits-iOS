@@ -82,6 +82,11 @@ struct RidgitsArchetypePack: Identifiable, Equatable {
     /// Firestore key for completion timestamp.
     var completedAtKey: String { "\(id)CompletedAt" }
 
+    var requiredMembershipTier: RidgitsSubscriptionTier? {
+        if isFree || isReferralOnly { return nil }
+        return ultraOnly ? .ultra : .premium
+    }
+
     static let catalog: [RidgitsArchetypePack] = [
         RidgitsArchetypePack(
             id: "love-language",

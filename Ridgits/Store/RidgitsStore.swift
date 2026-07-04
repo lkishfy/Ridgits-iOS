@@ -106,6 +106,10 @@ final class RidgitsStore: ObservableObject {
         return products.first { $0.id == productId }
     }
 
+    func pokePackProduct(id: String) -> Product? {
+        products.first { $0.id == id }
+    }
+
     func purchaseArchetypePack(_ pack: RidgitsArchetypePack) async -> Bool {
         guard let product = product(for: pack) else {
             purchaseError = "This pack is unavailable right now. Try again shortly."
@@ -140,16 +144,9 @@ final class RidgitsStore: ObservableObject {
             )
     }
 
-    /// Two Ultra yearly SKUs exist for legacy pricing; only show a picker when both load with different prices.
+    /// Legacy dual Ultra yearly SKUs — hidden while only `Ultra` is sold in App Store Connect.
     func shouldShowUltraYearlyVariantPicker(isCurrentPlan: Bool) -> Bool {
-        guard !isCurrentPlan else { return false }
-        guard
-            subscriptionProduct(tier: .ultra, billing: .yearly, ultraYearlyVariant: .standard) != nil,
-            subscriptionProduct(tier: .ultra, billing: .yearly, ultraYearlyVariant: .premium) != nil
-        else { return false }
-        let standardPrice = priceLine(tier: .ultra, billing: .yearly, ultraYearlyVariant: .standard)
-        let premiumPrice = priceLine(tier: .ultra, billing: .yearly, ultraYearlyVariant: .premium)
-        return standardPrice != premiumPrice
+        false
     }
 
     func canUpgrade(to tier: RidgitsSubscriptionTier) -> Bool {
@@ -165,6 +162,10 @@ final class RidgitsStore: ObservableObject {
         billing: RidgitsSubscriptionBilling,
         ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant = .standard
     ) async -> Bool {
+        guard RidgitsSubscriptionCatalog.offersMonthlySubscriptions || billing == .yearly else {
+            purchaseError = "Only yearly plans are available in the app right now."
+            return false
+        }
         guard canUpgrade(to: tier) else {
             purchaseError = "Downgrades aren't available in the app. Cancel your current plan in Apple Subscriptions, then resubscribe after it expires."
             return false
@@ -312,6 +313,8 @@ final class RidgitsStore: ObservableObject {
                         await applyServerAccessIfAvailable()
                     } else if RidgitsSubscriptionCatalog.tier(for: transaction.productID) != nil {
                         await applyServerAccessIfAvailable()
+                    } else if RidgitsProductID.allPokePackProductIds.contains(transaction.productID) {
+                        // Consumable poke packs — balance is server-side only.
                     }
                 }
                 return linked

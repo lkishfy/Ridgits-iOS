@@ -29,6 +29,7 @@ struct MatchProfileView: View {
                 }
                 actionButtons
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
             .ridgitsFloatingTabBarPadding()
         }
@@ -65,8 +66,10 @@ struct MatchProfileView: View {
                 Text(match.name)
                     .font(RidgitsTypography.headline(22))
                     .foregroundStyle(RidgitsColors.textHeadline)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
                 RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 18)
-                Spacer()
+                Spacer(minLength: 0)
                 RidgitsCompatibilityBadge(percent: match.compatibility.overall)
             }
 
@@ -74,10 +77,12 @@ struct MatchProfileView: View {
                 Text(String(format: "%.0f mi away · %@", miles, match.location))
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             } else if !match.location.isEmpty {
                 Text(match.location)
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -138,17 +143,29 @@ struct MatchProfileView: View {
                 onMessage()
                 dismiss()
             }
-            Button(sentPoke ? "Unpoke" : "Poke") {
-                onPoke()
+            if sentPoke {
+                Text("Poked")
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+            } else {
+                Button("Poke") {
+                    onPoke()
+                }
+                .font(RidgitsTypography.label(14))
+                .foregroundStyle(RidgitsColors.textHeadline)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .overlay(
+                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                        .stroke(RidgitsColors.border, lineWidth: 1)
+                )
             }
-            .font(RidgitsTypography.label(14))
-            .foregroundStyle(RidgitsColors.textHeadline)
-            .frame(maxWidth: .infinity)
-            .frame(height: 48)
-            .overlay(
-                RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                    .stroke(RidgitsColors.border, lineWidth: 1)
-            )
         }
         .padding(.top, 4)
     }
@@ -160,6 +177,8 @@ struct MatchProfileView: View {
                 .font(RidgitsTypography.body(14))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -169,22 +188,29 @@ struct MatchProfileView: View {
                 Text(title)
                     .font(RidgitsTypography.label(13))
                     .foregroundStyle(RidgitsColors.textHeadline)
-                Spacer()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                Spacer(minLength: 8)
                 Text("\(value)%")
                     .font(RidgitsTypography.label(13))
                     .foregroundStyle(RidgitsColors.textSecondary)
+                    .monospacedDigit()
             }
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(RidgitsColors.contextBar)
-                    Capsule()
-                        .fill(RidgitsColors.ctaBlack)
-                        .frame(width: max(0, geo.size.width * CGFloat(value) / 100))
+
+            Capsule()
+                .fill(RidgitsColors.contextBar)
+                .frame(maxWidth: .infinity)
+                .frame(height: 6)
+                .overlay(alignment: .leading) {
+                    GeometryReader { geo in
+                        Capsule()
+                            .fill(RidgitsColors.ctaBlack)
+                            .frame(width: max(0, geo.size.width * CGFloat(value) / 100))
+                    }
                 }
-            }
-            .frame(height: 6)
+                .clipShape(Capsule())
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func sectionBadge(_ title: String) -> some View {

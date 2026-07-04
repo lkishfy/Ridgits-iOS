@@ -16,25 +16,30 @@ Web subscriptions (Stripe on ridgits.com) are separate; the iOS app reads the sa
 
 ## 2. Subscription group (memberships)
 
-Create **one auto-renewable subscription group**, e.g. `ridgits_membership`.
+Create **one auto-renewable subscription group** named **Yearly** (group ID `22207786`).
 
 Rank tiers **low → high** (Apple uses this for upgrades):
 
 | Level | Tier | Product ID | Price (USD) | Duration |
 |------:|------|------------|-------------|----------|
-| 1 | Ridgits+ | `RidgitsPlusMonthly999` | $9.99 | 1 month |
-| 1 | Ridgits+ | `RidgitsPlusYearly6000` | $29.99 | 1 year |
-| 2 | Premium | `RidgitsPremiumMonthly1499` | $12.99 | 1 month |
-| 2 | Premium | `RidgitsPremiumYearly9900` | $53.99 | 1 year |
-| 3 | Ultra | `RidgitsUltraMonthly1999` | $19.99 | 1 month |
-| 3 | Ultra | `RidgitsUltraYearly9900` | $69.99 | 1 year |
-| 3 | Ultra | `RidgitsUltraYearly14900` | $149.00 | 1 year (legacy SKU — grandfather existing subscribers) |
+| 1 | Ridgits+ | `Plus` | $29.99 | 1 year |
+| 2 | Premium | `Premium` | $49.99 | 1 year |
+| 3 | Ultra | `Ultra` | $69.99 | 1 year |
+
+**Legacy SKUs** (grandfather existing subscribers — do not sell in app):
+
+| Product ID | Tier | Billing |
+|------------|------|---------|
+| `RidgitsPlusMonthly999` / `RidgitsPlusYearly6000` | Plus | monthly / yearly |
+| `RidgitsPremiumMonthly1499` / `RidgitsPremiumYearly9900` | Premium | monthly / yearly |
+| `RidgitsUltraMonthly1999` / `RidgitsUltraYearly9900` / `RidgitsUltraYearly14900` | Ultra | monthly / yearly |
 
 **Policy in the app:** upgrades only (higher tier). No in-app downgrades — users cancel in **Settings → Apple ID → Subscriptions**.
 
 For each subscription:
 
-- Add localized display name and description.
+- Add localized display name and description (required — clears **Missing Metadata**).
+- Set pricing for all territories.
 - Submit for review with the app binary (subscriptions cannot go live alone).
 
 ---
@@ -143,7 +148,7 @@ Health check: `curl https://ridgits-api.vercel.app/api/health`
 
 ## 7. Sandbox test plan
 
-- [ ] New user → purchase Ridgits+ monthly → tier shows Plus, features unlock
+- [ ] New user → purchase Ridgits+ yearly (`Plus`) → tier shows Plus, features unlock
 - [ ] Upgrade Plus → Premium → prorated charge, tier updates
 - [ ] Attempt Premium → Plus purchase → blocked in app and API
 - [ ] Cancel subscription in Sandbox Apple ID → access until period end, then expires via webhook

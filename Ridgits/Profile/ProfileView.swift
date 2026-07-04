@@ -161,7 +161,7 @@ struct ProfileView: View {
             }
 
             NavigationLink {
-                SubscriptionPaywallView()
+                SubscriptionPaywallView(showsDragIndicator: false)
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -172,7 +172,7 @@ struct ProfileView: View {
                                 .font(RidgitsTypography.label(14))
                                 .foregroundStyle(RidgitsColors.textHeadline)
                         }
-                        Text("Ridgits+, Premium, and Ultra plans")
+                        Text("Ridgits+, Premium, and Ultra")
                             .font(RidgitsTypography.caption(12))
                             .foregroundStyle(RidgitsColors.textSecondary)
                     }
@@ -243,14 +243,9 @@ struct ProfileView: View {
             if ridgitsStore.hasNearbyAccess || ridgitsStore.hasWebSubscription {
                 RidgitsDashboardCard {
                     Toggle(isOn: $nearbyPresence.alertsEnabled) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Nearby Ridgits pings")
-                                .font(RidgitsTypography.label(14))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                            Text("Bluetooth alert when another Ridgits member is close")
-                                .font(RidgitsTypography.caption(12))
-                                .foregroundStyle(RidgitsColors.textSecondary)
-                        }
+                        Text("Get a notification when another Ridgits member is close, and you're near them.")
+                            .font(RidgitsTypography.label(14))
+                            .foregroundStyle(RidgitsColors.textHeadline)
                     }
                     .tint(RidgitsColors.ctaBlack)
                     .padding(16)
@@ -266,7 +261,7 @@ struct ProfileView: View {
                         Text("Settings")
                             .font(RidgitsTypography.label(14))
                             .foregroundStyle(RidgitsColors.textHeadline)
-                        Text("Terms, privacy, sign out, and delete account")
+                        Text("Legal and account management")
                             .font(RidgitsTypography.caption(12))
                             .foregroundStyle(RidgitsColors.textSecondary)
                     }

@@ -282,11 +282,8 @@ struct RidgitsMonthlyMessageQuota: Equatable {
         unlimited || (remaining ?? 0) > 0
     }
 
-    var displayLabel: String {
-        if unlimited { return "Unlimited messages this month" }
-        let left = remaining ?? 0
-        let cap = limit ?? 0
-        return "\(left) of \(cap) messages left this month"
+    var displayLabel: String? {
+        nil
     }
 
     static func fromDictionary(_ data: [String: Any]) -> RidgitsMonthlyMessageQuota? {
@@ -310,6 +307,19 @@ struct RidgitsMonthlyMessageQuota: Equatable {
             unlimited: unlimited,
             resetsAt: resetsAt,
             tier: tier
+        )
+    }
+}
+
+struct RidgitsPokeCredits: Equatable {
+    let balance: Int
+    let starterGrantApplied: Bool
+
+    static func fromDictionary(_ data: [String: Any]) -> RidgitsPokeCredits? {
+        guard let balance = data["balance"] as? Int else { return nil }
+        return RidgitsPokeCredits(
+            balance: balance,
+            starterGrantApplied: data["starterGrantApplied"] as? Bool ?? false
         )
     }
 }

@@ -69,51 +69,85 @@ struct RidgitsSubscriptionFeature: Identifiable {
 }
 
 enum RidgitsSubscriptionCatalog {
-    static let subscriptionGroupId = "ridgits_membership"
+    /// App Store Connect subscription group display name: "Yearly" (ID 22207786).
+    static let subscriptionGroupId = "Yearly"
+
+    /// Paywall and new purchases use yearly only; monthly SKUs may still renew for existing subscribers.
+    static let offersMonthlySubscriptions = false
+
+    static let showsYearlySavingsBadges = false
+
+    static var purchaseBillingOptions: [RidgitsSubscriptionBilling] {
+        offersMonthlySubscriptions ? RidgitsSubscriptionBilling.allCases : [.yearly]
+    }
+
+    private static func nearbyFeature(for tier: RidgitsSubscriptionTier) -> RidgitsSubscriptionFeature {
+        switch tier {
+        case .plus:
+            return RidgitsSubscriptionFeature(
+                title: "Nearby matches",
+                detail: "Search from 25 to 150 miles"
+            )
+        case .premium, .ultra:
+            return RidgitsSubscriptionFeature(
+                title: "Nearby matches",
+                detail: "Full nearby search from 0 to 150 miles"
+            )
+        default:
+            return RidgitsSubscriptionFeature(title: "Nearby matches")
+        }
+    }
 
     private static let coreMembershipFeatures: [RidgitsSubscriptionFeature] = [
-        RidgitsSubscriptionFeature(
-            title: "Nearby matches",
-            detail: "Search within 25 miles and unlock close matches"
-        ),
         RidgitsSubscriptionFeature(
             title: "Unlimited Quick Tools",
             detail: "Analyze Profile Photos, Analyze Messages, Compatibility Reports"
         ),
     ]
 
+    private static func ridgitsFeature(for tier: RidgitsSubscriptionTier) -> RidgitsSubscriptionFeature {
+        let count = maxRidgits(tier: tier, isMembershipActive: true)
+        return RidgitsSubscriptionFeature(
+            title: count == 1 ? "1 Ridgit" : "\(count) Ridgits",
+            detail: "Custom quizzes that reveal your socials"
+        )
+    }
+
     private static func messagingFeature(for tier: RidgitsSubscriptionTier) -> RidgitsSubscriptionFeature {
         switch tier {
-        case .plus:
+        case .plus, .premium, .ultra:
             return RidgitsSubscriptionFeature(
                 title: "Message other users",
-                detail: "48 messages per month (resets monthly)"
-            )
-        case .premium:
-            return RidgitsSubscriptionFeature(
-                title: "Message other users",
-                detail: "128 messages per month (resets monthly)"
-            )
-        case .ultra:
-            return RidgitsSubscriptionFeature(
-                title: "Unlimited messages",
-                detail: "No monthly message cap"
+                detail: "Included with membership"
             )
         case .free:
             return RidgitsSubscriptionFeature(title: "Message other users")
         }
     }
 
-    /// App Store Connect product IDs — configure in one auto-renewable subscription group (ranked for upgrades).
+    /// App Store Connect product IDs — yearly group ranked Plus → Premium → Ultra.
     static let productIds: [String: (tier: RidgitsSubscriptionTier, billing: RidgitsSubscriptionBilling)] = [
-        RidgitsProductID.plusMonthly: (.plus, .monthly),
         RidgitsProductID.plusYearly: (.plus, .yearly),
-        RidgitsProductID.premiumMonthly: (.premium, .monthly),
         RidgitsProductID.premiumYearly: (.premium, .yearly),
+        RidgitsProductID.ultraYearly: (.ultra, .yearly),
+        // Legacy SKUs — existing subscribers only
+        RidgitsProductID.plusMonthly: (.plus, .monthly),
+        RidgitsProductID.plusYearlyLegacy: (.plus, .yearly),
+        RidgitsProductID.premiumMonthly: (.premium, .monthly),
+        RidgitsProductID.premiumYearlyLegacy: (.premium, .yearly),
         RidgitsProductID.ultraMonthly: (.ultra, .monthly),
-        RidgitsProductID.ultraYearly99: (.ultra, .yearly),
-        RidgitsProductID.ultraYearly149: (.ultra, .yearly),
+        RidgitsProductID.ultraYearly99Legacy: (.ultra, .yearly),
+        RidgitsProductID.ultraYearly149Legacy: (.ultra, .yearly),
     ]
+
+    /// Products fetched from StoreKit for the paywall (yearly group only).
+    static var storeKitSubscriptionProductIds: [String] {
+        [
+            RidgitsProductID.plusYearly,
+            RidgitsProductID.premiumYearly,
+            RidgitsProductID.ultraYearly,
+        ]
+    }
 
     static var allSubscriptionProductIds: [String] {
         Array(productIds.keys)
@@ -135,7 +169,10 @@ enum RidgitsSubscriptionCatalog {
         case (.premium, .yearly): return RidgitsProductID.premiumYearly
         case (.ultra, .monthly): return RidgitsProductID.ultraMonthly
         case (.ultra, .yearly):
-            return ultraYearlyVariant == .premium ? RidgitsProductID.ultraYearly149 : RidgitsProductID.ultraYearly99
+            if offersMonthlySubscriptions || ultraYearlyVariant == .standard {
+                return RidgitsProductID.ultraYearly
+            }
+            return RidgitsProductID.ultraYearly149Legacy
         default: return nil
         }
     }
@@ -150,16 +187,16 @@ enum RidgitsSubscriptionCatalog {
         case .free:
             return []
         case .plus:
-            return [messagingFeature(for: .plus)] + coreMembershipFeatures + [
+            return [messagingFeature(for: .plus), nearbyFeature(for: .plus), ridgitsFeature(for: .plus)] + coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Ridgits+ Badge", badgeTier: .plus),
             ]
         case .premium:
-            return [messagingFeature(for: .premium)] + coreMembershipFeatures + [
+            return [messagingFeature(for: .premium), nearbyFeature(for: .premium), ridgitsFeature(for: .premium)] + coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Premium Badge", badgeTier: .premium),
             ]
         case .ultra:
-            return [messagingFeature(for: .ultra)] + coreMembershipFeatures + [
+            return [messagingFeature(for: .ultra), nearbyFeature(for: .ultra), ridgitsFeature(for: .ultra)] + coreMembershipFeatures + [
                 RidgitsSubscriptionFeature(title: "Additional archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Exclusive archetype quizzes"),
                 RidgitsSubscriptionFeature(title: "Special access to new features"),
@@ -177,7 +214,7 @@ enum RidgitsSubscriptionCatalog {
         case (.plus, .monthly): return "$9.99"
         case (.plus, .yearly): return "$29.99"
         case (.premium, .monthly): return "$12.99"
-        case (.premium, .yearly): return "$53.99"
+        case (.premium, .yearly): return "$49.99"
         case (.ultra, .monthly): return "$19.99"
         case (.ultra, .yearly):
             return ultraYearlyVariant == .premium ? "$149" : "$69.99"
@@ -191,7 +228,7 @@ enum RidgitsSubscriptionCatalog {
     ) -> String {
         switch tier {
         case .plus: return "$2.50"
-        case .premium: return "$4.50"
+        case .premium: return "$4.17"
         case .ultra:
             return ultraYearlyVariant == .premium ? "$12.42" : "$5.83"
         default: return ""
@@ -200,6 +237,7 @@ enum RidgitsSubscriptionCatalog {
 
     /// Percent saved vs paying monthly for 12 months (for yearly plan badge).
     static func yearlyDiscountBadge(for tier: RidgitsSubscriptionTier) -> String? {
+        guard showsYearlySavingsBadges else { return nil }
         guard let percent = yearlyDiscountPercent(for: tier), percent > 0 else { return nil }
         return "Save \(percent)%"
     }
@@ -213,7 +251,7 @@ enum RidgitsSubscriptionCatalog {
             yearly = 29.99
         case .premium:
             monthly = 12.99
-            yearly = 53.99
+            yearly = 49.99
         case .ultra:
             monthly = 19.99
             yearly = 69.99
@@ -226,6 +264,7 @@ enum RidgitsSubscriptionCatalog {
     }
 
     static func maxYearlyDiscountBadge() -> String? {
+        guard showsYearlySavingsBadges else { return nil }
         let percents = [RidgitsSubscriptionTier.plus, .premium, .ultra]
             .compactMap { yearlyDiscountPercent(for: $0) }
         guard let maxPercent = percents.max(), maxPercent > 0 else { return nil }
@@ -238,20 +277,23 @@ enum RidgitsSubscriptionCatalog {
         return target.rank > current.rank
     }
 
-    /// Max custom Ridgits (iOS) by membership tier.
+    /// Max active custom Ridgits by membership tier.
     static func maxRidgits(tier: RidgitsSubscriptionTier, isMembershipActive: Bool) -> Int {
         guard isMembershipActive else { return 1 }
         switch tier {
-        case .free, .plus: return 1
+        case .free: return 1
+        case .plus: return 2
         case .premium: return 3
-        case .ultra: return 10
+        case .ultra: return 5
         }
     }
 
     static func ridgitLimitPaywallTier(current: RidgitsSubscriptionTier, isMembershipActive: Bool) -> RidgitsSubscriptionTier {
-        let limit = maxRidgits(tier: current, isMembershipActive: isMembershipActive)
-        if limit >= 10 { return .ultra }
-        if limit >= 3 { return .ultra }
-        return .premium
+        if !isMembershipActive { return .plus }
+        switch current {
+        case .free, .plus: return .premium
+        case .premium: return .ultra
+        case .ultra: return .ultra
+        }
     }
 }

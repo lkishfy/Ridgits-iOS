@@ -88,7 +88,7 @@ struct AdditionalArchetypesSection: View {
                         .font(RidgitsTypography.label(13))
                         .foregroundStyle(RidgitsColors.textHeadline)
                 }
-                Spacer()
+                Spacer(minLength: 28)
             }
 
             if !result.description.isEmpty {
@@ -118,6 +118,9 @@ struct AdditionalArchetypesSection: View {
                 .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+        .overlay(alignment: .topTrailing) {
+            packCornerBadge(for: pack)
+        }
         .overlay(alignment: .bottomTrailing) {
             if pack.isFree {
                 freeBadge
@@ -139,7 +142,7 @@ struct AdditionalArchetypesSection: View {
                         .font(RidgitsTypography.label(13))
                         .foregroundStyle(RidgitsColors.textHeadline)
                         .multilineTextAlignment(.leading)
-                    Spacer()
+                    Spacer(minLength: 28)
                 }
 
                 Text(pack.description)
@@ -165,6 +168,9 @@ struct AdditionalArchetypesSection: View {
                     .stroke(RidgitsColors.border, style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
             )
             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+            .overlay(alignment: .topTrailing) {
+                packCornerBadge(for: pack)
+            }
             .overlay(alignment: .bottomTrailing) {
                 if pack.isFree {
                     freeBadge
@@ -172,6 +178,14 @@ struct AdditionalArchetypesSection: View {
             }
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
+    }
+
+    @ViewBuilder
+    private func packCornerBadge(for pack: RidgitsArchetypePack) -> some View {
+        if let tier = pack.requiredMembershipTier {
+            RidgitsVerifiedBadge(tier: tier, size: 22)
+                .padding(10)
+        }
     }
 
     private func packIcon(_ pack: RidgitsArchetypePack) -> some View {

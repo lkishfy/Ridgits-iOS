@@ -140,10 +140,27 @@ final class RidgitsAPIClient {
         )
     }
 
+    func flagConversation(conversationId: String, reason: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/messaging/flag",
+            method: "POST",
+            body: ["conversationId": conversationId, "reason": reason]
+        )
+    }
+
     func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {
         let data = try await authorizedRequest(path: "/api/messaging/quota", method: "GET", body: nil)
         let quota = data["quota"] as? [String: Any] ?? [:]
         guard let parsed = RidgitsMonthlyMessageQuota.fromDictionary(quota) else {
+            throw RidgitsError.decoding
+        }
+        return parsed
+    }
+
+    func fetchPokeCredits() async throws -> RidgitsPokeCredits {
+        let data = try await authorizedRequest(path: "/api/pokes/quota", method: "GET", body: nil)
+        let credits = data["credits"] as? [String: Any] ?? [:]
+        guard let parsed = RidgitsPokeCredits.fromDictionary(credits) else {
             throw RidgitsError.decoding
         }
         return parsed

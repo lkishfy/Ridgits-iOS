@@ -701,7 +701,8 @@ struct QuizView: View {
     }
 
     private var preferencePanelMaxHeight: CGFloat {
-        min(UIScreen.main.bounds.height * 0.58, 560)
+        // Expand high enough to show ideal-answer options without feeling buried at the bottom.
+        UIScreen.main.bounds.height * 0.85 - 52
     }
 
     private var preferenceBottomDrawer: some View {

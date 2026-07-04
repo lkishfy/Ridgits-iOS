@@ -9,7 +9,7 @@ struct CachedNearbyPoolRecord: Codable {
     var matches: [RidgitsMatch]
     var closeMatchCount: Int
     var poolRadius: Int
-    var hasExtendedRadius: Bool
+    var poolAccessKey: String
     var fetchedAt: Date
 }
 
@@ -92,14 +92,14 @@ final class RidgitsMatchesCache {
         _ matches: [RidgitsMatch],
         closeMatchCount: Int,
         poolRadius: Int,
-        hasExtendedRadius: Bool,
+        poolAccessKey: String,
         uid: String
     ) {
         let record = CachedNearbyPoolRecord(
             matches: matches,
             closeMatchCount: closeMatchCount,
             poolRadius: poolRadius,
-            hasExtendedRadius: hasExtendedRadius,
+            poolAccessKey: poolAccessKey,
             fetchedAt: Date()
         )
         guard let data = try? JSONEncoder().encode(record) else { return }

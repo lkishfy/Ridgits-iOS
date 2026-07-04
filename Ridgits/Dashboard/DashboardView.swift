@@ -31,6 +31,7 @@ struct DashboardView: View {
     @State private var packQuizPresentation: PackQuizPresentation?
     @State private var referralGatePresentation: ReferralQuizGatePresentation?
     @State private var incomingRidgit: IncomingRidgit?
+    @State private var incomingPokeProfile: IncomingPokeProfile?
     @State private var showNearbyShareReceiver = false
     @StateObject private var messagingViewModel = MessagingViewModel()
     @StateObject private var matchesViewModel = MatchesViewModel()
@@ -38,6 +39,10 @@ struct DashboardView: View {
 
     private var unreadCount: Int {
         messagingViewModel.conversations.reduce(0) { $0 + $1.unreadCount }
+    }
+
+    private var messagesTabBadge: Int {
+        unreadCount + pokeInbox.unseenCount
     }
 
     var body: some View {
@@ -54,7 +59,7 @@ struct DashboardView: View {
                     compactProgress: tabBarScroll.compactProgress,
                     profileImageURL: profile?.image,
                     matchesBadge: pokeInbox.unseenCount,
-                    messagesBadge: unreadCount
+                    messagesBadge: messagesTabBadge
                 )
                 .padding(.bottom, 6)
             }
@@ -67,7 +72,7 @@ struct DashboardView: View {
             if let uid = authManager.currentUser?.uid {
                 matchesViewModel.hydrateFromCache(
                     uid: uid,
-                    hasExtendedNearby: ridgitsStore.hasExtendedNearbyRadius
+                    access: RidgitsNearbySearchAccess.from(store: ridgitsStore)
                 )
             }
         }
@@ -93,8 +98,14 @@ struct DashboardView: View {
             switch route {
             case .home:
                 selectedTab = RidgitsTab.home.rawValue
-            case .matches:
-                selectedTab = RidgitsTab.matches.rawValue
+            case .matches(let pokeFromUserId, let pokeId):
+                selectedTab = RidgitsTab.messages.rawValue
+                if let pokeFromUserId, !pokeFromUserId.isEmpty {
+                    incomingPokeProfile = IncomingPokeProfile(
+                        userId: pokeFromUserId,
+                        pokeId: pokeId
+                    )
+                }
             case .messages:
                 selectedTab = RidgitsTab.messages.rawValue
             case .ridgit(let id):
@@ -105,7 +116,10 @@ struct DashboardView: View {
             }
             deepLinkRouter.clearPendingRoute()
         }
-        .onChange(of: ridgitsStore.hasExtendedNearbyRadius) { _, _ in
+        .onChange(of: ridgitsStore.membershipTier) { _, _ in
+            refreshNearbyPresence()
+        }
+        .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
             refreshNearbyPresence()
         }
         .sheet(item: $packAnalysisPresentation) { presentation in
@@ -173,11 +187,22 @@ struct DashboardView: View {
         case .home:
             homeTab
         case .matches:
-            NavigationStack { MatchesView(viewModel: matchesViewModel) }
+            NavigationStack {
+                MatchesView(
+                    viewModel: matchesViewModel,
+                    incomingPokeProfile: $incomingPokeProfile
+                )
+            }
         case .ridgit:
             NavigationStack { MakeRidgitView() }
         case .messages:
-            NavigationStack { MessagesView(viewModel: messagingViewModel) }
+            NavigationStack {
+                MessagesView(
+                    viewModel: messagingViewModel,
+                    matchesViewModel: matchesViewModel,
+                    incomingPokeProfile: $incomingPokeProfile
+                )
+            }
         case .profile:
             NavigationStack { ProfileView() }
         }

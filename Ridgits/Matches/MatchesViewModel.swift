@@ -11,82 +11,124 @@ final class MatchesViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isLoadingNearby = false
     @Published var errorMessage: String?
-    /// Set when a poke failed because the account isn't subscribed — the view should
-    /// present `SubscriptionPaywallView` in addition to (or instead of) the alert.
-    @Published var showPaywallPrompt = false
+    /// Set when a poke failed for missing credits — present `PokePackPaywallView`.
+    @Published var showPokePackPaywall = false
+    /// Set when the server requires birth year on file — present `BirthYearPromptView`.
+    @Published var showBirthYearPrompt = false
+    @Published var pokeCredits: RidgitsPokeCredits?
 
     private var nearbyPool: [RidgitsMatch] = []
     private var rawNationwideMatches: [RidgitsMatch] = []
-    private var lastPoolAccessExtended: Bool?
+    private var lastPoolAccessKey: String?
     private var nearbyLoadTask: Task<Void, Never>?
 
-    func fetchRadius(hasExtendedNearby: Bool) -> Int {
-        RidgitsNearbyAccess.clampRadius(maxDistance, hasExtendedRadius: hasExtendedNearby)
+    func fetchRadius(access: RidgitsNearbySearchAccess) -> Int {
+        RidgitsNearbyAccess.clampRadius(maxDistance, access: access)
     }
 
-    func hydrateFromCache(uid: String, hasExtendedNearby: Bool) {
+    func hydrateFromCache(uid: String, access: RidgitsNearbySearchAccess) {
         if let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 10) {
             rawNationwideMatches = cached
             nationwideMatches = compatibilityFilter.filtered(cached)
         }
 
         guard let pool = RidgitsMatchesCache.shared.nearbyPool(for: uid),
-              pool.hasExtendedRadius == hasExtendedNearby else {
+              pool.poolAccessKey == access.poolCacheKey else {
             return
         }
 
         nearbyPool = pool.matches
         closeMatchCount = pool.closeMatchCount
-        applyDisplayedRadius(hasExtendedNearby: hasExtendedNearby)
+        applyDisplayedRadius(access: access)
     }
 
-    func applyDisplayedRadius(hasExtendedNearby: Bool) {
+    func applyDisplayedRadius(access: RidgitsNearbySearchAccess) {
         let radiusMatches = RidgitsNearbyAccess.displayedMatches(
             from: nearbyPool,
-            within: fetchRadius(hasExtendedNearby: hasExtendedNearby),
-            hasExtendedRadius: hasExtendedNearby
+            within: fetchRadius(access: access),
+            access: access
         )
         nearbyMatches = compatibilityFilter.filtered(radiusMatches)
     }
 
-    func onRadiusChanged(hasExtendedNearby: Bool) {
-        applyDisplayedRadius(hasExtendedNearby: hasExtendedNearby)
+    func onRadiusChanged(access: RidgitsNearbySearchAccess) {
+        applyDisplayedRadius(access: access)
     }
 
-    func onCompatibilityFilterChanged(hasExtendedNearby: Bool) {
-        applyDisplayedRadius(hasExtendedNearby: hasExtendedNearby)
+    func onCompatibilityFilterChanged(access: RidgitsNearbySearchAccess) {
+        applyDisplayedRadius(access: access)
         nationwideMatches = compatibilityFilter.filtered(rawNationwideMatches)
     }
 
-    func resetCompatibilityFilter(hasExtendedNearby: Bool) {
+    func resetCompatibilityFilter(access: RidgitsNearbySearchAccess) {
         compatibilityFilter.reset()
-        onCompatibilityFilterChanged(hasExtendedNearby: hasExtendedNearby)
+        onCompatibilityFilterChanged(access: access)
     }
 
-    func unfilteredNearbyCount(hasExtendedNearby: Bool) -> Int {
+    func unfilteredNearbyCount(access: RidgitsNearbySearchAccess) -> Int {
         RidgitsNearbyAccess.displayedMatches(
             from: nearbyPool,
-            within: fetchRadius(hasExtendedNearby: hasExtendedNearby),
-            hasExtendedRadius: hasExtendedNearby
+            within: fetchRadius(access: access),
+            access: access
         ).count
     }
 
-    func load(hasExtendedNearby: Bool, forceRefresh: Bool = false) async {
+    func resolveMatch(for userId: String) async -> RidgitsMatch? {
+        if let existing = nearbyPool.first(where: { $0.userId == userId })
+            ?? rawNationwideMatches.first(where: { $0.userId == userId }) {
+            return existing
+        }
+
+        var profile = RidgitsPublicProfileCache.shared.profile(for: userId)
+        if profile == nil {
+            profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: userId)
+        }
+        guard let profile else { return nil }
+
+        RidgitsPublicProfileCache.shared.save(profile)
+
+        let name = profile.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let about = profile.about.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return RidgitsMatch(
+            id: userId,
+            userId: userId,
+            name: name.isEmpty ? "Ridgits member" : name,
+            image: profile.image,
+            location: profile.location,
+            distanceMiles: nil,
+            compatibility: RidgitsCompatibility(
+                overall: 0,
+                communication: 0,
+                intimacy: 0,
+                values: 0,
+                social: 0,
+                commitment: 0
+            ),
+            about: about.isEmpty ? nil : about,
+            subscriptionTier: profile.subscriptionTier
+        )
+    }
+
+    func load(access: RidgitsNearbySearchAccess, forceRefresh: Bool = false) async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         nearbyLoadTask?.cancel()
         nearbyLoadTask = Task {
-            await performLoad(uid: uid, hasExtendedNearby: hasExtendedNearby, forceRefresh: forceRefresh)
+            await performLoad(uid: uid, access: access, forceRefresh: forceRefresh)
         }
         await nearbyLoadTask?.value
     }
 
-    private func performLoad(uid: String, hasExtendedNearby: Bool, forceRefresh: Bool) async {
-        let accessChanged = lastPoolAccessExtended.map { $0 != hasExtendedNearby } ?? false
-        lastPoolAccessExtended = hasExtendedNearby
+    private func performLoad(uid: String, access: RidgitsNearbySearchAccess, forceRefresh: Bool) async {
+        await refreshPokeCredits()
+
+        let accessKey = access.poolCacheKey
+        let accessChanged = lastPoolAccessKey.map { $0 != accessKey } ?? false
+        lastPoolAccessKey = accessKey
 
         if !forceRefresh && !accessChanged {
-            hydrateFromCache(uid: uid, hasExtendedNearby: hasExtendedNearby)
+            hydrateFromCache(uid: uid, access: access)
 
             let needsNationwide = !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
                 || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: 10)
@@ -127,12 +169,12 @@ final class MatchesViewModel: ObservableObject {
             if shouldFetchNearby {
                 await refreshNearbyPool(
                     uid: uid,
-                    hasExtendedNearby: hasExtendedNearby,
+                    access: access,
                     forceRefresh: forceRefresh || accessChanged,
                     blocking: showBlockingLoad
                 )
             } else {
-                applyDisplayedRadius(hasExtendedNearby: hasExtendedNearby)
+                applyDisplayedRadius(access: access)
             }
         } catch is CancellationError {
             return
@@ -145,20 +187,21 @@ final class MatchesViewModel: ObservableObject {
 
     private func refreshNearbyPool(
         uid: String,
-        hasExtendedNearby: Bool,
+        access: RidgitsNearbySearchAccess,
         forceRefresh: Bool,
         blocking: Bool
     ) async {
-        let poolRadius = RidgitsNearbyAccess.poolFetchRadius(hasExtendedRadius: hasExtendedNearby)
+        let poolRadius = RidgitsNearbyAccess.poolFetchRadius(access: access)
+        let accessKey = access.poolCacheKey
 
         if !forceRefresh,
            let cached = RidgitsMatchesCache.shared.nearbyPool(for: uid),
            cached.poolRadius >= poolRadius,
-           cached.hasExtendedRadius == hasExtendedNearby,
+           cached.poolAccessKey == accessKey,
            !RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid) {
             nearbyPool = cached.matches
-            closeMatchCount = hasExtendedNearby ? 0 : cached.closeMatchCount
-            applyDisplayedRadius(hasExtendedNearby: hasExtendedNearby)
+            closeMatchCount = access.showsCloseMatchTeaser ? cached.closeMatchCount : 0
+            applyDisplayedRadius(access: access)
             return
         }
 
@@ -175,17 +218,13 @@ final class MatchesViewModel: ObservableObject {
         do {
             let result = try await RidgitsFirebaseClient.shared.findNearbyPool(
                 poolRadius: poolRadius,
-                hasExtendedRadius: hasExtendedNearby,
+                poolAccessKey: accessKey,
                 forceRefresh: forceRefresh
             )
             guard !Task.isCancelled else { return }
             nearbyPool = result.matches
-            if !hasExtendedNearby {
-                closeMatchCount = result.closeMatchCount
-            } else {
-                closeMatchCount = 0
-            }
-            applyDisplayedRadius(hasExtendedNearby: hasExtendedNearby)
+            closeMatchCount = access.showsCloseMatchTeaser ? result.closeMatchCount : 0
+            applyDisplayedRadius(access: access)
             errorMessage = nil
         } catch is CancellationError {
             return
@@ -196,24 +235,44 @@ final class MatchesViewModel: ObservableObject {
         }
     }
 
+    func refreshPokeCredits() async {
+        do {
+            pokeCredits = try await RidgitsAPIClient.shared.fetchPokeCredits()
+        } catch {
+            // Non-fatal — sending is still gated server-side.
+        }
+    }
+
+    /// Returns whether the user can attempt a new poke (has credits and hasn't already poked).
+    func preflightPoke(alreadySent: Bool) async -> PokePreflightResult {
+        if alreadySent { return .alreadySent }
+        await refreshPokeCredits()
+        guard let balance = pokeCredits?.balance, balance > 0 else {
+            return .noCredits
+        }
+        return .ready
+    }
+
     func sendPoke(to match: RidgitsMatch) async {
         do {
             _ = try await RidgitsAPIClient.shared.sendPoke(toUserId: match.userId)
+            await refreshPokeCredits()
         } catch let ridgitsError as RidgitsError {
-            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
-                showPaywallPrompt = true
+            if ridgitsError.code == "POKE_CREDITS_REQUIRED" {
+                showPokePackPaywall = true
+            } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
+                showBirthYearPrompt = true
+                return
             }
             errorMessage = ridgitsError.localizedDescription
         } catch {
             errorMessage = error.localizedDescription
         }
     }
+}
 
-    func unpoke(match: RidgitsMatch, pokeId: String) async {
-        do {
-            try await RidgitsAPIClient.shared.unpoke(pokeId: pokeId)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
+enum PokePreflightResult {
+    case alreadySent
+    case noCredits
+    case ready
 }

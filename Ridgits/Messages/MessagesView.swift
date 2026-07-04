@@ -13,7 +13,10 @@ final class MessagingViewModel: ObservableObject {
     @Published var timeRemaining: TimeInterval?
     /// Set when a messaging action failed because the account isn't subscribed.
     @Published var showPaywallPrompt = false
-    @Published var monthlyQuota: RidgitsMonthlyMessageQuota?
+    /// Set when the server requires birth year on file — present `BirthYearPromptView`.
+    @Published var showBirthYearPrompt = false
+    @Published var isFlagging = false
+    @Published var flagSuccessMessage: String?
 
     private var conversationsListener: ListenerRegistration?
     private var messagesListener: ListenerRegistration?
@@ -41,9 +44,7 @@ final class MessagingViewModel: ObservableObject {
         pendingIncoming.count
     }
 
-    var canSendMonthlyMessage: Bool {
-        monthlyQuota?.canSend ?? true
-    }
+    var canSendMonthlyMessage: Bool { true }
 
     func startListening() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -53,8 +54,6 @@ final class MessagingViewModel: ObservableObject {
         }
 
         guard conversationsListener == nil else { return }
-
-        Task { await refreshMonthlyQuota() }
 
         conversationsListener = RidgitsFirebaseClient.shared.listenConversations(userId: uid) { [weak self] convos in
             Task { @MainActor in
@@ -73,23 +72,17 @@ final class MessagingViewModel: ObservableObject {
             )
             conversations = convos
             RidgitsConversationsCache.shared.save(convos, uid: uid)
-            await refreshMonthlyQuota()
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    func refreshMonthlyQuota() async {
-        do {
-            monthlyQuota = try await RidgitsFirebaseClient.shared.fetchMessagingQuota()
-        } catch {
-            // Non-fatal — sending is still gated server-side.
-        }
-    }
-
     private func handleMessagingError(_ ridgitsError: RidgitsError) {
-        if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
+        if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
             showPaywallPrompt = true
+        } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
+            showBirthYearPrompt = true
+            return
         }
         errorMessage = ridgitsError.localizedDescription
     }
@@ -137,10 +130,23 @@ final class MessagingViewModel: ObservableObject {
         do {
             try await RidgitsFirebaseClient.shared.sendMessage(conversationId: conversation.id, message: trimmed)
             messageText = ""
-            await refreshMonthlyQuota()
         } catch let ridgitsError as RidgitsError {
             handleMessagingError(ridgitsError)
-            await refreshMonthlyQuota()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func flagConversation(_ conversation: RidgitsConversation, reason: String) async {
+        let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        isFlagging = true
+        defer { isFlagging = false }
+        do {
+            try await RidgitsFirebaseClient.shared.flagConversation(conversationId: conversation.id, reason: trimmed)
+            flagSuccessMessage = "Thanks — our team will review this conversation with high priority. If multiple members report the same person within 7 days, their messaging may be paused while we investigate."
+        } catch let ridgitsError as RidgitsError {
+            errorMessage = ridgitsError.localizedDescription
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -188,10 +194,20 @@ final class MessagingViewModel: ObservableObject {
 }
 
 struct MessagesView: View {
+    @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var ridgitsStore: RidgitsStore
+    @EnvironmentObject private var pokeInbox: RidgitsPokeInbox
     @ObservedObject var viewModel: MessagingViewModel
+    @ObservedObject var matchesViewModel: MatchesViewModel
+    @Binding var incomingPokeProfile: IncomingPokeProfile?
     @State private var showRequests = false
     @State private var showSubscriptionPaywall = false
+    @State private var showBirthYearPrompt = false
+    @State private var composeMatch: RidgitsMatch?
+    @State private var composeMessage = ""
+    @State private var pokeProfileMatch: RidgitsMatch?
+    @State private var showPokePackPaywall = false
+    @State private var pokeConfirmMatch: RidgitsMatch?
 
     var body: some View {
         NavigationStack {
@@ -207,6 +223,22 @@ struct MessagesView: View {
             }
             .background(Color.white)
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(item: $pokeProfileMatch) { match in
+                MatchProfileView(
+                    match: match,
+                    onMessage: {
+                        guard ridgitsStore.hasPlusMembership else {
+                            showSubscriptionPaywall = true
+                            return
+                        }
+                        composeMatch = match
+                        pokeProfileMatch = nil
+                    },
+                    onPoke: {
+                        Task { await requestPoke(for: match) }
+                    }
+                )
+            }
             .toolbar {
                 if viewModel.selectedConversation != nil {
                     ToolbarItem(placement: .topBarLeading) {
@@ -226,18 +258,80 @@ struct MessagesView: View {
             .toolbar(viewModel.selectedConversation == nil ? .hidden : .visible, for: .navigationBar)
         }
         .sheet(isPresented: $showRequests) {
-            MessageRequestsView(viewModel: viewModel)
+            MessageRequestsView(
+                viewModel: viewModel,
+                matchesViewModel: matchesViewModel,
+                composeMatch: $composeMatch,
+                onViewPokeProfile: { poke in
+                    await openPokeProfile(poke)
+                },
+                onPokeBack: { poke in
+                    await pokeBack(poke)
+                }
+            )
+        }
+        .sheet(item: $composeMatch) { match in
+            StartConversationSheet(
+                match: match,
+                messageText: $composeMessage,
+                onSend: { await sendConversationRequest(to: match) },
+                onCancel: {
+                    composeMessage = ""
+                    composeMatch = nil
+                }
+            )
         }
         .sheet(isPresented: $showSubscriptionPaywall) {
             SubscriptionPaywallView(preferredBilling: .yearly)
+        }
+        .fullScreenCover(isPresented: $showBirthYearPrompt) {
+            BirthYearPromptView {
+                showBirthYearPrompt = false
+            }
+            .environmentObject(authManager)
+        }
+        .sheet(isPresented: $showPokePackPaywall) {
+            PokePackPaywallView {
+                Task { await matchesViewModel.refreshPokeCredits() }
+            }
+        }
+        .onChange(of: matchesViewModel.showPokePackPaywall) { _, showPaywall in
+            guard showPaywall else { return }
+            matchesViewModel.showPokePackPaywall = false
+            showPokePackPaywall = true
+        }
+        .alert("Send poke?", isPresented: Binding(
+            get: { pokeConfirmMatch != nil },
+            set: { if !$0 { pokeConfirmMatch = nil } }
+        )) {
+            Button("Send poke") {
+                guard let match = pokeConfirmMatch else { return }
+                pokeConfirmMatch = nil
+                Task { await matchesViewModel.sendPoke(to: match) }
+            }
+            Button("Cancel", role: .cancel) {
+                pokeConfirmMatch = nil
+            }
+        } message: {
+            if let match = pokeConfirmMatch {
+                Text("Send a poke to \(match.name)? This uses 1 credit and can't be undone.")
+            }
         }
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
             guard showPaywall else { return }
             viewModel.showPaywallPrompt = false
             showSubscriptionPaywall = true
         }
+        .onChange(of: viewModel.showBirthYearPrompt) { _, showPrompt in
+            guard showPrompt else { return }
+            viewModel.showBirthYearPrompt = false
+            showBirthYearPrompt = true
+        }
+        .task(id: incomingPokeProfile?.id) {
+            await openIncomingPokeIfNeeded()
+        }
         .alert("Couldn't send message", isPresented: Binding(
-            get: { viewModel.errorMessage != nil && !viewModel.showPaywallPrompt },
+            get: { viewModel.errorMessage != nil && !viewModel.showPaywallPrompt && !viewModel.showBirthYearPrompt },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
             Button("OK") { viewModel.errorMessage = nil }
@@ -249,7 +343,7 @@ struct MessagesView: View {
     private var inboxHeader: some View {
         VStack(spacing: 0) {
             HStack(alignment: .center) {
-                Text("Messages")
+                Text("Inbox")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(RidgitsColors.textHeadline)
 
@@ -263,8 +357,8 @@ struct MessagesView: View {
                             .font(.system(size: 16, weight: .regular))
                             .foregroundStyle(RidgitsColors.textSecondary)
 
-                        if viewModel.incomingRequestCount > 0 {
-                            Text("\(viewModel.incomingRequestCount)")
+                        if viewModel.incomingRequestCount + pokeInbox.unseenCount > 0 {
+                            Text("\(viewModel.incomingRequestCount + pokeInbox.unseenCount)")
                                 .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(.white)
                                 .frame(minWidth: 18, minHeight: 18)
@@ -278,15 +372,6 @@ struct MessagesView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 12)
-
-            if let quota = viewModel.monthlyQuota {
-                Text(quota.displayLabel)
-                    .font(RidgitsTypography.caption())
-                    .foregroundStyle(quota.canSend ? RidgitsColors.textSecondary : RidgitsColors.destructive)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
-            }
         }
         .background(Color.white)
     }
@@ -294,7 +379,11 @@ struct MessagesView: View {
     private var conversationList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
-                if viewModel.activeConversations.isEmpty {
+                if !pokeInbox.receivedPokesSorted.isEmpty {
+                    pokesInboxSection
+                }
+
+                if viewModel.activeConversations.isEmpty && pokeInbox.receivedPokesSorted.isEmpty {
                     emptyInbox
                 } else {
                     ForEach(viewModel.activeConversations) { convo in
@@ -313,6 +402,134 @@ struct MessagesView: View {
         }
     }
 
+    private var pokesInboxSection: some View {
+        VStack(spacing: 0) {
+            Text("Pokes")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+            ForEach(pokeInbox.receivedPokesSorted) { poke in
+                PokeInboxRow(
+                    poke: poke,
+                    sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
+                    onViewProfile: {
+                        Task { await openPokeProfile(poke) }
+                    },
+                    onPokeBack: {
+                        Task { await pokeBack(poke) }
+                    }
+                )
+            }
+
+            if !viewModel.activeConversations.isEmpty {
+                Divider()
+                    .padding(.top, 8)
+                Text("Chats")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+            }
+        }
+    }
+
+    @MainActor
+    private func openIncomingPokeIfNeeded() async {
+        guard let incoming = incomingPokeProfile else { return }
+        defer { incomingPokeProfile = nil }
+
+        let userId = incoming.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !userId.isEmpty else { return }
+
+        if let poke = pokeInbox.receivedPokes.first(where: { $0.fromUserId == userId }) {
+            await openPokeProfile(poke)
+            return
+        }
+
+        if let pokeId = incoming.pokeId?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !pokeId.isEmpty {
+            try? await RidgitsAPIClient.shared.markPokeSeen(
+                pokeId: pokeId,
+                profileVisited: true
+            )
+        }
+
+        if let match = await matchesViewModel.resolveMatch(for: userId) {
+            pokeProfileMatch = match
+        }
+    }
+
+    @MainActor
+    private func openPokeProfile(_ poke: RidgitsPoke) async {
+        try? await RidgitsAPIClient.shared.markPokeSeen(
+            pokeId: poke.id,
+            profileVisited: true
+        )
+
+        if let match = await matchesViewModel.resolveMatch(for: poke.fromUserId) {
+            pokeProfileMatch = match
+        }
+    }
+
+    @MainActor
+    private func pokeBack(_ poke: RidgitsPoke) async {
+        try? await RidgitsAPIClient.shared.markPokeSeen(
+            pokeId: poke.id,
+            profileVisited: false
+        )
+
+        guard let match = await matchesViewModel.resolveMatch(for: poke.fromUserId) else { return }
+        await requestPoke(for: match)
+    }
+
+    @MainActor
+    private func requestPoke(for match: RidgitsMatch) async {
+        let alreadySent = pokeInbox.sentPokeIdsByUser[match.userId] != nil
+        switch await matchesViewModel.preflightPoke(alreadySent: alreadySent) {
+        case .alreadySent:
+            return
+        case .noCredits:
+            showPokePackPaywall = true
+        case .ready:
+            pokeConfirmMatch = match
+        }
+    }
+
+    @MainActor
+    private func sendConversationRequest(to match: RidgitsMatch) async {
+        guard ridgitsStore.hasPlusMembership else {
+            showSubscriptionPaywall = true
+            return
+        }
+        let text = composeMessage
+        do {
+            _ = try await RidgitsFirebaseClient.shared.startConversation(
+                toUserId: match.userId,
+                message: text
+            )
+            composeMessage = ""
+            composeMatch = nil
+        } catch let ridgitsError as RidgitsError {
+            composeMatch = nil
+            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
+                showSubscriptionPaywall = true
+            } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
+                showBirthYearPrompt = true
+            } else {
+                viewModel.errorMessage = ridgitsError.localizedDescription
+            }
+        } catch {
+            composeMatch = nil
+            viewModel.errorMessage = error.localizedDescription
+        }
+    }
+
     private var emptyInbox: some View {
         VStack(spacing: 8) {
             Text("No messages yet")
@@ -322,6 +539,11 @@ struct MessagesView: View {
                 .font(RidgitsTypography.body(15))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .multilineTextAlignment(.center)
+            Text("When someone pokes you, they'll show up here — tap their name to view their profile or poke back.")
+                .font(RidgitsTypography.caption(13))
+                .foregroundStyle(RidgitsColors.textMuted)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 32)
@@ -331,19 +553,45 @@ struct MessagesView: View {
 
 private struct MessageRequestsView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
+    @EnvironmentObject private var pokeInbox: RidgitsPokeInbox
     @ObservedObject var viewModel: MessagingViewModel
+    @ObservedObject var matchesViewModel: MatchesViewModel
+    @Binding var composeMatch: RidgitsMatch?
+    let onViewPokeProfile: (RidgitsPoke) async -> Void
+    let onPokeBack: (RidgitsPoke) async -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var showSubscriptionPaywall = false
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
-                    if viewModel.pendingIncoming.isEmpty && viewModel.awaitingApproval.isEmpty {
-                        Text("No message requests")
+                    if pokeInbox.receivedPokesSorted.isEmpty
+                        && viewModel.pendingIncoming.isEmpty
+                        && viewModel.awaitingApproval.isEmpty {
+                        Text("No message or poke requests")
                             .font(RidgitsTypography.body(15))
                             .foregroundStyle(RidgitsColors.textSecondary)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 48)
+                    }
+
+                    if !pokeInbox.receivedPokesSorted.isEmpty {
+                        requestsSectionHeader("Pokes")
+                        ForEach(pokeInbox.receivedPokesSorted) { poke in
+                            PokeInboxRow(
+                                poke: poke,
+                                sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
+                                onViewProfile: {
+                                    dismiss()
+                                    Task { await onViewPokeProfile(poke) }
+                                },
+                                onPokeBack: {
+                                    dismiss()
+                                    Task { await onPokeBack(poke) }
+                                }
+                            )
+                        }
                     }
 
                     if !viewModel.pendingIncoming.isEmpty {
@@ -395,6 +643,9 @@ private struct MessageRequestsView: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(preferredBilling: .yearly)
+        }
     }
 
     private func requestsSectionHeader(_ title: String) -> some View {
@@ -405,6 +656,88 @@ private struct MessageRequestsView: View {
             .padding(.horizontal, 16)
             .padding(.top, 20)
             .padding(.bottom, 8)
+    }
+}
+
+private struct PokeInboxRow: View {
+    let poke: RidgitsPoke
+    let sentPokeBack: Bool
+    let onViewProfile: () -> Void
+    let onPokeBack: () -> Void
+
+    @State private var imageURL = ""
+    @State private var subscriptionTier: String?
+
+    private var isUnread: Bool { poke.isActionable }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Button(action: onViewProfile) {
+                HStack(alignment: .center, spacing: 12) {
+                    ChatAvatar(
+                        imageURL: imageURL,
+                        initial: String(poke.fromName.prefix(1)).uppercased(),
+                        size: 56
+                    )
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: 6) {
+                            Text(poke.fromName)
+                                .font(.system(size: 16, weight: isUnread ? .semibold : .regular))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                                .lineLimit(1)
+                            RidgitsVerifiedBadge(tier: subscriptionTier, size: 16)
+                            Spacer(minLength: 0)
+                            if let timestamp = RidgitsMessageFormatting.relativeTimestamp(poke.createdAt) {
+                                Text(timestamp)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(RidgitsColors.textMuted)
+                            }
+                        }
+                        Text("Poked you")
+                            .font(.system(size: 15))
+                            .foregroundStyle(isUnread ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+
+            if sentPokeBack {
+                Text("Poked")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .overlay(
+                        Capsule()
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+            } else {
+                Button(action: onPokeBack) {
+                    Text("Poke back")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(RidgitsColors.ctaBlack)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .task(id: poke.fromUserId) {
+            if let cached = RidgitsPublicProfileCache.shared.profile(for: poke.fromUserId) {
+                imageURL = cached.image
+                subscriptionTier = cached.subscriptionTier
+            } else if let profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: poke.fromUserId) {
+                imageURL = profile.image
+                subscriptionTier = profile.subscriptionTier
+                RidgitsPublicProfileCache.shared.save(profile)
+            }
+        }
     }
 }
 
@@ -496,32 +829,11 @@ private struct DMConversationRow: View {
 
     @ViewBuilder
     private var avatar: some View {
-        Group {
-            if let url = URL(string: conversation.otherUserImage), !conversation.otherUserImage.isEmpty {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image.resizable().scaledToFill()
-                    default:
-                        initialsAvatar
-                    }
-                }
-            } else {
-                initialsAvatar
-            }
-        }
-        .frame(width: 56, height: 56)
-        .clipShape(Circle())
-    }
-
-    private var initialsAvatar: some View {
-        Circle()
-            .fill(RidgitsColors.contextBar)
-            .overlay {
-                Text(conversation.otherUserName.prefix(1).uppercased())
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-            }
+        ChatAvatar(
+            imageURL: conversation.otherUserImage,
+            initial: String(conversation.otherUserName.prefix(1)).uppercased(),
+            size: 56
+        )
     }
 }
 
@@ -543,6 +855,14 @@ struct ConversationDetailView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
     @ObservedObject var viewModel: MessagingViewModel
     let conversation: RidgitsConversation
+    @State private var showFlagSheet = false
+    @State private var flagReason = ""
+    @State private var currentUserImageURL = ""
+    @State private var currentUserInitial = "?"
+
+    private var otherUserInitial: String {
+        String(conversation.otherUserName.prefix(1)).uppercased()
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -563,9 +883,12 @@ struct ConversationDetailView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(viewModel.messages) { message in
+                            let isMine = message.senderId == Auth.auth().currentUser?.uid
                             MessageBubble(
                                 message: message,
-                                isMine: message.senderId == Auth.auth().currentUser?.uid
+                                isMine: isMine,
+                                avatarImageURL: isMine ? currentUserImageURL : conversation.otherUserImage,
+                                avatarInitial: isMine ? currentUserInitial : otherUserInitial
                             )
                             .id(message.id)
                         }
@@ -579,7 +902,7 @@ struct ConversationDetailView: View {
                 }
             }
 
-            if conversation.canSendMessage && (viewModel.timeRemaining ?? 1) > 0 && viewModel.canSendMonthlyMessage {
+            if conversation.canSendMessage && (viewModel.timeRemaining ?? 1) > 0 {
                 HStack(spacing: 8) {
                     TextField("Message", text: $viewModel.messageText, axis: .vertical)
                         .lineLimit(1...4)
@@ -588,10 +911,6 @@ struct ConversationDetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                     Button {
                         guard ridgitsStore.hasPlusMembership else {
-                            viewModel.showPaywallPrompt = true
-                            return
-                        }
-                        guard viewModel.canSendMonthlyMessage else {
                             viewModel.showPaywallPrompt = true
                             return
                         }
@@ -605,11 +924,6 @@ struct ConversationDetailView: View {
                 }
                 .padding(12)
                 .background(RidgitsColors.surface)
-            } else if conversation.status == .active && !viewModel.canSendMonthlyMessage {
-                Text("You've used all your messages for this month. Upgrade for more, or wait until the 1st (UTC) for your limit to reset.")
-                    .font(RidgitsTypography.body(13))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                    .padding()
             } else if conversation.status == .active {
                 Text("This conversation has expired or reached the 16-message limit.")
                     .font(RidgitsTypography.body(13))
@@ -630,25 +944,185 @@ struct ConversationDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                HStack(spacing: 6) {
-                    Text(conversation.otherUserName)
+                HStack(spacing: 8) {
+                    ChatAvatar(
+                        imageURL: conversation.otherUserImage,
+                        initial: otherUserInitial,
+                        size: 28
+                    )
+                    HStack(spacing: 6) {
+                        Text(conversation.otherUserName)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(RidgitsColors.textHeadline)
+                            .lineLimit(1)
+                        RidgitsVerifiedBadge(tier: conversation.otherUserSubscriptionTier, size: 16)
+                    }
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        showFlagSheet = true
+                    } label: {
+                        Label("Report conversation", systemImage: "flag")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(RidgitsColors.textHeadline)
-                        .lineLimit(1)
-                    RidgitsVerifiedBadge(tier: conversation.otherUserSubscriptionTier, size: 16)
                 }
             }
         }
+        .task(id: conversation.id) {
+            await loadCurrentUserAvatar()
+            RidgitsProfileCache.shared.scheduleImagePrefetch(remoteURL: conversation.otherUserImage)
+        }
+        .sheet(isPresented: $showFlagSheet) {
+            NavigationStack {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("What happens when you report")
+                        .font(RidgitsTypography.headline(17))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        reportInfoRow("Your report is sent to our moderation team with high priority.")
+                        reportInfoRow("We review the conversation and the reported member's account signals.")
+                        reportInfoRow("If two or more members report the same person within 7 days, their messaging is paused while we investigate.")
+                    }
+
+                    Text("Tell us why you're reporting this conversation.")
+                        .font(RidgitsTypography.body(14))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+
+                    TextField("Reason for report", text: $flagReason, axis: .vertical)
+                        .lineLimit(3...6)
+                        .padding(12)
+                        .background(RidgitsColors.inputSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+
+                    RidgitsPrimaryButton(title: viewModel.isFlagging ? "Submitting…" : "Submit report") {
+                        Task {
+                            await viewModel.flagConversation(conversation, reason: flagReason)
+                            if viewModel.flagSuccessMessage != nil {
+                                showFlagSheet = false
+                                flagReason = ""
+                            }
+                        }
+                    }
+                    .disabled(flagReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isFlagging)
+
+                    Spacer()
+                }
+                .padding(20)
+                .navigationTitle("Report conversation")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Cancel") {
+                            showFlagSheet = false
+                            flagReason = ""
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        .alert("Report submitted", isPresented: Binding(
+            get: { viewModel.flagSuccessMessage != nil },
+            set: { if !$0 { viewModel.flagSuccessMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.flagSuccessMessage ?? "")
+        }
+    }
+
+    @MainActor
+    private func loadCurrentUserAvatar() async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        if let cached = RidgitsProfileCache.shared.profile(for: uid) {
+            currentUserImageURL = cached.image
+            let name = cached.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !name.isEmpty {
+                currentUserInitial = String(name.prefix(1)).uppercased()
+            }
+            RidgitsProfileCache.shared.scheduleImagePrefetch(remoteURL: cached.image)
+            return
+        }
+
+        if let profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: uid) {
+            currentUserImageURL = profile.image
+            let name = profile.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !name.isEmpty {
+                currentUserInitial = String(name.prefix(1)).uppercased()
+            }
+            RidgitsProfileCache.shared.save(profile)
+        }
+    }
+
+    private func reportInfoRow(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("•")
+                .font(RidgitsTypography.body(14))
+                .foregroundStyle(RidgitsColors.textSecondary)
+            Text(text)
+                .font(RidgitsTypography.body(14))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+private struct ChatAvatar: View {
+    let imageURL: String
+    let initial: String
+    var size: CGFloat = 32
+
+    var body: some View {
+        Group {
+            if imageURL.isEmpty {
+                initialsAvatar
+            } else {
+                RidgitsCachedProfileImage(remoteURL: imageURL) {
+                    initialsAvatar
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .overlay(
+            Circle()
+                .stroke(RidgitsColors.border.opacity(0.6), lineWidth: 0.5)
+        )
+    }
+
+    private var initialsAvatar: some View {
+        Circle()
+            .fill(RidgitsColors.contextBar)
+            .overlay {
+                Text(initial.isEmpty ? "?" : initial)
+                    .font(.system(size: size * 0.38, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+            }
     }
 }
 
 private struct MessageBubble: View {
     let message: RidgitsMessage
     let isMine: Bool
+    let avatarImageURL: String
+    let avatarInitial: String
 
     var body: some View {
-        HStack {
-            if isMine { Spacer(minLength: 40) }
+        HStack(alignment: .bottom, spacing: 8) {
+            if isMine { Spacer(minLength: 24) }
+
+            if !isMine {
+                ChatAvatar(imageURL: avatarImageURL, initial: avatarInitial, size: 32)
+            }
+
             Text(message.text)
                 .font(RidgitsTypography.body(14))
                 .foregroundStyle(isMine ? .white : RidgitsColors.textHeadline)
@@ -656,7 +1130,12 @@ private struct MessageBubble: View {
                 .padding(.vertical, 10)
                 .background(isMine ? RidgitsColors.ctaBlack : RidgitsColors.contextBar)
                 .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
-            if !isMine { Spacer(minLength: 40) }
+
+            if isMine {
+                ChatAvatar(imageURL: avatarImageURL, initial: avatarInitial, size: 32)
+            }
+
+            if !isMine { Spacer(minLength: 24) }
         }
     }
 }

@@ -7,6 +7,7 @@ struct MakeRidgitView: View {
     @EnvironmentObject private var nearbyPresence: RidgitsNearbyPresenceService
     @State private var profile = RidgitsUserProfile.empty(uid: "")
     @State private var ridgits: [RidgitChallenge] = []
+    @State private var activeRidgitIds: [String] = []
     @State private var showEditor = false
     @State private var editingRidgit: RidgitChallenge?
     @State private var deleteConfirmId: String?
@@ -14,6 +15,7 @@ struct MakeRidgitView: View {
     @State private var nearbySharePayload: RidgitSharePayload?
     @State private var showRidgitLimitPaywall = false
     @State private var showRidgitLimitAlert = false
+    @State private var showRidgitSelection = false
 
     private var ridgitLimit: Int {
         RidgitsSubscriptionCatalog.maxRidgits(
@@ -22,8 +24,16 @@ struct MakeRidgitView: View {
         )
     }
 
+    private var activeRidgitCount: Int {
+        activeRidgitIds.filter { id in ridgits.contains(where: { $0.id == id }) }.count
+    }
+
     private var canCreateMoreRidgits: Bool {
-        ridgits.count < ridgitLimit
+        activeRidgitCount < ridgitLimit
+    }
+
+    private var inactiveRidgitCount: Int {
+        ridgits.count - activeRidgitCount
     }
 
     private var ridgitLimitPaywallTier: RidgitsSubscriptionTier {
@@ -43,9 +53,14 @@ struct MakeRidgitView: View {
                     Text("Create quizzes that reveal your social media info only to those who pass")
                         .font(RidgitsTypography.body(14))
                         .foregroundStyle(RidgitsColors.textSecondary)
-                    Text("\(ridgits.count) of \(ridgitLimit) Ridgits used")
+                    Text("\(activeRidgitCount) of \(ridgitLimit) active Ridgits")
                         .font(RidgitsTypography.caption(12))
                         .foregroundStyle(RidgitsColors.textMuted)
+                    if inactiveRidgitCount > 0 {
+                        Text("\(inactiveRidgitCount) inactive — upgrade to use again, or delete to remove")
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                    }
                 }
 
                 if !showEditor {
@@ -56,6 +71,7 @@ struct MakeRidgitView: View {
                     RidgitEditorView(
                         profile: profile,
                         existing: editingRidgit,
+                        ridgitLimit: ridgitLimit,
                         canCreateNew: canCreateMoreRidgits,
                         onLimitReached: handleRidgitLimitReached,
                         onCancel: cancelEditor,
@@ -70,7 +86,7 @@ struct MakeRidgitView: View {
                         .padding(.top, 8)
 
                     ForEach(ridgits) { ridgit in
-                        ridgitRow(ridgit)
+                        ridgitRow(ridgit, isActive: RidgitSlotManager.isActive(ridgitId: ridgit.id, activeIds: activeRidgitIds))
                     }
                 }
 
@@ -89,6 +105,12 @@ struct MakeRidgitView: View {
         .background(RidgitsColors.feedBackground)
         .navigationBarTitleDisplayMode(.inline)
         .task { await reload() }
+        .onChange(of: ridgitsStore.membershipTier) { _, _ in
+            Task { await reload() }
+        }
+        .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
+            Task { await reload() }
+        }
         .fullScreenCover(item: $nearbySharePayload) { payload in
             RidgitNearbyShareSenderSheet(payload: payload) { _ in
                 nearbySharePayload = nil
@@ -103,19 +125,30 @@ struct MakeRidgitView: View {
                 subheadline: ridgitLimitPaywallSubheadline
             )
         }
+        .fullScreenCover(isPresented: $showRidgitSelection) {
+            RidgitSlotSelectionSheet(
+                ridgits: ridgits,
+                slotLimit: ridgitLimit,
+                tierName: ridgitsStore.isMembershipActive ? ridgitsStore.membershipTier.displayName : "Free"
+            ) { selected in
+                await confirmActiveSelection(selected)
+            }
+        }
         .alert("Ridgit limit reached", isPresented: $showRidgitLimitAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Ultra members can create up to 10 Ridgits. Delete one to make room for a new quiz.")
+            Text("Ultra members can create up to 5 active Ridgits. Delete one to make room for a new quiz.")
         }
     }
 
     private var ridgitLimitPaywallSubheadline: String {
         switch ridgitLimitPaywallTier {
+        case .plus:
+            return "Ridgits+ includes 2 Ridgits — \(ridgitsStore.priceLine(tier: .plus, billing: .yearly))/year."
         case .premium:
-            return "Free members get 1 Ridgit. Premium includes up to 3 — \(ridgitsStore.priceLine(tier: .premium, billing: .yearly))/year."
+            return "Ridgits+ includes 2 Ridgits. Premium includes 3 — \(ridgitsStore.priceLine(tier: .premium, billing: .yearly))/year."
         case .ultra:
-            return "Upgrade to Ultra for up to 10 Ridgits — \(ridgitsStore.priceLine(tier: .ultra, billing: .yearly))/year."
+            return "Upgrade to Ultra for up to 5 Ridgits — \(ridgitsStore.priceLine(tier: .ultra, billing: .yearly))/year."
         default:
             return "Upgrade for more Ridgits."
         }
@@ -169,20 +202,22 @@ struct MakeRidgitView: View {
         .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
-    private func ridgitRow(_ ridgit: RidgitChallenge) -> some View {
+    private func ridgitRow(_ ridgit: RidgitChallenge, isActive: Bool) -> some View {
         RidgitsDashboardCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text(ridgit.title)
                         .font(RidgitsTypography.label(16))
-                        .foregroundStyle(RidgitsColors.textHeadline)
+                        .foregroundStyle(isActive ? RidgitsColors.textHeadline : RidgitsColors.textMuted)
                     Spacer()
-                    Button("Edit") {
-                        editingRidgit = ridgit
-                        showEditor = true
+                    if isActive {
+                        Button("Edit") {
+                            editingRidgit = ridgit
+                            showEditor = true
+                        }
+                        .font(RidgitsTypography.label(12))
+                        .foregroundStyle(RidgitsColors.textSecondary)
                     }
-                    .font(RidgitsTypography.label(12))
-                    .foregroundStyle(RidgitsColors.textSecondary)
 
                     if deleteConfirmId == ridgit.id {
                         Button("Confirm") {
@@ -199,11 +234,17 @@ struct MakeRidgitView: View {
                     }
                 }
 
+                if !isActive {
+                    Text("Inactive — upgrade your plan to edit, share, or preview this Ridgit.")
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                }
+
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(ridgit.questions.prefix(3).enumerated()), id: \.offset) { index, question in
                         Text("\(index + 1). \(question.question)")
                             .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(RidgitsColors.textSecondary)
+                            .foregroundStyle(isActive ? RidgitsColors.textSecondary : RidgitsColors.textMuted)
                             .lineLimit(1)
                     }
                     if ridgit.questions.count > 3 {
@@ -213,37 +254,40 @@ struct MakeRidgitView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("SHARE NEARBY")
-                        .font(RidgitsTypography.caption(10))
-                        .foregroundStyle(RidgitsColors.textMuted)
-                        .tracking(0.8)
-                    Text("Ridgits can only be shared by bumping phones with another Ridgits member nearby.")
-                        .font(RidgitsTypography.caption(12))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                if isActive {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("SHARE NEARBY")
+                            .font(RidgitsTypography.caption(10))
+                            .foregroundStyle(RidgitsColors.textMuted)
+                            .tracking(0.8)
+                        Text("Ridgits can only be shared by bumping phones with another Ridgits member nearby.")
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                RidgitsSquareButton(title: "Share Nearby", style: .filled) {
-                    nearbySharePayload = RidgitSharePayload(
-                        ridgitId: ridgit.id,
-                        title: ridgit.title,
-                        senderName: senderDisplayName,
-                        previewQuestion: ridgit.questions.first?.question
-                    )
-                }
+                    RidgitsSquareButton(title: "Share Nearby", style: .filled) {
+                        nearbySharePayload = RidgitSharePayload(
+                            ridgitId: ridgit.id,
+                            title: ridgit.title,
+                            senderName: senderDisplayName,
+                            previewQuestion: ridgit.questions.first?.question
+                        )
+                    }
 
-                NavigationLink {
-                    RidgitQuizView(ridgitId: ridgit.id)
-                } label: {
-                    Text("Preview")
-                        .font(RidgitsTypography.label(12))
-                        .foregroundStyle(RidgitsColors.textHeadline)
-                        .underline()
+                    NavigationLink {
+                        RidgitQuizView(ridgitId: ridgit.id)
+                    } label: {
+                        Text("Preview")
+                            .font(RidgitsTypography.label(12))
+                            .foregroundStyle(RidgitsColors.textHeadline)
+                            .underline()
+                    }
                 }
             }
             .padding(16)
         }
+        .opacity(isActive ? 1 : 0.55)
     }
 
     private var senderDisplayName: String {
@@ -262,14 +306,55 @@ struct MakeRidgitView: View {
         guard let uid = authManager.currentUser?.uid else { return }
         profile = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)) ?? .empty(uid: uid)
         ridgits = await RidgitsFirebaseClient.shared.fetchRidgits(userId: uid)
+        var ids = await RidgitsFirebaseClient.shared.fetchActiveRidgitIds(uid: uid)
         showEditor = false
         editingRidgit = nil
+
+        if RidgitSlotManager.needsSelection(ridgits: ridgits, activeIds: ids, limit: ridgitLimit) {
+            activeRidgitIds = ids
+            showRidgitSelection = true
+            return
+        }
+
+        if ids.isEmpty, !ridgits.isEmpty {
+            ids = RidgitSlotManager.defaultActiveIds(from: ridgits, limit: ridgitLimit)
+            try? await RidgitsFirebaseClient.shared.saveActiveRidgitIds(uid: uid, ids: ids)
+        } else {
+            let sanitized = RidgitSlotManager.sanitizedActiveIds(ids, ridgits: ridgits, limit: ridgitLimit)
+            if sanitized != ids {
+                ids = sanitized
+                try? await RidgitsFirebaseClient.shared.saveActiveRidgitIds(uid: uid, ids: ids)
+            }
+        }
+
+        let inactive = RidgitSlotManager.inactiveRidgits(from: ridgits, activeIds: ids)
+        if ids.count < ridgitLimit, !inactive.isEmpty {
+            let slots = ridgitLimit - ids.count
+            let reactivated = inactive.prefix(slots).map(\.id)
+            ids.append(contentsOf: reactivated)
+            try? await RidgitsFirebaseClient.shared.saveActiveRidgitIds(uid: uid, ids: ids)
+        }
+
+        activeRidgitIds = ids
+    }
+
+    @MainActor
+    private func confirmActiveSelection(_ selected: [String]) async {
+        guard let uid = authManager.currentUser?.uid else { return }
+        do {
+            try await RidgitsFirebaseClient.shared.saveActiveRidgitIds(uid: uid, ids: selected)
+            activeRidgitIds = selected
+            showRidgitSelection = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     @MainActor
     private func deleteRidgit(_ id: String) async {
+        guard let uid = authManager.currentUser?.uid else { return }
         do {
-            try await RidgitsFirebaseClient.shared.deleteRidgit(id: id)
+            try await RidgitsFirebaseClient.shared.deleteRidgit(id: id, userId: uid)
             deleteConfirmId = nil
             await reload()
         } catch {
@@ -281,6 +366,7 @@ struct MakeRidgitView: View {
 private struct RidgitEditorView: View {
     let profile: RidgitsUserProfile
     let existing: RidgitChallenge?
+    let ridgitLimit: Int
     let canCreateNew: Bool
     let onLimitReached: () -> Void
     let onCancel: () -> Void
@@ -433,7 +519,8 @@ private struct RidgitEditorView: View {
                 userId: uid,
                 title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                 questions: questions,
-                profile: profile
+                profile: profile,
+                activeSlotLimit: existing == nil ? ridgitLimit : nil
             )
             await onSaved()
         } catch {

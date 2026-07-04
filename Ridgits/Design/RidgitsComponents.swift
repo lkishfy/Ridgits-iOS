@@ -175,29 +175,25 @@ struct RidgitsCompatibilityBadge: View {
 }
 
 struct RidgitsLoadingView: View {
+    @State private var isSpinning = false
+
     var body: some View {
         ZStack {
             RidgitsColors.surface.ignoresSafeArea()
             VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .stroke(RidgitsColors.border, lineWidth: 1)
-                        .frame(width: 64, height: 64)
-                    Circle()
-                        .trim(from: 0, to: 0.72)
-                        .stroke(RidgitsColors.textHeadline, lineWidth: 2)
-                        .frame(width: 64, height: 64)
-                        .rotationEffect(.degrees(-90))
-                    Circle()
-                        .fill(RidgitsColors.charcoal)
-                        .frame(width: 40, height: 40)
-                        .overlay(RidgitsLogoView.onDark(size: 24))
-                }
+                RidgitsLogoView.onLight(size: 48)
+                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                    .animation(
+                        .linear(duration: 1.1).repeatForever(autoreverses: false),
+                        value: isSpinning
+                    )
+
                 Text("Signing you in to Ridgits…")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
             }
         }
+        .onAppear { isSpinning = true }
     }
 }
 

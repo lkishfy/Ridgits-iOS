@@ -92,7 +92,7 @@ struct ArchetypePackPaywallView: View {
     }
 
     private var subscriptionPriceLine: String {
-        ridgitsStore.priceLine(tier: subscriptionTier, billing: .monthly)
+        ridgitsStore.priceLine(tier: subscriptionTier, billing: .yearly)
     }
 
     private var pricingOptions: some View {
@@ -144,7 +144,7 @@ struct ArchetypePackPaywallView: View {
                     .font(RidgitsTypography.label(14))
                     .foregroundStyle(RidgitsColors.textHeadline)
                 Spacer()
-                Text("\(subscriptionPriceLine)/mo")
+                Text("\(subscriptionPriceLine)/yr")
                     .font(RidgitsTypography.headline(18))
                     .foregroundStyle(RidgitsColors.textHeadline)
             }
@@ -157,7 +157,7 @@ struct ArchetypePackPaywallView: View {
             .foregroundStyle(RidgitsColors.textSecondary)
 
             RidgitsSquareButton(
-                title: "Subscribe — \(subscriptionPriceLine)/mo",
+                title: "Subscribe — \(subscriptionPriceLine)/yr",
                 style: .filled
             ) {
                 onViewSubscriptions()
