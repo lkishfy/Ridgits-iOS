@@ -70,17 +70,32 @@ struct NearbyPaywallView: View {
                         }
                     }
 
-                    Button("Restore purchases") {
+                    Button {
                         Task { await ridgitsStore.restorePurchases() }
+                    } label: {
+                        HStack(spacing: 8) {
+                            if ridgitsStore.isRestoring {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                            Text(ridgitsStore.isRestoring ? "Restoring…" : "Restore purchases")
+                        }
                     }
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .frame(maxWidth: .infinity)
+                    .disabled(ridgitsStore.isRestoring)
 
                     if let error = ridgitsStore.purchaseError {
                         Text(error)
                             .font(RidgitsTypography.caption())
                             .foregroundStyle(RidgitsColors.destructive)
+                    }
+
+                    if let message = ridgitsStore.restoreStatusMessage {
+                        Text(message)
+                            .font(RidgitsTypography.caption())
+                            .foregroundStyle(RidgitsColors.textSecondary)
                     }
 
                     Text("Payment is processed by Apple. Already subscribed on ridgits.com? Sign in with the same account — your access carries over.")

@@ -116,16 +116,21 @@ final class RidgitsAPIClient {
     func linkPurchase(
         transactionId: String,
         productId: String,
-        signedTransactionInfo: String
+        signedTransactionInfo: String,
+        restoring: Bool = false
     ) async throws -> RidgitsLinkPurchaseResult {
+        var body: [String: Any] = [
+            "transactionId": transactionId,
+            "productId": productId,
+            "signedTransactionInfo": signedTransactionInfo,
+        ]
+        if restoring {
+            body["restoring"] = true
+        }
         let data = try await authorizedRequest(
             path: "/api/iap/link-purchase",
             method: "POST",
-            body: [
-                "transactionId": transactionId,
-                "productId": productId,
-                "signedTransactionInfo": signedTransactionInfo,
-            ]
+            body: body
         )
         return RidgitsLinkPurchaseResult(
             linked: data["linked"] as? Bool ?? false,

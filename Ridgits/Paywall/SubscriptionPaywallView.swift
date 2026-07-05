@@ -60,12 +60,27 @@ struct SubscriptionPaywallView: View {
                             .foregroundStyle(RidgitsColors.destructive)
                     }
 
-                    Button("Restore purchases") {
+                    if let message = ridgitsStore.restoreStatusMessage {
+                        Text(message)
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                    }
+
+                    Button {
                         Task { await ridgitsStore.restorePurchases() }
+                    } label: {
+                        HStack(spacing: 8) {
+                            if ridgitsStore.isRestoring {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                            Text(ridgitsStore.isRestoring ? "Restoring…" : "Restore purchases")
+                        }
                     }
                     .font(RidgitsTypography.body(13))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .frame(maxWidth: .infinity)
+                    .disabled(ridgitsStore.isRestoring)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, showsDragIndicator ? 0 : 12)

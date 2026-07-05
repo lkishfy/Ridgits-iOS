@@ -60,7 +60,9 @@ final class RidgitsStore: ObservableObject {
     @Published private(set) var products: [Product] = []
     @Published private(set) var isLoadingProducts = false
     @Published private(set) var isPurchasing = false
+    @Published private(set) var isRestoring = false
     @Published var purchaseError: String?
+    @Published var restoreStatusMessage: String?
 
     var hasNearbyAccess: Bool { access.hasNearbyAccess }
     var isLoadingAccess: Bool { access.isLoading }
@@ -396,11 +398,30 @@ final class RidgitsStore: ObservableObject {
     }
 
     func restorePurchases() async {
+        guard !isRestoring else { return }
+        isRestoring = true
+        purchaseError = nil
+        restoreStatusMessage = nil
+        defer { isRestoring = false }
+
+        let tierBefore = membershipTier
+
         do {
             try await AppStore.sync()
+            try? await Task.sleep(nanoseconds: 500_000_000)
             await refreshEntitlements()
-            await linkUnprocessedEntitlements()
+            await linkUnprocessedEntitlements(restoring: true)
             await applyServerAccessIfAvailable()
+
+            if membershipTier.rank > tierBefore.rank {
+                restoreStatusMessage = "Restored \(membershipTier.displayName)."
+                RidgitsHaptics.play(.success)
+            } else if isMembershipActive {
+                restoreStatusMessage = "Your \(membershipTier.displayName) plan is active."
+                RidgitsHaptics.play(.success)
+            } else {
+                restoreStatusMessage = "No active subscriptions found for this Apple ID."
+            }
         } catch {
             purchaseError = error.localizedDescription
         }
@@ -457,31 +478,71 @@ final class RidgitsStore: ObservableObject {
         }
     }
 
-    private func linkUnprocessedEntitlements() async {
+    private func linkUnprocessedEntitlements(restoring: Bool = false) async {
+        var candidates: [(VerificationResult<Transaction>, Int)] = []
+        var seenTransactionIds = Set<UInt64>()
+
+        func consider(_ result: VerificationResult<Transaction>) {
+            guard case .verified(let transaction) = result else { return }
+            guard seenTransactionIds.insert(transaction.id).inserted else { return }
+            guard isActiveSubscriptionTransaction(transaction) else { return }
+
+            let rank: Int
+            if let tier = RidgitsSubscriptionCatalog.tier(for: transaction.productID) {
+                rank = tier.rank
+            } else if transaction.productID == RidgitsProductID.nearbyYearly {
+                rank = 0
+            } else {
+                return
+            }
+            candidates.append((result, rank))
+        }
+
         for await result in Transaction.currentEntitlements {
-            guard case .verified = result else { continue }
-            _ = await linkTransaction(result)
+            consider(result)
+        }
+
+        if restoring {
+            for await result in Transaction.all {
+                consider(result)
+            }
+        }
+
+        candidates.sort { $0.1 < $1.1 }
+        for (result, _) in candidates {
+            _ = await linkTransaction(result, restoring: restoring)
         }
     }
 
-    private func linkTransaction(_ result: VerificationResult<Transaction>) async -> Bool {
+    private func isActiveSubscriptionTransaction(_ transaction: Transaction) -> Bool {
+        if let expiration = transaction.expirationDate {
+            return expiration > Date()
+        }
+        return true
+    }
+
+    private func linkTransaction(_ result: VerificationResult<Transaction>, restoring: Bool = false) async -> Bool {
         guard case .verified(let transaction) = result else { return false }
         let signed = result.jwsRepresentation
         do {
             let response = try await RidgitsAPIClient.shared.linkPurchase(
                 transactionId: String(transaction.id),
                 productId: transaction.productID,
-                signedTransactionInfo: signed
+                signedTransactionInfo: signed,
+                restoring: restoring
             )
             return response.linked
         } catch {
             if let ridgitsError = error as? RidgitsError, let code = ridgitsError.code {
+                purchaseError = ridgitsError.localizedDescription
                 if code == "SUBSCRIPTION_REQUIRED" || code == "PROFILE_INCOMPLETE" {
-                    purchaseError = ridgitsError.localizedDescription
                     return false
                 }
+            } else {
+                purchaseError = (error as? RidgitsError)?.localizedDescription
+                    ?? error.localizedDescription
             }
-            return RidgitsProductID.all.contains(transaction.productID)
+            return false
         }
     }
 
