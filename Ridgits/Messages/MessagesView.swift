@@ -241,6 +241,7 @@ struct MessagesView: View {
     @Binding var incomingPokeProfile: IncomingPokeProfile?
     @State private var showRequests = false
     @State private var showSubscriptionPaywall = false
+    @State private var subscriptionPaywallForMessaging = false
     @State private var showBirthYearPrompt = false
     @State private var showIdentityVerification = false
     @State private var showProfilePhotoMatchAlert = false
@@ -270,6 +271,7 @@ struct MessagesView: View {
                     match: match,
                     onMessage: {
                         guard ridgitsStore.hasPlusMembership else {
+                            subscriptionPaywallForMessaging = true
                             showSubscriptionPaywall = true
                             return
                         }
@@ -330,7 +332,18 @@ struct MessagesView: View {
             )
         }
         .sheet(isPresented: $showSubscriptionPaywall) {
-            SubscriptionPaywallView(preferredBilling: .yearly)
+            SubscriptionPaywallView(
+                highlightTier: subscriptionPaywallForMessaging ? .plus : nil,
+                headline: subscriptionPaywallForMessaging ? "Subscribe to respond" : nil,
+                subheadline: subscriptionPaywallForMessaging
+                    ? "Ridgits+ lets you accept message requests and keep the conversation going."
+                    : nil
+            )
+        }
+        .onChange(of: showSubscriptionPaywall) { _, isPresented in
+            if !isPresented {
+                subscriptionPaywallForMessaging = false
+            }
         }
         .fullScreenCover(isPresented: $showBirthYearPrompt) {
             BirthYearPromptView {
@@ -345,6 +358,7 @@ struct MessagesView: View {
                     Task { await ridgitsStore.refreshAccessInBackground() }
                 }
             }
+            .environmentObject(ridgitsStore)
         }
         .sheet(isPresented: $showPokePackPaywall) {
             PokePackPaywallView {
@@ -397,6 +411,7 @@ struct MessagesView: View {
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
             guard showPaywall else { return }
             viewModel.showPaywallPrompt = false
+            subscriptionPaywallForMessaging = true
             showSubscriptionPaywall = true
         }
         .onChange(of: viewModel.showBirthYearPrompt) { _, showPrompt in
@@ -620,7 +635,12 @@ struct MessagesView: View {
     @MainActor
     private func sendConversationRequest(to match: RidgitsMatch) async {
         guard ridgitsStore.hasPlusMembership else {
+            subscriptionPaywallForMessaging = true
             showSubscriptionPaywall = true
+            return
+        }
+        guard ridgitsStore.isVerifiedForMessaging else {
+            showIdentityVerification = true
             return
         }
         let text = composeMessage
@@ -634,6 +654,7 @@ struct MessagesView: View {
         } catch let ridgitsError as RidgitsError {
             composeMatch = nil
             if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
+                subscriptionPaywallForMessaging = true
                 showSubscriptionPaywall = true
             } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
                 showBirthYearPrompt = true
@@ -678,6 +699,7 @@ private struct MessageRequestsView: View {
     let onDeletePoke: (RidgitsPoke) async -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showSubscriptionPaywall = false
+    @State private var showIdentityVerification = false
 
     var body: some View {
         NavigationStack {
@@ -736,10 +758,10 @@ private struct MessageRequestsView: View {
                                 subtitleOverride: convo.lastMessage ?? "Sent you a message",
                                 showsApprove: true,
                                 onApprove: {
-                                    guard ridgitsStore.hasPlusMembership else {
-                                        viewModel.showPaywallPrompt = true
-                                        return
-                                    }
+                                    guard gateMessagingAccess(
+                                        subscriptionPaywall: { showSubscriptionPaywall = true },
+                                        identityVerification: { showIdentityVerification = true }
+                                    ) else { return }
                                     Task { await viewModel.approve(convo) }
                                 },
                                 showsDecline: true,
@@ -798,8 +820,36 @@ private struct MessageRequestsView: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showSubscriptionPaywall) {
-            SubscriptionPaywallView(preferredBilling: .yearly)
+            SubscriptionPaywallView(
+                highlightTier: .plus,
+                headline: "Subscribe to accept messages",
+                subheadline: "Ridgits+ lets you approve requests and reply to people who reached out."
+            )
         }
+        .sheet(isPresented: $showIdentityVerification) {
+            IdentityVerificationView(autoStart: true) { success in
+                showIdentityVerification = false
+                if success {
+                    Task { await ridgitsStore.refreshAccessInBackground() }
+                }
+            }
+            .environmentObject(ridgitsStore)
+        }
+    }
+
+    private func gateMessagingAccess(
+        subscriptionPaywall: () -> Void,
+        identityVerification: () -> Void
+    ) -> Bool {
+        guard ridgitsStore.hasPlusMembership else {
+            subscriptionPaywall()
+            return false
+        }
+        guard ridgitsStore.isVerifiedForMessaging else {
+            identityVerification()
+            return false
+        }
+        return true
     }
 
     private func requestsSectionHeader(_ title: String) -> some View {
@@ -821,6 +871,7 @@ private struct PokeInboxRow: View {
 
     @State private var imageURL = ""
     @State private var subscriptionTier: String?
+    @State private var profilePhotoVerified = false
 
     private var isUnread: Bool { poke.isActionable }
 
@@ -840,7 +891,11 @@ private struct PokeInboxRow: View {
                                 .font(.system(size: 16, weight: isUnread ? .semibold : .regular))
                                 .foregroundStyle(RidgitsColors.textHeadline)
                                 .lineLimit(1)
-                            RidgitsVerifiedBadge(tier: subscriptionTier, size: 16)
+                            RidgitsProfileTrustBadges(
+                                subscriptionTier: subscriptionTier,
+                                profilePhotoVerified: profilePhotoVerified,
+                                badgeSize: 16
+                            )
                             Spacer(minLength: 0)
                             if let timestamp = RidgitsMessageFormatting.relativeTimestamp(poke.createdAt) {
                                 Text(timestamp)
@@ -886,9 +941,11 @@ private struct PokeInboxRow: View {
             if let cached = RidgitsPublicProfileCache.shared.profile(for: poke.fromUserId) {
                 imageURL = cached.image
                 subscriptionTier = cached.subscriptionTier
+                profilePhotoVerified = cached.profilePhotoVerified
             } else if let profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: poke.fromUserId) {
                 imageURL = profile.image
                 subscriptionTier = profile.subscriptionTier
+                profilePhotoVerified = profile.profilePhotoVerified
                 RidgitsPublicProfileCache.shared.save(profile)
             }
         }
@@ -967,7 +1024,11 @@ private struct DMConversationRow: View {
                     .foregroundStyle(RidgitsColors.textHeadline)
                     .lineLimit(1)
 
-                RidgitsVerifiedBadge(tier: conversation.otherUserSubscriptionTier, size: 16)
+                RidgitsProfileTrustBadges(
+                    subscriptionTier: conversation.otherUserSubscriptionTier,
+                    profilePhotoVerified: conversation.otherUserProfilePhotoVerified,
+                    badgeSize: 16
+                )
 
                 Spacer(minLength: 0)
 
@@ -1036,6 +1097,8 @@ struct ConversationDetailView: View {
     @ObservedObject var viewModel: MessagingViewModel
     let conversation: RidgitsConversation
     @State private var showFlagSheet = false
+    @State private var showSubscriptionPaywall = false
+    @State private var showIdentityVerification = false
     @State private var flagReason = ""
     @State private var currentUserImageURL = ""
     @State private var currentUserInitial = "?"
@@ -1090,10 +1153,7 @@ struct ConversationDetailView: View {
                         .background(RidgitsColors.inputSurface)
                         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                     Button {
-                        guard ridgitsStore.hasPlusMembership else {
-                            viewModel.showPaywallPrompt = true
-                            return
-                        }
+                        guard gateConversationMessagingAccess() else { return }
                         Task { await viewModel.sendMessage() }
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
@@ -1111,11 +1171,8 @@ struct ConversationDetailView: View {
                     .padding()
             } else if conversation.isIncomingPending {
                 VStack(spacing: 12) {
-                    RidgitsPrimaryButton(title: "Approve conversation") {
-                        guard ridgitsStore.hasPlusMembership else {
-                            viewModel.showPaywallPrompt = true
-                            return
-                        }
+                    RidgitsPrimaryButton(title: acceptButtonTitle) {
+                        guard gateConversationMessagingAccess() else { return }
                         Task { await viewModel.approve(conversation) }
                     }
                     Button("Decline") {
@@ -1160,7 +1217,11 @@ struct ConversationDetailView: View {
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(RidgitsColors.textHeadline)
                             .lineLimit(1)
-                        RidgitsVerifiedBadge(tier: conversation.otherUserSubscriptionTier, size: 16)
+                        RidgitsProfileTrustBadges(
+                            subscriptionTier: conversation.otherUserSubscriptionTier,
+                            profilePhotoVerified: conversation.otherUserProfilePhotoVerified,
+                            badgeSize: 16
+                        )
                     }
                 }
             }
@@ -1181,6 +1242,22 @@ struct ConversationDetailView: View {
         .task(id: conversation.id) {
             await loadCurrentUserAvatar()
             RidgitsProfileCache.shared.scheduleImagePrefetch(remoteURL: conversation.otherUserImage)
+        }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(
+                highlightTier: .plus,
+                headline: "Subscribe to respond",
+                subheadline: "Ridgits+ lets you accept message requests and keep the conversation going."
+            )
+        }
+        .sheet(isPresented: $showIdentityVerification) {
+            IdentityVerificationView(autoStart: true) { success in
+                showIdentityVerification = false
+                if success {
+                    Task { await ridgitsStore.refreshAccessInBackground() }
+                }
+            }
+            .environmentObject(ridgitsStore)
         }
         .sheet(isPresented: $showFlagSheet) {
             NavigationStack {
@@ -1241,6 +1318,24 @@ struct ConversationDetailView: View {
         } message: {
             Text(viewModel.flagSuccessMessage ?? "")
         }
+    }
+
+    private var acceptButtonTitle: String {
+        if !ridgitsStore.hasPlusMembership { return "Subscribe to accept" }
+        if !ridgitsStore.isVerifiedForMessaging { return "Verify to accept" }
+        return "Accept message"
+    }
+
+    private func gateConversationMessagingAccess() -> Bool {
+        guard ridgitsStore.hasPlusMembership else {
+            showSubscriptionPaywall = true
+            return false
+        }
+        guard ridgitsStore.isVerifiedForMessaging else {
+            showIdentityVerification = true
+            return false
+        }
+        return true
     }
 
     @MainActor

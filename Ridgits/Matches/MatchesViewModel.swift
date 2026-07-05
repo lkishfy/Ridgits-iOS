@@ -8,6 +8,7 @@ final class MatchesViewModel: ObservableObject {
     @Published var maxDistance = RidgitsNearbyAccess.defaultRadiusMiles
     @Published var compatibilityFilter = RidgitsCompatibilityFilter()
     @Published var closeMatchCount = 0
+    @Published var closeMatchPreviews: [RidgitsCloseMatchPreview] = []
     @Published var isLoading = false
     @Published var isLoadingNearby = false
     @Published var errorMessage: String?
@@ -49,6 +50,7 @@ final class MatchesViewModel: ObservableObject {
 
         nearbyPool = pool.matches
         closeMatchCount = access.showsCloseMatchTeaser ? pool.closeMatchCount : 0
+        closeMatchPreviews = access.showsCloseMatchTeaser ? pool.closeMatches : []
         applyDisplayedRadius(access: access)
         refreshNationwideDistances()
     }
@@ -120,7 +122,8 @@ final class MatchesViewModel: ObservableObject {
             distanceMiles: nil,
             compatibility: compatibility,
             about: about.isEmpty ? nil : about,
-            subscriptionTier: profile.subscriptionTier
+            subscriptionTier: profile.subscriptionTier,
+            profilePhotoVerified: profile.profilePhotoVerified
         )
         resolvedMatchCache[userId] = match
         return match
@@ -158,6 +161,7 @@ final class MatchesViewModel: ObservableObject {
             let nationwideLooksBroken = !rawNationwideMatches.isEmpty
                 && rawNationwideMatches.allSatisfy { !$0.compatibility.hasScores }
             let needsNationwide = nationwideLooksBroken
+                || rawNationwideMatches.isEmpty
                 || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
                 || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: 10)
             let needsNearby = nearbyPool.isEmpty
@@ -183,6 +187,7 @@ final class MatchesViewModel: ObservableObject {
             if Task.isCancelled { return }
 
             if forceRefresh
+                || rawNationwideMatches.isEmpty
                 || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
                 || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: 10) {
                 rawNationwideMatches = try await RidgitsFirebaseClient.shared.getTopNationwideMatches(
@@ -229,6 +234,7 @@ final class MatchesViewModel: ObservableObject {
            !RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid) {
             nearbyPool = cached.matches
             closeMatchCount = access.showsCloseMatchTeaser ? cached.closeMatchCount : 0
+            closeMatchPreviews = access.showsCloseMatchTeaser ? cached.closeMatches : []
             applyDisplayedRadius(access: access)
             refreshNationwideDistances()
             await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
@@ -302,6 +308,7 @@ final class MatchesViewModel: ObservableObject {
         guard !Task.isCancelled else { return }
         nearbyPool = result.matches
         closeMatchCount = access.showsCloseMatchTeaser ? max(0, result.closeMatchCount) : 0
+        closeMatchPreviews = access.showsCloseMatchTeaser ? result.closeMatches : []
         applyDisplayedRadius(access: access)
         refreshNationwideDistances()
         await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
@@ -329,10 +336,11 @@ final class MatchesViewModel: ObservableObject {
         return (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) == true
     }
 
-    /// Accurate count of compatible matches within the close-match threshold (free-user teaser).
+    /// Accurate count and avatar previews for compatible matches within the close-match threshold.
     private func refreshCloseMatchCount(access: RidgitsNearbySearchAccess, forceRefresh: Bool) async {
         guard access.showsCloseMatchTeaser else {
             closeMatchCount = 0
+            closeMatchPreviews = []
             return
         }
 
@@ -344,11 +352,30 @@ final class MatchesViewModel: ObservableObject {
             )
             guard !Task.isCancelled else { return }
             closeMatchCount = max(0, preview.closeMatchCount)
+            closeMatchPreviews = Array(preview.closeMatches.prefix(5))
+            persistCloseMatchPreviews(access: access)
         } catch is CancellationError {
             return
         } catch {
             closeMatchCount = 0
+            closeMatchPreviews = []
         }
+    }
+
+    private func persistCloseMatchPreviews(access: RidgitsNearbySearchAccess) {
+        guard let uid = Auth.auth().currentUser?.uid,
+              var cached = RidgitsMatchesCache.shared.nearbyPool(for: uid),
+              cached.poolAccessKey == access.poolCacheKey else { return }
+        cached.closeMatchCount = closeMatchCount
+        cached.closeMatches = closeMatchPreviews
+        RidgitsMatchesCache.shared.saveNearbyPool(
+            cached.matches,
+            closeMatchCount: cached.closeMatchCount,
+            closeMatches: cached.closeMatches,
+            poolRadius: cached.poolRadius,
+            poolAccessKey: cached.poolAccessKey,
+            uid: uid
+        )
     }
 
     func refreshPokeCredits() async {

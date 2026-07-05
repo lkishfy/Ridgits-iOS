@@ -17,7 +17,13 @@ struct PokePackPaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var ridgitsStore: RidgitsStore
 
+    @State private var showSubscriptionPaywall = false
+
     var onPurchaseComplete: (() -> Void)?
+
+    private var canPurchasePokePacks: Bool {
+        ridgitsStore.hasNearbyAccess
+    }
 
     var body: some View {
         NavigationStack {
@@ -25,8 +31,12 @@ struct PokePackPaywallView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     header
 
-                    ForEach(PokePackOption.catalog) { option in
-                        packRow(option)
+                    if canPurchasePokePacks {
+                        ForEach(PokePackOption.catalog) { option in
+                            packRow(option)
+                        }
+                    } else {
+                        subscriptionRequiredCard
                     }
 
                     if let error = ridgitsStore.purchaseError {
@@ -35,7 +45,7 @@ struct PokePackPaywallView: View {
                             .foregroundStyle(RidgitsColors.destructive)
                     }
 
-                    Text("Poke credits are used when you tap Poke on a match.")
+                    Text(footerNote)
                         .font(RidgitsTypography.caption(11))
                         .foregroundStyle(RidgitsColors.textMuted)
                         .multilineTextAlignment(.center)
@@ -57,7 +67,18 @@ struct PokePackPaywallView: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .task { await ridgitsStore.loadProducts() }
+        .task {
+            await ridgitsStore.loadProducts()
+            await ridgitsStore.refreshAccessInBackground()
+        }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(
+                highlightTier: .plus,
+                headline: "Subscribe to buy pokes",
+                subheadline: "Ridgits+ members can purchase extra poke credits."
+            )
+            .environmentObject(ridgitsStore)
+        }
     }
 
     private var header: some View {
@@ -65,9 +86,36 @@ struct PokePackPaywallView: View {
             Text("Say hi without the pressure of a message")
                 .font(RidgitsTypography.headline(22))
                 .foregroundStyle(RidgitsColors.textHeadline)
-            Text("Each poke uses one credit. New accounts start with a few free pokes.")
-                .font(RidgitsTypography.body(14))
-                .foregroundStyle(RidgitsColors.textSecondary)
+            Text(
+                canPurchasePokePacks
+                    ? "Each poke uses one credit. New accounts start with a few free pokes."
+                    : "Subscribe to Ridgits+ to unlock poke pack purchases."
+            )
+            .font(RidgitsTypography.body(14))
+            .foregroundStyle(RidgitsColors.textSecondary)
+        }
+    }
+
+    private var footerNote: String {
+        canPurchasePokePacks
+            ? "Poke credits are used when you tap Poke on a match."
+            : "Free starter pokes are included for new accounts. Extra packs require Ridgits+."
+    }
+
+    private var subscriptionRequiredCard: some View {
+        RidgitsDashboardCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Ridgits+ required")
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Text("Poke packs are available to Ridgits+ members. Subscribe first, then come back to buy more credits.")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                RidgitsSquareButton(title: "Subscribe to Ridgits+", style: .filled) {
+                    showSubscriptionPaywall = true
+                }
+            }
+            .padding(16)
         }
     }
 
@@ -76,6 +124,10 @@ struct PokePackPaywallView: View {
         let price = product?.displayPrice ?? fallbackPrice(for: option.credits)
 
         return Button {
+            guard canPurchasePokePacks else {
+                showSubscriptionPaywall = true
+                return
+            }
             guard let product else {
                 ridgitsStore.purchaseError = "Product unavailable. Try again shortly."
                 return

@@ -13,6 +13,7 @@ struct RidgitsAccess {
     var isSubscribed: Bool = false
     var isLoading: Bool = true
     var identityVerificationStatus: String = "none"
+    var phoneVerificationStatus: String = "none"
     var profilePhotoIdentityMatchStatus: String = "none"
     var canSubscribe: Bool = false
     var canMessage: Bool = false
@@ -21,15 +22,36 @@ struct RidgitsAccess {
         RidgitsSubscriptionTier.from(stored: subscriptionTier)
     }
 
+    /// Best-known tier from Firestore string and the active StoreKit product id.
+    var resolvedMembershipTier: RidgitsSubscriptionTier {
+        let stored = membershipTier
+        guard let productId = activeProductId,
+              let productTier = RidgitsSubscriptionCatalog.tier(for: productId) else {
+            return stored
+        }
+        return stored.rank >= productTier.rank ? stored : productTier
+    }
+
+    var hasActiveMembership: Bool {
+        if isSubscribed && resolvedMembershipTier.rank > 0 { return true }
+        return hasNearbyAccess && resolvedMembershipTier.rank >= RidgitsSubscriptionTier.plus.rank
+    }
+
     var isIdentityVerified: Bool {
         identityVerificationStatus == "verified"
     }
-}
 
-private struct PendingSubscriptionPurchase {
-    let tier: RidgitsSubscriptionTier
-    let billing: RidgitsSubscriptionBilling
-    let ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant
+    var isPhoneVerified: Bool {
+        phoneVerificationStatus == "verified"
+    }
+
+    var isProfilePhotoVerified: Bool {
+        profilePhotoIdentityMatchStatus == "verified"
+    }
+
+    var isFullyIdentityVerified: Bool {
+        isIdentityVerified && isPhoneVerified
+    }
 }
 
 @MainActor
@@ -39,16 +61,19 @@ final class RidgitsStore: ObservableObject {
     @Published private(set) var isLoadingProducts = false
     @Published private(set) var isPurchasing = false
     @Published var purchaseError: String?
-    @Published var showIdentityVerification = false
 
     var hasNearbyAccess: Bool { access.hasNearbyAccess }
     var isLoadingAccess: Bool { access.isLoading }
     var hasWebSubscription: Bool { access.subscriptionSource == "stripe" }
-    var membershipTier: RidgitsSubscriptionTier { access.membershipTier }
-    var isMembershipActive: Bool { access.isSubscribed }
+    var membershipTier: RidgitsSubscriptionTier { access.resolvedMembershipTier }
+    var isMembershipActive: Bool { access.hasActiveMembership }
     /// Active Ridgits+ or higher (Premium, Ultra).
     var hasPlusMembership: Bool {
         isMembershipActive && membershipTier.rank >= RidgitsSubscriptionTier.plus.rank
+    }
+    /// ID + phone verified via Stripe Identity — required to message.
+    var isVerifiedForMessaging: Bool {
+        access.isFullyIdentityVerified
     }
     var subscriptionBillingPeriod: RidgitsSubscriptionBilling? {
         guard let raw = access.subscriptionBillingPeriod else { return nil }
@@ -56,8 +81,6 @@ final class RidgitsStore: ObservableObject {
     }
 
     private var transactionListenerTask: Task<Void, Never>?
-    private var pendingSubscriptionPurchase: PendingSubscriptionPurchase?
-    private var identityVerificationContinuation: CheckedContinuation<Bool, Never>?
 
     init() {
         transactionListenerTask = Task { await listenForTransactions() }
@@ -72,14 +95,11 @@ final class RidgitsStore: ObservableObject {
         defer { access.isLoading = false }
         await refreshAccessInBackground()
         await loadProducts()
-        if !access.hasNearbyAccess {
-            await linkUnprocessedEntitlements()
-            await applyServerAccessIfAvailable()
-        }
     }
 
     func refreshAccessInBackground() async {
         await refreshEntitlements()
+        await linkUnprocessedEntitlements()
         await applyServerAccessIfAvailable()
     }
 
@@ -200,61 +220,35 @@ final class RidgitsStore: ObservableObject {
             return false
         }
 
-        pendingSubscriptionPurchase = PendingSubscriptionPurchase(
-            tier: tier,
-            billing: billing,
-            ultraYearlyVariant: ultraYearlyVariant
-        )
-
-        guard await ensureIdentityVerified() else {
-            pendingSubscriptionPurchase = nil
-            return false
-        }
-        let purchased = await purchase(product: product)
-        pendingSubscriptionPurchase = nil
-        return purchased
-    }
-
-    func completeIdentityVerificationFlow(success: Bool) {
-        showIdentityVerification = false
-        identityVerificationContinuation?.resume(returning: success)
-        identityVerificationContinuation = nil
-    }
-
-    func resumePendingSubscriptionPurchaseIfNeeded() async -> Bool {
-        guard let pending = pendingSubscriptionPurchase else { return false }
-        guard await ensureIdentityVerified() else { return false }
-        guard let product = subscriptionProduct(
-            tier: pending.tier,
-            billing: pending.billing,
-            ultraYearlyVariant: pending.ultraYearlyVariant
-        ) else {
-            purchaseError = "This plan isn't available right now. Try again shortly."
-            return false
-        }
-        pendingSubscriptionPurchase = nil
         return await purchase(product: product)
     }
 
-    private func ensureIdentityVerified() async -> Bool {
+    func resumePendingSubscriptionPurchaseIfNeeded() async -> Bool {
+        false
+    }
+
+    /// Opens Stripe Identity after a successful subscription purchase when still unverified.
+    func promptIdentityVerificationIfNeeded() async -> Bool {
+        await refreshAccessInBackground()
+        if isVerifiedForMessaging {
+            return true
+        }
+        // Status check syncs from Stripe — skip the browser flow if already verified there.
         do {
             let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-            access.identityVerificationStatus = status.identityVerificationStatus
-            access.profilePhotoIdentityMatchStatus = status.profilePhotoIdentityMatchStatus
-            access.canSubscribe = status.canSubscribe
-            access.canMessage = status.canMessage
             if status.isFullyVerifiedForSubscribe {
+                await refreshAccessInBackground()
                 return true
             }
         } catch {
             purchaseError = error.localizedDescription
             return false
         }
-
-        return await withCheckedContinuation { continuation in
-            identityVerificationContinuation = continuation
-            showIdentityVerification = true
+        let verified = await IdentityVerificationCoordinator.shared.runVerificationFlow()
+        if verified {
+            await refreshAccessInBackground()
         }
+        return verified
     }
 
     func showManageSubscriptions() async {
@@ -326,11 +320,6 @@ final class RidgitsStore: ObservableObject {
             }
         }
 
-        access.hasNearbyAccess = false
-        access.isSubscribed = false
-        access.activeProductId = nil
-        access.expirationDate = nil
-
         if storeKitNearbyAccess {
             access.hasNearbyAccess = true
             access.activeProductId = nearbyProductId
@@ -347,6 +336,8 @@ final class RidgitsStore: ObservableObject {
             access.expirationDate = bestExpiration ?? access.expirationDate
             access.subscriptionSource = "app_store"
         }
+        // When StoreKit has no active membership, keep existing access until the server
+        // confirms in `applyServerAccessIfAvailable` — avoids flashing free tier on refresh.
     }
 
     func purchaseYearly() async -> Bool {
@@ -368,6 +359,11 @@ final class RidgitsStore: ObservableObject {
             return false
         }
 
+        if RidgitsProductID.allPokePackProductIds.contains(product.id), !hasNearbyAccess {
+            purchaseError = "Subscribe to Ridgits+ to buy poke packs."
+            return false
+        }
+
         do {
             let result = try await product.purchase()
             switch result {
@@ -378,16 +374,9 @@ final class RidgitsStore: ObservableObject {
                 }
                 let linked = await linkTransaction(verification)
                 await transaction.finish()
-                await refreshEntitlements()
+                await refreshAccessInBackground()
                 if linked {
                     RidgitsHaptics.play(.success)
-                    if transaction.productID == RidgitsProductID.nearbyYearly {
-                        await applyServerAccessIfAvailable()
-                    } else if RidgitsSubscriptionCatalog.tier(for: transaction.productID) != nil {
-                        await applyServerAccessIfAvailable()
-                    } else if RidgitsProductID.allPokePackProductIds.contains(transaction.productID) {
-                        // Consumable poke packs — balance is server-side only.
-                    }
                 }
                 return linked
             case .userCancelled:
@@ -417,6 +406,8 @@ final class RidgitsStore: ObservableObject {
 
     private func applyServerAccessIfAvailable() async {
         guard Auth.auth().currentUser != nil else { return }
+        let storeKitTier = access.resolvedMembershipTier
+        let storeKitSubscribed = access.hasActiveMembership
         do {
             let account = try await RidgitsAPIClient.shared.fetchAccountAccess()
             access.hasNearbyAccess = account.hasNearbyAccess
@@ -428,14 +419,22 @@ final class RidgitsStore: ObservableObject {
                 access.subscriptionSource = source
             }
 
+            let serverTier = RidgitsSubscriptionTier.from(stored: account.subscriptionTier)
+            let mergedTier: RidgitsSubscriptionTier
             if account.hasNearbyAccess {
-                if let tier = account.subscriptionTier {
-                    access.subscriptionTier = tier
-                    if tier != "free", tier != "nearby_yearly" {
-                        access.isSubscribed = true
-                    }
+                mergedTier = storeKitTier.rank >= serverTier.rank ? storeKitTier : serverTier
+                access.subscriptionTier = mergedTier.rawValue
+                if mergedTier != .free {
+                    access.isSubscribed = true
                 }
+            } else if storeKitSubscribed && storeKitTier.rank > 0 {
+                // StoreKit shows an upgrade the server hasn't linked yet.
+                mergedTier = storeKitTier
+                access.subscriptionTier = mergedTier.rawValue
+                access.isSubscribed = true
+                access.hasNearbyAccess = true
             } else {
+                mergedTier = .free
                 access.isSubscribed = false
                 access.subscriptionTier = "free"
             }
@@ -443,10 +442,13 @@ final class RidgitsStore: ObservableObject {
             if let identityStatus = account.identityVerificationStatus {
                 access.identityVerificationStatus = identityStatus
             }
+            if let phoneStatus = account.phoneVerificationStatus {
+                access.phoneVerificationStatus = phoneStatus
+            }
             if let matchStatus = account.profilePhotoIdentityMatchStatus {
                 access.profilePhotoIdentityMatchStatus = matchStatus
             }
-            access.canSubscribe = account.canSubscribe ?? access.isIdentityVerified
+            access.canSubscribe = account.canSubscribe ?? access.isFullyIdentityVerified
             access.canMessage = account.canMessage ?? false
         } catch {
             // Keep StoreKit entitlements if the API is unreachable.
@@ -471,6 +473,12 @@ final class RidgitsStore: ObservableObject {
             )
             return response.linked
         } catch {
+            if let ridgitsError = error as? RidgitsError, let code = ridgitsError.code {
+                if code == "SUBSCRIPTION_REQUIRED" {
+                    purchaseError = ridgitsError.localizedDescription
+                    return false
+                }
+            }
             return RidgitsProductID.all.contains(transaction.productID)
         }
     }
@@ -480,8 +488,7 @@ final class RidgitsStore: ObservableObject {
             guard case .verified(let transaction) = result else { continue }
             _ = await linkTransaction(result)
             await transaction.finish()
-            await refreshEntitlements()
-            await applyServerAccessIfAvailable()
+            await refreshAccessInBackground()
         }
     }
 }

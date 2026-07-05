@@ -20,6 +20,7 @@ struct ProfileSettingsView: View {
     @State private var isResendingVerification = false
     @State private var verificationResendMessage: String?
     @State private var showIdentityVerification = false
+    @State private var showSubscriptionPaywall = false
 
     private var requiresPassword: Bool {
         authManager.currentUser?.providerData.contains { $0.providerID == EmailAuthProviderID } == true
@@ -137,26 +138,12 @@ struct ProfileSettingsView: View {
                     }
                 }
 
-                if !ridgitsStore.access.isIdentityVerified {
-                    RidgitsDashboardCard {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "person.badge.shield.checkmark.fill")
-                                    .foregroundStyle(RidgitsColors.textHeadline)
-                                Text("Identity verification")
-                                    .font(RidgitsTypography.label(14))
-                                    .foregroundStyle(RidgitsColors.textHeadline)
-                            }
-                            Text("Government ID + selfie verification is required to subscribe and message on iOS. ID images are processed by Stripe; Ridgits stores verification status only.")
-                                .font(RidgitsTypography.caption(12))
-                                .foregroundStyle(RidgitsColors.textSecondary)
-                            RidgitsSquareButton(title: "Verify identity", style: .filled) {
-                                showIdentityVerification = true
-                            }
-                        }
-                        .padding(16)
-                    }
-                }
+                IdentityVerificationStatusCard(
+                    access: ridgitsStore.access,
+                    canStartVerification: ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess,
+                    onVerify: { showIdentityVerification = true },
+                    onSubscribe: { showSubscriptionPaywall = true }
+                )
 
                 RidgitsDashboardCard {
                     VStack(alignment: .leading, spacing: 12) {
@@ -212,15 +199,25 @@ struct ProfileSettingsView: View {
             deleteAccountSheet
         }
         .sheet(isPresented: $showIdentityVerification) {
-            IdentityVerificationView { success in
+            IdentityVerificationView(autoStart: true) { success in
                 showIdentityVerification = false
                 if success {
                     Task { await ridgitsStore.refreshAccessInBackground() }
                 }
             }
+            .environmentObject(ridgitsStore)
+        }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(
+                highlightTier: .plus,
+                headline: "Subscribe to verify",
+                subheadline: "Identity Verification is included after you subscribe."
+            )
+            .environmentObject(ridgitsStore)
         }
         .task {
             await authManager.refreshEmailVerificationStatus()
+            await ridgitsStore.refreshAccessInBackground()
             await loadProfile()
         }
     }

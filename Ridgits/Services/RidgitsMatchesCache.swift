@@ -8,9 +8,36 @@ private struct CachedMatchesRecord: Codable {
 struct CachedNearbyPoolRecord: Codable {
     var matches: [RidgitsMatch]
     var closeMatchCount: Int
+    var closeMatches: [RidgitsCloseMatchPreview]
     var poolRadius: Int
     var poolAccessKey: String
     var fetchedAt: Date
+
+    init(
+        matches: [RidgitsMatch],
+        closeMatchCount: Int,
+        closeMatches: [RidgitsCloseMatchPreview],
+        poolRadius: Int,
+        poolAccessKey: String,
+        fetchedAt: Date
+    ) {
+        self.matches = matches
+        self.closeMatchCount = closeMatchCount
+        self.closeMatches = closeMatches
+        self.poolRadius = poolRadius
+        self.poolAccessKey = poolAccessKey
+        self.fetchedAt = fetchedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        matches = try container.decode([RidgitsMatch].self, forKey: .matches)
+        closeMatchCount = try container.decode(Int.self, forKey: .closeMatchCount)
+        closeMatches = try container.decodeIfPresent([RidgitsCloseMatchPreview].self, forKey: .closeMatches) ?? []
+        poolRadius = try container.decode(Int.self, forKey: .poolRadius)
+        poolAccessKey = try container.decode(String.self, forKey: .poolAccessKey)
+        fetchedAt = try container.decode(Date.self, forKey: .fetchedAt)
+    }
 }
 
 @MainActor
@@ -91,6 +118,7 @@ final class RidgitsMatchesCache {
     func saveNearbyPool(
         _ matches: [RidgitsMatch],
         closeMatchCount: Int,
+        closeMatches: [RidgitsCloseMatchPreview],
         poolRadius: Int,
         poolAccessKey: String,
         uid: String
@@ -98,6 +126,7 @@ final class RidgitsMatchesCache {
         let record = CachedNearbyPoolRecord(
             matches: matches,
             closeMatchCount: closeMatchCount,
+            closeMatches: closeMatches,
             poolRadius: poolRadius,
             poolAccessKey: poolAccessKey,
             fetchedAt: Date()
@@ -106,6 +135,7 @@ final class RidgitsMatchesCache {
         let url = cacheDirectory.appendingPathComponent(poolFilename(uid: uid))
         try? data.write(to: url, options: .atomic)
         prefetchImages(for: matches)
+        prefetchCloseMatchImages(for: closeMatches)
     }
 
     func clear(uid: String? = nil) {
@@ -185,6 +215,12 @@ final class RidgitsMatchesCache {
     private func prefetchImages(for matches: [RidgitsMatch]) {
         for match in matches {
             RidgitsProfileCache.shared.scheduleImagePrefetch(remoteURL: match.image)
+        }
+    }
+
+    private func prefetchCloseMatchImages(for previews: [RidgitsCloseMatchPreview]) {
+        for preview in previews {
+            RidgitsProfileCache.shared.scheduleImagePrefetch(remoteURL: preview.image)
         }
     }
 }

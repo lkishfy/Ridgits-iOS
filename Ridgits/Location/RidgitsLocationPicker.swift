@@ -147,6 +147,19 @@ enum RidgitsUSLocations {
             .map { $0 }
     }
 
+    private static let countryTokens: Set<String> = [
+        "usa", "u.s.a.", "u.s.a", "us", "united states", "united states of america", "america",
+    ]
+
+    private static func stripTrailingCountryParts(_ parts: [String]) -> [String] {
+        guard !parts.isEmpty else { return parts }
+        let last = parts[parts.count - 1].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if countryTokens.contains(last) {
+            return stripTrailingCountryParts(Array(parts.dropLast()))
+        }
+        return parts
+    }
+
     static func parse(_ location: String, city: String = "", stateCode: String = "") -> (city: String, stateCode: String) {
         if let normalized = normalize(city: city, stateCode: stateCode) {
             return (normalized.city, normalized.stateCode)
@@ -155,10 +168,12 @@ enum RidgitsUSLocations {
         let trimmed = location.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return ("", "") }
 
-        let commaParts = trimmed
-            .split(separator: ",", omittingEmptySubsequences: true)
-            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let commaParts = stripTrailingCountryParts(
+            trimmed
+                .split(separator: ",", omittingEmptySubsequences: true)
+                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+        )
 
         if commaParts.count >= 2,
            let code = resolveStateCode(commaParts.last ?? "") {

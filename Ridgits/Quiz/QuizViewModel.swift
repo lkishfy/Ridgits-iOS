@@ -84,7 +84,7 @@ final class QuizViewModel: ObservableObject {
             if hideAnsweredQuestions || selectedCategory != nil {
                 return max(activePool.count, 1)
             }
-            return orderedIndices.count
+            return totalPersonalityQuestions
         }
         return activePool.count
     }
@@ -119,9 +119,15 @@ final class QuizViewModel: ObservableObject {
 
     var canFinish: Bool {
         let required = mode == .onboarding
-            ? QuizCatalog.onboardingSkipThreshold
-            : QuizCatalog.minimumAnswersToComplete
+            ? QuizCatalog.minimumAnswersToComplete
+            : QuizCatalog.onboardingSkipThreshold
         return personalityAnsweredCount >= required
+    }
+
+    var finishAnswerThreshold: Int {
+        mode == .onboarding
+            ? QuizCatalog.minimumAnswersToComplete
+            : QuizCatalog.onboardingSkipThreshold
     }
 
     func bootstrap() async {
@@ -384,7 +390,7 @@ final class QuizViewModel: ObservableObject {
     func completeQuiz() async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard mode == .modify || canFinish else {
-            errorMessage = "Answer at least \(QuizCatalog.onboardingSkipThreshold) questions to finish."
+            errorMessage = "Answer at least \(finishAnswerThreshold) questions to finish."
             return
         }
         isSaving = true

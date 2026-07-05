@@ -40,7 +40,11 @@ struct StartConversationSheet: View {
                                     .foregroundStyle(RidgitsColors.textHeadline)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.85)
-                                RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 16)
+                                RidgitsProfileTrustBadges(
+                                    subscriptionTier: match.subscriptionTier,
+                                    profilePhotoVerified: match.isProfilePhotoVerified,
+                                    badgeSize: 16
+                                )
                             }
 
                             Text("Once they accept, you have 24 hours and 16 messages total.")

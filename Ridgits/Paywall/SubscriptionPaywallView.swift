@@ -14,6 +14,7 @@ struct SubscriptionPaywallView: View {
 
     @State private var ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant = .standard
     @State private var selectedBilling: RidgitsSubscriptionBilling = .yearly
+    @State private var showPostPurchaseIdentityVerification = false
 
     private let tiers: [RidgitsSubscriptionTier] = [.plus, .premium, .ultra]
     private var billing: RidgitsSubscriptionBilling { .yearly }
@@ -68,16 +69,32 @@ struct SubscriptionPaywallView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, showsDragIndicator ? 0 : 12)
-                .padding(.bottom, 32)
+                .padding(.bottom, showsDragIndicator ? 32 : 16)
+                .modifier(EmbeddedTabBarBottomPadding(enabled: !showsDragIndicator))
             }
         }
         .background(RidgitsColors.feedBackground)
         .modifier(SubscriptionPaywallSheetPresentation(showsDragIndicator: showsDragIndicator))
-        .task { await ridgitsStore.loadProducts() }
-        .sheet(isPresented: $ridgitsStore.showIdentityVerification) {
-            IdentityVerificationView { success in
-                ridgitsStore.completeIdentityVerificationFlow(success: success)
+        .task {
+            await ridgitsStore.loadProducts()
+            await ridgitsStore.refreshAccessInBackground()
+            dismissIfSubscriptionAlreadySatisfied()
+        }
+        .onChange(of: ridgitsStore.membershipTier) { _, _ in
+            dismissIfSubscriptionAlreadySatisfied()
+        }
+        .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
+            dismissIfSubscriptionAlreadySatisfied()
+        }
+        .sheet(isPresented: $showPostPurchaseIdentityVerification) {
+            IdentityVerificationView(autoStart: true) { success in
+                showPostPurchaseIdentityVerification = false
+                Task { await ridgitsStore.refreshAccessInBackground() }
+                if success {
+                    dismiss()
+                }
             }
+            .environmentObject(ridgitsStore)
         }
     }
 
@@ -277,7 +294,13 @@ struct SubscriptionPaywallView: View {
                                 billing: activeBilling,
                                 ultraYearlyVariant: ultraYearlyVariant
                             )
-                            if success { dismiss() }
+                            guard success else { return }
+                            await ridgitsStore.refreshAccessInBackground()
+                            if ridgitsStore.isVerifiedForMessaging {
+                                dismiss()
+                            } else {
+                                showPostPurchaseIdentityVerification = true
+                            }
                         }
                     }
                     .disabled(ridgitsStore.isPurchasing)
@@ -300,6 +323,25 @@ struct SubscriptionPaywallView: View {
         case .premium: return "Get Premium"
         case .ultra: return "Get Ultra"
         default: return "Subscribe"
+        }
+    }
+
+    private func dismissIfSubscriptionAlreadySatisfied() {
+        guard let highlightTier else { return }
+        guard ridgitsStore.isMembershipActive else { return }
+        guard ridgitsStore.membershipTier.rank >= highlightTier.rank else { return }
+        dismiss()
+    }
+}
+
+private struct EmbeddedTabBarBottomPadding: ViewModifier {
+    let enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.ridgitsFloatingTabBarPadding()
+        } else {
+            content
         }
     }
 }

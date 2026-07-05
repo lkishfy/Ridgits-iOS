@@ -11,6 +11,11 @@ struct ProfileView: View {
     @State private var isSaving = false
     @State private var isLoading = true
     @State private var statusMessage: String?
+    @State private var matchGender: [Int] = []
+    @State private var matchInterestedIn: [Int] = []
+    @State private var matchLookingFor: [Int] = []
+    @State private var showIdentityVerification = false
+    @State private var showSubscriptionPaywall = false
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
@@ -41,6 +46,26 @@ struct ProfileView: View {
                   let cached = RidgitsProfileCache.shared.profile(for: uid) else { return }
             profile = cached
             isLoading = false
+        }
+        .sheet(isPresented: $showIdentityVerification) {
+            IdentityVerificationView(autoStart: true) { success in
+                showIdentityVerification = false
+                if success {
+                    Task { await ridgitsStore.refreshAccessInBackground() }
+                }
+            }
+            .environmentObject(ridgitsStore)
+        }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallView(
+                highlightTier: .plus,
+                headline: "Subscribe to verify",
+                subheadline: "Identity Verification is included after you subscribe."
+            )
+            .environmentObject(ridgitsStore)
+        }
+        .task {
+            await ridgitsStore.refreshAccessInBackground()
         }
     }
 
@@ -85,6 +110,13 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 16) {
             ReferralProfileSection()
 
+            IdentityVerificationStatusCard(
+                access: ridgitsStore.access,
+                canStartVerification: ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess,
+                onVerify: { showIdentityVerification = true },
+                onSubscribe: { showSubscriptionPaywall = true }
+            )
+
             RidgitsDashboardCard {
                 VStack(alignment: .leading, spacing: 16) {
                     profileCardHeader
@@ -98,12 +130,15 @@ struct ProfileView: View {
                                 Text(profile.name.isEmpty ? "Add your name" : profile.name)
                                     .font(RidgitsTypography.headline(20))
                                     .foregroundStyle(RidgitsColors.textHeadline)
-                                RidgitsVerifiedBadge(
-                                    tier: ridgitsStore.isMembershipActive
-                                        ? ridgitsStore.membershipTier.rawValue
-                                        : "free",
-                                    size: 18
-                                )
+                                if ridgitsStore.isMembershipActive {
+                                    RidgitsVerifiedBadge(
+                                        tier: ridgitsStore.membershipTier,
+                                        size: 18
+                                    )
+                                }
+                                if ridgitsStore.access.isProfilePhotoVerified {
+                                    RidgitsPhotoVerifiedBadge(size: 18)
+                                }
                             }
                             if let age = profile.age {
                                 Text("\(age) years old")
@@ -154,6 +189,15 @@ struct ProfileView: View {
                     if !profile.aspirations.isEmpty {
                         RidgitsSectionDivider()
                         profileSection(title: "Aspirations", body: profile.aspirations)
+                    }
+
+                    if hasMatchPreferences {
+                        RidgitsSectionDivider()
+                        ProfileMatchPreferencesSummary(
+                            gender: matchGender,
+                            interestedIn: matchInterestedIn,
+                            lookingFor: matchLookingFor
+                        )
                     }
 
                     if !quizBadges.isEmpty {
@@ -312,6 +356,14 @@ struct ProfileView: View {
                     )
                 }
 
+                RidgitsSectionDivider()
+
+                ProfileMatchPreferencesEditor(
+                    gender: $matchGender,
+                    interestedIn: $matchInterestedIn,
+                    lookingFor: $matchLookingFor
+                )
+
                 VStack(alignment: .leading, spacing: 8) {
                     RidgitsFormStyle.fieldLabel("Interests", required: true)
                     HStack(spacing: 8) {
@@ -382,6 +434,7 @@ struct ProfileView: View {
             RoundedRectangle(cornerRadius: rounded ? size / 2 : RidgitsRadius.md)
                 .stroke(RidgitsColors.border, lineWidth: 1)
         )
+        .ridgitsProfilePhotoVerifiedOverlay(show: ridgitsStore.access.isProfilePhotoVerified, size: max(18, size * 0.24))
     }
 
     private func placeholderImage(size: CGFloat) -> some View {
@@ -413,6 +466,10 @@ struct ProfileView: View {
         }
     }
 
+    private var hasMatchPreferences: Bool {
+        !matchGender.isEmpty || !matchInterestedIn.isEmpty || !matchLookingFor.isEmpty
+    }
+
     @MainActor
     private func loadProfile() async {
         guard let uid = authManager.currentUser?.uid else { return }
@@ -435,6 +492,9 @@ struct ProfileView: View {
 
         async let packProfile = RidgitsFirebaseClient.shared.fetchPackProfile(uid: uid)
         let progress = try? await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid)
+        if let progress {
+            applyMatchPreferences(from: progress)
+        }
         let personalityCompleted = progress.map {
             $0.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: $0.answers)
         } ?? false
@@ -448,6 +508,12 @@ struct ProfileView: View {
         }
     }
 
+    private func applyMatchPreferences(from progress: LoadedQuizProgress) {
+        matchGender = QuizCatalog.selectedOptionValues(from: progress.answers["demo_000"])
+        matchInterestedIn = QuizCatalog.selectedOptionValues(from: progress.answers["demo_001"])
+        matchLookingFor = QuizCatalog.selectedOptionValues(from: progress.answers["demo_002"])
+    }
+
     @MainActor
     private func saveProfile() async {
         isSaving = true
@@ -455,6 +521,17 @@ struct ProfileView: View {
         defer { isSaving = false }
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
+            if let uid = authManager.currentUser?.uid {
+                try await RidgitsFirebaseClient.shared.saveDemographicAnswers(
+                    uid: uid,
+                    gender: matchGender,
+                    interestedIn: matchInterestedIn,
+                    lookingFor: matchLookingFor
+                )
+                if let progress = try? await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid, source: .server) {
+                    applyMatchPreferences(from: progress)
+                }
+            }
             if let matchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded() {
                 statusMessage = matchMessage
             } else {
@@ -462,6 +539,143 @@ struct ProfileView: View {
             }
         } catch {
             statusMessage = error.localizedDescription
+        }
+    }
+}
+
+private struct ProfileMatchPreferencesEditor: View {
+    @Binding var gender: [Int]
+    @Binding var interestedIn: [Int]
+    @Binding var lookingFor: [Int]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("MATCH PREFERENCES")
+                    .font(RidgitsTypography.sectionLabel(11))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .tracking(0.8)
+                Text("Used for matching. Update these here instead of in Modify Quiz.")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textMuted)
+            }
+
+            ForEach(QuizCatalog.demographicQuestions, id: \.id) { question in
+                ProfileDemographicQuestionEditor(
+                    question: question,
+                    selection: binding(for: question.id)
+                )
+            }
+        }
+    }
+
+    private func binding(for questionID: String) -> Binding<[Int]> {
+        switch questionID {
+        case "demo_000":
+            return $gender
+        case "demo_001":
+            return $interestedIn
+        case "demo_002":
+            return $lookingFor
+        default:
+            return .constant([])
+        }
+    }
+}
+
+private struct ProfileMatchPreferencesSummary: View {
+    let gender: [Int]
+    let interestedIn: [Int]
+    let lookingFor: [Int]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("MATCH PREFERENCES")
+                .font(RidgitsTypography.sectionLabel(11))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .tracking(0.8)
+
+            ForEach(QuizCatalog.demographicQuestions, id: \.id) { question in
+                let values = values(for: question.id)
+                if !values.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(question.text)
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                        FlowLayout(spacing: 8) {
+                            ForEach(QuizCatalog.labels(for: values, in: question), id: \.self) { label in
+                                Text(label)
+                                    .font(RidgitsTypography.caption(12))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(RidgitsColors.hoverSurface)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                                            .stroke(RidgitsColors.border, lineWidth: 1)
+                                    )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func values(for questionID: String) -> [Int] {
+        switch questionID {
+        case "demo_000": return gender
+        case "demo_001": return interestedIn
+        case "demo_002": return lookingFor
+        default: return []
+        }
+    }
+}
+
+private struct ProfileDemographicQuestionEditor: View {
+    let question: QuizQuestion
+    @Binding var selection: [Int]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(question.text)
+                .font(RidgitsTypography.body(13))
+                .foregroundStyle(RidgitsColors.textHeadline)
+                .fixedSize(horizontal: false, vertical: true)
+
+            FlowLayout(spacing: 8) {
+                ForEach(question.options) { option in
+                    let selected = selection.contains(option.value)
+                    Button {
+                        toggle(option.value)
+                    } label: {
+                        Text(option.label)
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(selected ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(selected ? RidgitsColors.hoverSurface : RidgitsColors.surface)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                                    .stroke(selected ? RidgitsColors.ctaBlack : RidgitsColors.border, lineWidth: selected ? 1.5 : 1)
+                            )
+                    }
+                    .buttonStyle(RidgitsHapticPlainButtonStyle())
+                }
+            }
+        }
+    }
+
+    private func toggle(_ value: Int) {
+        if question.id == "demo_000" || question.id == "demo_001" {
+            selection = [value]
+            return
+        }
+
+        if selection.contains(value) {
+            selection.removeAll { $0 == value }
+        } else {
+            selection.append(value)
+            selection.sort()
         }
     }
 }

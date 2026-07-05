@@ -8,7 +8,7 @@ struct RidgitsNearbySearchAccess: Equatable {
     @MainActor
     static func from(store: RidgitsStore) -> RidgitsNearbySearchAccess {
         RidgitsNearbySearchAccess(
-            tier: store.isMembershipActive ? store.membershipTier : .free,
+            tier: store.membershipTier,
             hasMembership: store.isMembershipActive
         )
     }

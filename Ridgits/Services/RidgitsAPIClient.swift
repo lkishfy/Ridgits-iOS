@@ -8,6 +8,8 @@ struct RidgitsAccountAccess: Decodable {
     let subscriptionTier: String?
     let identityVerificationStatus: String?
     let identityVerifiedAt: String?
+    let phoneVerificationStatus: String?
+    let phoneVerifiedAt: String?
     let profilePhotoIdentityMatchStatus: String?
     let profilePhotoIdentityMatchAt: String?
     let profilePhotoIdentityMatchScore: Double?
@@ -23,6 +25,23 @@ struct RidgitsLinkPurchaseResult: Decodable {
 struct RidgitsNearbyMatchesResult {
     let matches: [RidgitsMatch]
     let closeMatchCount: Int
+    let closeMatches: [RidgitsCloseMatchPreview]
+}
+
+struct RidgitsCloseMatchPreview: Identifiable, Equatable, Codable, Hashable {
+    let userId: String
+    let name: String
+    let image: String
+
+    var id: String { userId }
+
+    static func fromDictionary(_ dict: [String: Any]) -> RidgitsCloseMatchPreview? {
+        guard let userId = dict["userId"] as? String else { return nil }
+        let name = (dict["name"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let image = (dict["image"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, name.lowercased() != "anonymous", !image.isEmpty else { return nil }
+        return RidgitsCloseMatchPreview(userId: userId, name: name, image: image)
+    }
 }
 
 struct RidgitsSignupValidation {
@@ -58,6 +77,8 @@ final class RidgitsAPIClient {
             subscriptionTier: data["subscriptionTier"] as? String,
             identityVerificationStatus: data["identityVerificationStatus"] as? String,
             identityVerifiedAt: data["identityVerifiedAt"] as? String,
+            phoneVerificationStatus: data["phoneVerificationStatus"] as? String,
+            phoneVerifiedAt: data["phoneVerifiedAt"] as? String,
             profilePhotoIdentityMatchStatus: data["profilePhotoIdentityMatchStatus"] as? String,
             profilePhotoIdentityMatchAt: data["profilePhotoIdentityMatchAt"] as? String,
             profilePhotoIdentityMatchScore: data["profilePhotoIdentityMatchScore"] as? Double,
@@ -82,6 +103,14 @@ final class RidgitsAPIClient {
         let data = try await authorizedRequest(path: "/api/identity/match-profile-photo", method: "POST", body: [:])
         let json = try JSONSerialization.data(withJSONObject: data)
         return try JSONDecoder().decode(RidgitsProfilePhotoMatchResult.self, from: json)
+    }
+
+    func registerProfilePhoto(imageUrl: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/profile/register-photo",
+            method: "POST",
+            body: ["imageUrl": imageUrl]
+        )
     }
 
     func linkPurchase(
@@ -119,7 +148,8 @@ final class RidgitsAPIClient {
         )
         return RidgitsNearbyMatchesResult(
             matches: parseMatches(data["matches"]),
-            closeMatchCount: data["closeMatchCount"] as? Int ?? data["hiddenNearbyCount"] as? Int ?? 0
+            closeMatchCount: data["closeMatchCount"] as? Int ?? data["hiddenNearbyCount"] as? Int ?? 0,
+            closeMatches: parseCloseMatchPreviews(data["closeMatches"])
         )
     }
 
@@ -357,6 +387,11 @@ final class RidgitsAPIClient {
     private func parseMatches(_ value: Any?) -> [RidgitsMatch] {
         guard let matches = value as? [[String: Any]] else { return [] }
         return matches.compactMap(RidgitsMatch.fromDictionary)
+    }
+
+    private func parseCloseMatchPreviews(_ value: Any?) -> [RidgitsCloseMatchPreview] {
+        guard let matches = value as? [[String: Any]] else { return [] }
+        return matches.compactMap(RidgitsCloseMatchPreview.fromDictionary)
     }
 
     private func authorizedRequest(

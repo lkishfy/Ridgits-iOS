@@ -82,7 +82,7 @@ enum QuizCatalog {
 
     static let minimumAnswersToComplete = 53
 
-    /// Logged-in users at or above this count skip the onboarding quiz shell.
+    /// Enough personality answers to unlock results / matching / modify quiz updates.
     static let onboardingSkipThreshold = 50
 
     static func personalityAnsweredCount(in answers: [String: QuizAnswerRecord]) -> Int {
@@ -119,6 +119,25 @@ enum QuizCatalog {
         questions.filter { $0.category != "Demographics" }.count
     }
 
+    static let demographicQuestionIDs = ["demo_000", "demo_001", "demo_002"]
+
+    static var demographicQuestions: [QuizQuestion] {
+        demographicQuestionIDs.compactMap { id in questions.first { $0.id == id } }
+    }
+
+    static func selectedOptionValues(from record: QuizAnswerRecord?) -> [Int] {
+        guard let record else { return [] }
+        if let answers = record.answers, !answers.isEmpty { return answers }
+        if let answer = record.answer { return [answer] }
+        return []
+    }
+
+    static func labels(for values: [Int], in question: QuizQuestion) -> [String] {
+        values.compactMap { value in
+            question.options.first { $0.value == value }?.label
+        }
+    }
+
     /// Segment widths for the category progress bar.
     static func progressSegments(mode: QuizMode) -> [(category: String, count: Int)] {
         if mode == .onboarding {
@@ -150,12 +169,11 @@ enum QuizCatalog {
             return ordered
         case .modify:
             var ordered: [Int] = []
-            ordered.append(contentsOf: all.filter { questions[$0].category == "Demographics" })
             for category in personalityCategories {
-                ordered.append(contentsOf: all.filter { questions[$0].category == category }.prefix(5))
+                ordered.append(contentsOf: all.filter { questions[$0].category == category }.prefix(10))
             }
             for category in personalityCategories {
-                ordered.append(contentsOf: all.filter { questions[$0].category == category }.dropFirst(5))
+                ordered.append(contentsOf: all.filter { questions[$0].category == category }.dropFirst(10))
             }
             return ordered
         }

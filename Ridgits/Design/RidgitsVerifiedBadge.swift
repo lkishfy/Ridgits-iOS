@@ -71,3 +71,42 @@ struct RidgitsVerifiedBadgeLabel: View {
         }
     }
 }
+
+/// Badge shown when a member's profile photo matched their verified ID selfie.
+struct RidgitsPhotoVerifiedBadge: View {
+    var size: CGFloat = 16
+
+    var body: some View {
+        Image(systemName: "checkmark.seal.fill")
+            .font(.system(size: size))
+            .foregroundStyle(RidgitsColors.forestGreen)
+            .accessibilityLabel("Photo verified")
+    }
+}
+
+extension View {
+    func ridgitsProfilePhotoVerifiedOverlay(show: Bool, size: CGFloat = 22) -> some View {
+        overlay(alignment: .bottomTrailing) {
+            if show {
+                RidgitsPhotoVerifiedBadge(size: size)
+                    .background(Circle().fill(RidgitsColors.surface))
+                    .offset(x: 2, y: 2)
+            }
+        }
+    }
+}
+
+struct RidgitsProfileTrustBadges: View {
+    let subscriptionTier: String?
+    let profilePhotoVerified: Bool
+    var badgeSize: CGFloat = 16
+
+    var body: some View {
+        HStack(spacing: 4) {
+            RidgitsVerifiedBadge(tier: subscriptionTier, size: badgeSize)
+            if profilePhotoVerified {
+                RidgitsPhotoVerifiedBadge(size: badgeSize)
+            }
+        }
+    }
+}

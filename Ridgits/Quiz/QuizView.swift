@@ -438,7 +438,7 @@ struct QuizView: View {
 
     private var demographicsProgressHeader: some View {
         VStack(spacing: 8) {
-            Text(mode == .modify ? "Your match preferences" : "Getting Started")
+            Text("Getting Started")
                 .font(RidgitsTypography.caption(11))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .tracking(1.1)
@@ -453,8 +453,8 @@ struct QuizView: View {
     private var modifyCompactProgress: some View {
         VStack(spacing: 8) {
             if mode == .onboarding,
-               viewModel.personalityAnsweredCount < QuizCatalog.onboardingSkipThreshold {
-                Text("Answer at least \(QuizCatalog.onboardingSkipThreshold) questions to unlock your personality results.")
+               viewModel.personalityAnsweredCount < viewModel.finishAnswerThreshold {
+                Text("Answer at least \(viewModel.finishAnswerThreshold) questions to unlock your personality results.")
                     .font(RidgitsTypography.caption(11))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -711,7 +711,7 @@ struct QuizView: View {
 
     private var onboardingProgressSubtitle: String {
         let answered = viewModel.personalityAnsweredCount
-        let required = QuizCatalog.onboardingSkipThreshold
+        let required = viewModel.finishAnswerThreshold
         if answered >= required {
             return "\(answered) answered · Results unlocked"
         }
@@ -720,9 +720,7 @@ struct QuizView: View {
     }
 
     private var optionsList: some View {
-        let canSelectAnswers = mode == .onboarding ||
-            !usesModernQuizLayout ||
-            viewModel.canSelectAnswer(for: viewModel.currentQuestion)
+        let canSelectAnswers = true
 
         return VStack(spacing: usesModernQuizLayout ? 12 : 10) {
             ForEach(viewModel.currentQuestion.options) { option in

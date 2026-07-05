@@ -27,10 +27,11 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
         NotificationCenter.default.removeObserver(self)
     }
 
-    func verifyAndWait() async -> Bool {
+    /// Runs the full Stripe Identity flow (ID + phone OTP + selfie when configured in Dashboard).
+    func runVerificationFlow() async -> Bool {
         do {
             let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-            if status.isIdentityVerified {
+            if status.isFullyVerifiedForSubscribe {
                 return true
             }
         } catch {
@@ -62,6 +63,17 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
             }
             presentVerification(url: url)
         } catch {
+            if let ridgitsError = error as? RidgitsError {
+                if ridgitsError.code == "IDENTITY_ALREADY_VERIFIED" {
+                    finish(success: true)
+                    return
+                }
+                if ridgitsError.code == "SUBSCRIPTION_REQUIRED" {
+                    errorMessage = "Subscribe to Ridgits+ first to unlock identity verification."
+                    finish(success: false)
+                    return
+                }
+            }
             errorMessage = error.localizedDescription
             finish(success: false)
         }
@@ -112,7 +124,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
             }
             do {
                 let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-                if status.isIdentityVerified {
+                if status.isFullyVerifiedForSubscribe {
                     authSession?.cancel()
                     authSession = nil
                     finish(success: true)

@@ -60,6 +60,16 @@ For each subscription:
 | `RidgitsPackDealbreakerMap999` | Non-Consumable | $9.99 | … |
 | `RidgitsPackIdentityPerformance999` | Non-Consumable | $9.99 | … |
 
+**Consumable poke packs** (require active Ridgits+ / Premium / Ultra subscription to purchase):
+
+| Product ID | Type | Credits | Suggested price |
+|------------|------|--------:|----------------:|
+| `RidgitsPokes5Pack` | **Consumable** | 5 | $5.00 |
+| `RidgitsPokes10Pack` | **Consumable** | 10 | $7.99 |
+| `RidgitsPokes25Pack` | **Consumable** | 25 | $19.99 |
+
+Poke packs use Apple IAP (consumables). The app and API only credit purchases when the user has an active membership — free users can still use starter poke credits but cannot buy packs until subscribed.
+
 Product IDs must match **exactly** — they are hard-coded in iOS (`RidgitsProductID.swift`) and `ridgits-api` (`ridgits-products.ts`).
 
 ---

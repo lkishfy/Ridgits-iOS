@@ -17,6 +17,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     var ageRangeMin: Int?
     var ageRangeMax: Int?
     var subscriptionTier: String
+    var profilePhotoVerified: Bool
     /// When false, the user is hidden from discovery and cannot send pokes or messages.
     var visibleInCommunity: Bool
     var completedQuizBadges: [RidgitsQuizBadge]
@@ -45,6 +46,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             id: uid, name: "", location: "", locationCity: "", locationStateCode: "", age: nil, image: "",
             about: "", interests: [], aspirations: "", additionalImages: [],
             socialHandle: "", ageRangeMin: nil, ageRangeMax: nil, subscriptionTier: "free",
+            profilePhotoVerified: false,
             visibleInCommunity: true,
             completedQuizBadges: []
         )
@@ -83,6 +85,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             ageRangeMin: data["ageRangeMin"] as? Int ?? (data["ageRangeMin"] as? String).flatMap(Int.init),
             ageRangeMax: data["ageRangeMax"] as? Int ?? (data["ageRangeMax"] as? String).flatMap(Int.init),
             subscriptionTier: data["subscriptionTier"] as? String ?? "free",
+            profilePhotoVerified: data["profilePhotoVerified"] as? Bool ?? false,
             visibleInCommunity: data["visibleInCommunity"] as? Bool ?? true,
             completedQuizBadges: Self.parseCompletedQuizBadges(from: data)
         )
@@ -183,6 +186,11 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
     let compatibility: RidgitsCompatibility
     let about: String?
     let subscriptionTier: String?
+    let profilePhotoVerified: Bool?
+
+    var isProfilePhotoVerified: Bool {
+        profilePhotoVerified == true
+    }
 
     func withDistanceMiles(_ miles: Double?) -> RidgitsMatch {
         RidgitsMatch(
@@ -194,7 +202,8 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
             distanceMiles: miles,
             compatibility: compatibility,
             about: about,
-            subscriptionTier: subscriptionTier
+            subscriptionTier: subscriptionTier,
+            profilePhotoVerified: profilePhotoVerified
         )
     }
 
@@ -208,7 +217,8 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
             distanceMiles: distanceMiles,
             compatibility: scores,
             about: about,
-            subscriptionTier: subscriptionTier
+            subscriptionTier: subscriptionTier,
+            profilePhotoVerified: profilePhotoVerified
         )
     }
 }
@@ -325,6 +335,7 @@ struct RidgitsConversation: Identifiable, Equatable, Codable {
     let otherUserName: String
     let otherUserImage: String
     let otherUserSubscriptionTier: String?
+    let otherUserProfilePhotoVerified: Bool
     let unreadCount: Int
     let isIncomingPending: Bool
     let isOutgoingPending: Bool
@@ -498,6 +509,7 @@ extension RidgitsConversation {
         let otherUserName = participantString(other, keys: ["displayName", "name"]) ?? ""
         let otherUserImage = participantString(other, keys: ["imageUrl", "image", "photoUrl", "photoURL", "avatarUrl", "avatar"]) ?? ""
         let otherUserSubscriptionTier = other["subscriptionTier"] as? String
+        let otherUserProfilePhotoVerified = other["profilePhotoVerified"] as? Bool ?? false
 
         return RidgitsConversation(
             id: id,
@@ -513,6 +525,7 @@ extension RidgitsConversation {
             otherUserName: otherUserName,
             otherUserImage: otherUserImage,
             otherUserSubscriptionTier: otherUserSubscriptionTier,
+            otherUserProfilePhotoVerified: otherUserProfilePhotoVerified,
             unreadCount: (data["unreadCounts"] as? [String: Int])?[currentUserId] ?? 0,
             isIncomingPending: status == .pending && initiatorId != currentUserId && !approvedByMe,
             isOutgoingPending: status == .pending && initiatorId == currentUserId && !approvedByOther,
@@ -520,7 +533,12 @@ extension RidgitsConversation {
         )
     }
 
-    func updatingOtherUser(name: String, image: String, subscriptionTier: String? = nil) -> RidgitsConversation {
+    func updatingOtherUser(
+        name: String,
+        image: String,
+        subscriptionTier: String? = nil,
+        profilePhotoVerified: Bool? = nil
+    ) -> RidgitsConversation {
         RidgitsConversation(
             id: id,
             participantIds: participantIds,
@@ -534,6 +552,7 @@ extension RidgitsConversation {
             otherUserName: name,
             otherUserImage: image,
             otherUserSubscriptionTier: subscriptionTier ?? otherUserSubscriptionTier,
+            otherUserProfilePhotoVerified: profilePhotoVerified ?? otherUserProfilePhotoVerified,
             unreadCount: unreadCount,
             isIncomingPending: isIncomingPending,
             isOutgoingPending: isOutgoingPending,
@@ -577,7 +596,8 @@ extension RidgitsMatch {
             distanceMiles: parsedDouble(dict["distance"]),
             compatibility: parsedCompatibility,
             about: about,
-            subscriptionTier: dict["subscriptionTier"] as? String
+            subscriptionTier: dict["subscriptionTier"] as? String,
+            profilePhotoVerified: dict["profilePhotoVerified"] as? Bool
         )
     }
 

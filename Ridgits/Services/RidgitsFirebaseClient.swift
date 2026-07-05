@@ -66,6 +66,11 @@ final class RidgitsFirebaseClient {
         try await db.collection("users").document(normalizedProfile.id).setData(payload, merge: true)
         try await db.collection("publicProfiles").document(normalizedProfile.id).setData(payload, merge: true)
         RidgitsProfileCache.shared.save(normalizedProfile)
+
+        let image = normalizedProfile.image.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !image.isEmpty {
+            try await api.registerProfilePhoto(imageUrl: image)
+        }
     }
 
     func isQuizCompleted(uid: String) async throws -> Bool {
@@ -262,6 +267,9 @@ final class RidgitsFirebaseClient {
             }
         }
 
+        let existingSnap = try await db.collection("quizProgress").document(uid).getDocument()
+        mergePreservedDemographicAnswers(into: &flatAnswers, from: existingSnap.data())
+
         var payload: [String: Any] = [
             "answers": flatAnswers,
             "preferredAnswers": preferredAnswers,
@@ -294,6 +302,84 @@ final class RidgitsFirebaseClient {
             await syncCompletedQuizBadges(uid: uid)
         }
         RidgitsMatchesCache.shared.clearNationwide(uid: uid)
+    }
+
+    /// Merges only demographic quiz answers without touching personality answers.
+    func saveDemographicAnswers(
+        uid: String,
+        gender: [Int],
+        interestedIn: [Int],
+        lookingFor: [Int]
+    ) async throws {
+        guard !gender.isEmpty || !interestedIn.isEmpty || !lookingFor.isEmpty else { return }
+
+        let docRef = db.collection("quizProgress").document(uid)
+        let snap = try await docRef.getDocument()
+        let existing = snap.data() ?? [:]
+
+        var answers = existing["answers"] as? [String: Any] ?? [:]
+        var preferredAnswers = existing["preferredAnswers"] as? [String: Any] ?? [:]
+
+        if !gender.isEmpty {
+            answers["demo_000"] = gender
+            preferredAnswers["demo_000"] = gender
+            answers.removeValue(forKey: "0")
+            preferredAnswers.removeValue(forKey: "0")
+        }
+        if !interestedIn.isEmpty {
+            answers["demo_001"] = interestedIn
+            preferredAnswers["demo_001"] = interestedIn
+            answers.removeValue(forKey: "1")
+            preferredAnswers.removeValue(forKey: "1")
+        }
+        if !lookingFor.isEmpty {
+            answers["demo_002"] = lookingFor
+            preferredAnswers["demo_002"] = lookingFor
+            answers.removeValue(forKey: "2")
+            preferredAnswers.removeValue(forKey: "2")
+        }
+
+        var payload: [String: Any] = [
+            "answers": answers,
+            "preferredAnswers": preferredAnswers,
+            "demographicsUpdatedAt": FieldValue.serverTimestamp(),
+            "lastUpdated": ISO8601DateFormatter().string(from: Date()),
+            "updatedAt": FieldValue.serverTimestamp(),
+        ]
+
+        for legacyKey in ["0", "1", "2"] {
+            payload["answers.\(legacyKey)"] = FieldValue.delete()
+            payload["preferredAnswers.\(legacyKey)"] = FieldValue.delete()
+        }
+
+        if let user = Auth.auth().currentUser {
+            payload["userId"] = uid
+            if let email = user.email {
+                payload["email"] = email
+            }
+        }
+
+        try await docRef.setData(payload, merge: true)
+        try? await db.collection("topNationwideMatches").document(uid).delete()
+        RidgitsMatchesCache.shared.clear(uid: uid)
+        NotificationCenter.default.post(name: .ridgitsMatchPreferencesDidChange, object: nil)
+    }
+
+    private static let legacyDemographicKeys = ["0": "demo_000", "1": "demo_001", "2": "demo_002"]
+
+    private func mergePreservedDemographicAnswers(into flatAnswers: inout [String: Any], from existing: [String: Any]?) {
+        guard let existingAnswers = existing?["answers"] as? [String: Any] else { return }
+        for demoId in QuizCatalog.demographicQuestionIDs {
+            guard flatAnswers[demoId] == nil else { continue }
+            if let value = existingAnswers[demoId] {
+                flatAnswers[demoId] = value
+                continue
+            }
+            if let legacyKey = Self.legacyDemographicKeys.first(where: { $0.value == demoId })?.key,
+               let value = existingAnswers[legacyKey] {
+                flatAnswers[demoId] = value
+            }
+        }
     }
 
     private func parseInt(_ value: Any?) -> Int? {
@@ -670,14 +756,14 @@ final class RidgitsFirebaseClient {
         previewCloseMatches: Bool = false
     ) async throws -> RidgitsNearbyMatchesResult {
         guard let uid = Auth.auth().currentUser?.uid else {
-            return RidgitsNearbyMatchesResult(matches: [], closeMatchCount: 0)
+            return RidgitsNearbyMatchesResult(matches: [], closeMatchCount: 0, closeMatches: [])
         }
 
         if !previewCloseMatches,
            !forceRefresh,
            let cached = RidgitsMatchesCache.shared.nearby(for: uid, maxDistance: maxDistance),
            !RidgitsMatchesCache.shared.isNearbyStale(uid: uid, maxDistance: maxDistance) {
-            return RidgitsNearbyMatchesResult(matches: cached, closeMatchCount: 0)
+            return RidgitsNearbyMatchesResult(matches: cached, closeMatchCount: 0, closeMatches: [])
         }
 
         let result = try await api.findMatches(
@@ -696,7 +782,7 @@ final class RidgitsFirebaseClient {
         forceRefresh: Bool = false
     ) async throws -> RidgitsNearbyMatchesResult {
         guard let uid = Auth.auth().currentUser?.uid else {
-            return RidgitsNearbyMatchesResult(matches: [], closeMatchCount: 0)
+            return RidgitsNearbyMatchesResult(matches: [], closeMatchCount: 0, closeMatches: [])
         }
 
         if !forceRefresh,
@@ -706,7 +792,8 @@ final class RidgitsFirebaseClient {
            !RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid) {
             return RidgitsNearbyMatchesResult(
                 matches: cached.matches,
-                closeMatchCount: cached.closeMatchCount
+                closeMatchCount: cached.closeMatchCount,
+                closeMatches: cached.closeMatches
             )
         }
 
@@ -715,13 +802,15 @@ final class RidgitsFirebaseClient {
         RidgitsMatchesCache.shared.saveNearbyPool(
             enrichedMatches,
             closeMatchCount: result.closeMatchCount,
+            closeMatches: result.closeMatches,
             poolRadius: poolRadius,
             poolAccessKey: poolAccessKey,
             uid: uid
         )
         return RidgitsNearbyMatchesResult(
             matches: enrichedMatches,
-            closeMatchCount: result.closeMatchCount
+            closeMatchCount: result.closeMatchCount,
+            closeMatches: result.closeMatches
         )
     }
 
@@ -755,6 +844,8 @@ final class RidgitsFirebaseClient {
         let cachedLooksBroken = cached?.isEmpty == false
             && cached?.allSatisfy { $0.compatibility.overall == 0 && $0.compatibility.communication == 0 } == true
         let shouldRefresh = forceRefresh
+            || cached == nil
+            || cached?.isEmpty == true
             || cachedLooksBroken
             || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: limit)
 
@@ -847,7 +938,8 @@ final class RidgitsFirebaseClient {
             enriched.append(conversation.updatingOtherUser(
                 name: name,
                 image: image,
-                subscriptionTier: profile.subscriptionTier == "free" ? conversation.otherUserSubscriptionTier : profile.subscriptionTier
+                subscriptionTier: profile.subscriptionTier == "free" ? conversation.otherUserSubscriptionTier : profile.subscriptionTier,
+                profilePhotoVerified: profile.profilePhotoVerified
             ))
         }
 
@@ -948,4 +1040,8 @@ final class RidgitsFirebaseClient {
                 }
             }
     }
+}
+
+extension Notification.Name {
+    static let ridgitsMatchPreferencesDidChange = Notification.Name("ridgitsMatchPreferencesDidChange")
 }

@@ -71,6 +71,10 @@ struct MatchProfileView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 280)
             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+            .ridgitsProfilePhotoVerifiedOverlay(
+                show: match.isProfilePhotoVerified || (profile?.profilePhotoVerified == true),
+                size: 28
+            )
 
             HStack(spacing: 8) {
                 Text(match.name)
@@ -78,7 +82,11 @@ struct MatchProfileView: View {
                     .foregroundStyle(RidgitsColors.textHeadline)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
-                RidgitsVerifiedBadge(tier: match.subscriptionTier, size: 18)
+                RidgitsProfileTrustBadges(
+                    subscriptionTier: match.subscriptionTier,
+                    profilePhotoVerified: match.isProfilePhotoVerified || (profile?.profilePhotoVerified == true),
+                    badgeSize: 18
+                )
                 Spacer(minLength: 0)
                 RidgitsCompatibilityBadge(percent: compatibility.overall)
             }

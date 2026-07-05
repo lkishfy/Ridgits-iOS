@@ -36,7 +36,9 @@ enum RidgitsSubscriptionTier: String, CaseIterable, Identifiable {
     }
 
     static func from(stored value: String?) -> RidgitsSubscriptionTier {
-        guard let value, let tier = RidgitsSubscriptionTier(rawValue: value) else { return .free }
+        guard let value else { return .free }
+        let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard let tier = RidgitsSubscriptionTier(rawValue: normalized) else { return .free }
         return tier
     }
 }
