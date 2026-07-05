@@ -359,6 +359,8 @@ final class RidgitsStore: ObservableObject {
             return false
         }
 
+        guard await assertProfileCompleteForPurchase() else { return false }
+
         if RidgitsProductID.allPokePackProductIds.contains(product.id), !hasNearbyAccess {
             purchaseError = "Subscribe to Ridgits+ to buy poke packs."
             return false
@@ -474,13 +476,30 @@ final class RidgitsStore: ObservableObject {
             return response.linked
         } catch {
             if let ridgitsError = error as? RidgitsError, let code = ridgitsError.code {
-                if code == "SUBSCRIPTION_REQUIRED" {
+                if code == "SUBSCRIPTION_REQUIRED" || code == "PROFILE_INCOMPLETE" {
                     purchaseError = ridgitsError.localizedDescription
                     return false
                 }
             }
             return RidgitsProductID.all.contains(transaction.productID)
         }
+    }
+
+    private func assertProfileCompleteForPurchase() async -> Bool {
+        guard let uid = Auth.auth().currentUser?.uid else { return false }
+
+        let profile: RidgitsUserProfile?
+        if let cached = RidgitsProfileCache.shared.profile(for: uid) {
+            profile = cached
+        } else {
+            profile = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)
+        }
+
+        guard let profile, profile.isCompleteForMatching else {
+            purchaseError = "Complete your profile (photo, bio, interests, and location) before purchasing."
+            return false
+        }
+        return true
     }
 
     private func listenForTransactions() async {

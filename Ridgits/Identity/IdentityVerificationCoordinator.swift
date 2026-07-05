@@ -127,6 +127,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
                 if status.isFullyVerifiedForSubscribe {
                     authSession?.cancel()
                     authSession = nil
+                    _ = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded()
                     finish(success: true)
                     return
                 }

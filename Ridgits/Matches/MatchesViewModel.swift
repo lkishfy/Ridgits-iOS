@@ -180,7 +180,9 @@ final class MatchesViewModel: ObservableObject {
             || RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid)
         let showBlockingLoad = nearbyMatches.isEmpty && nearbyPool.isEmpty
 
-        if showBlockingLoad { isLoading = true }
+        if !showBlockingLoad && (shouldFetchNearby || rawNationwideMatches.isEmpty) {
+            isLoading = true
+        }
         defer { isLoading = false }
 
         do {

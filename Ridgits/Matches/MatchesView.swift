@@ -35,7 +35,7 @@ struct MatchesView: View {
                     pokeInboxBanner
                 }
                 nearbySection
-                RidgitsSectionHeader(title: "Top nationwide", subtitle: "Preview compatibility scores")
+                RidgitsSectionHeader(title: "Top nationwide")
                 matchSection(
                     viewModel.nationwideMatches,
                     locked: false,
@@ -83,8 +83,8 @@ struct MatchesView: View {
         }
         .ridgitsBlockingLoader(
             isPresented: viewModel.isLoadingNearby,
-            title: "Finding matches",
-            subtitle: "Scanning compatible people near you"
+            title: "Finding matches near you",
+            subtitle: "Scanning compatible people in your radius"
         )
         .navigationDestination(item: $selectedMatch) { match in
             MatchProfileView(
@@ -348,18 +348,15 @@ struct MatchesView: View {
                 closeMatchesTeaser
             }
             distanceSlider
-
-            if viewModel.isLoading && viewModel.nearbyMatches.isEmpty {
-                ProgressView().padding(.vertical, 12)
-            } else {
-                nearbyMatchesSection
-            }
+            nearbyMatchesSection
         }
     }
 
     private var nearbyMatchesSection: some View {
         Group {
-            if viewModel.nearbyMatches.isEmpty && !viewModel.isLoading && !viewModel.isLoadingNearby {
+            if viewModel.isLoadingNearby && viewModel.nearbyMatches.isEmpty {
+                EmptyView()
+            } else if viewModel.nearbyMatches.isEmpty && !viewModel.isLoading && !viewModel.isLoadingNearby {
                 if viewModel.compatibilityFilter.isActive,
                    viewModel.unfilteredNearbyCount(access: nearbyAccess) > 0 {
                     filteredEmptyCard
@@ -564,10 +561,8 @@ struct MatchesView: View {
         emptyMessage: String? = nil
     ) -> some View {
         VStack(spacing: 12) {
-            if viewModel.isLoading && matches.isEmpty {
-                ProgressView().padding()
-            } else if matches.isEmpty {
-                if let emptyMessage {
+            if matches.isEmpty {
+                if let emptyMessage, !viewModel.isLoading, !viewModel.isLoadingNearby {
                     Text(emptyMessage)
                         .font(RidgitsTypography.caption(12))
                         .foregroundStyle(RidgitsColors.textSecondary)
