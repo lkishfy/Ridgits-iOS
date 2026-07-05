@@ -53,7 +53,7 @@ struct QuizView: View {
         }
         .task { await viewModel.bootstrap() }
         .onDisappear {
-            guard !viewModel.didComplete, viewModel.hasBootstrapped else { return }
+            guard !viewModel.didComplete, viewModel.hasBootstrapped, viewModel.canPersistForCurrentUser else { return }
             Task { await viewModel.saveProgressForExit() }
         }
         .onChange(of: viewModel.currentQuestionIndex) { _, _ in
@@ -175,10 +175,7 @@ struct QuizView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 4) {
-                    signOutButton
-                    modifyToolbarMenu
-                }
+                modifyToolbarMenu
             }
         } else {
             ToolbarItem(placement: .principal) {
@@ -260,6 +257,27 @@ struct QuizView: View {
         .buttonStyle(RidgitsHapticPlainButtonStyle())
     }
 
+    private var quizCommunityBadge: some View {
+        quizCommunityBadge(compact: false)
+    }
+
+    private func quizCommunityBadge(compact: Bool) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "star.fill")
+                .font(.system(size: compact ? 9 : 10, weight: .semibold))
+            Text("Community")
+                .font(RidgitsTypography.caption(compact ? 9 : 10))
+                .textCase(.uppercase)
+                .tracking(0.4)
+        }
+        .foregroundStyle(Color(hex: 0x059669))
+        .padding(.horizontal, compact ? 6 : 8)
+        .padding(.vertical, compact ? 3 : 4)
+        .background(Color(hex: 0xECFDF5))
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .accessibilityLabel("Community question")
+    }
+
     private var usesModernQuizLayout: Bool {
         showsPreferencePanel
     }
@@ -274,6 +292,9 @@ struct QuizView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: usesModernQuizLayout ? 16 : 20) {
+                    if viewModel.currentQuestion.userSubmitted {
+                        quizCommunityBadge
+                    }
                     if usesModernQuizLayout {
                         modifyQuestionBlock
                         modifyFeatureChips
@@ -353,10 +374,16 @@ struct QuizView: View {
     private func modifyListRow(question: QuizQuestion, record: QuizAnswerRecord?) -> some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(question.category)
-                    .font(RidgitsTypography.caption(10))
-                    .foregroundStyle(RidgitsColors.textMuted)
-                    .textCase(.uppercase)
+                HStack(spacing: 6) {
+                    Text(question.category)
+                        .font(RidgitsTypography.caption(10))
+                        .foregroundStyle(RidgitsColors.textMuted)
+                        .textCase(.uppercase)
+
+                    if question.userSubmitted {
+                        quizCommunityBadge(compact: true)
+                    }
+                }
 
                 Text(question.text)
                     .font(RidgitsTypography.label(15))

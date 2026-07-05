@@ -53,6 +53,21 @@ enum QuizCatalog {
         Set(spicyBundled?.questions.map(\.id) ?? [])
     }
 
+    /// Question IDs contributed by the Ridgits community (mirrors web `quizData.js` userSubmitted flags).
+    static let communityQuestionIDs: Set<String> = [
+        "intim_020", "vals_004", "vals_014", "vals_016", "vals_022", "vals_023",
+        "vals_031", "vals_035", "vals_036", "socl_018", "comt_020", "vals_037",
+        "vals_038", "social_024", "intm_023", "vals_039", "vals_040", "vals_041",
+        "social_025", "comt_025", "vals_042", "vals_043", "intm_025", "comt_021",
+        "comt_022", "comt_023", "comt_024", "socl_022", "comt_026", "vals_044",
+        "comm_020", "socl_023", "socl_024", "vals_045", "vals_046", "socl_025",
+        "comm_021", "vals_047", "socl_026", "socl_027",
+    ]
+
+    static func isCommunityQuestion(id: String) -> Bool {
+        communityQuestionIDs.contains(id)
+    }
+
     static var archetypes: [QuizArchetypeDefinition] {
         bundled?.archetypes ?? []
     }
@@ -171,7 +186,8 @@ enum QuizCatalog {
                 QuizOption(value: 1, label: "Man"),
             ],
             multiSelect: true,
-            isSpicy: false
+            isSpicy: false,
+            userSubmitted: false
         ),
     ]
 }
@@ -191,6 +207,7 @@ private struct QuizQuestionDTO: Decodable {
     let text: String
     let multiSelect: Bool?
     let isSpicy: Bool?
+    let userSubmitted: Bool?
     let options: [QuizOptionDTO]
 
     var asQuestion: QuizQuestion {
@@ -200,7 +217,8 @@ private struct QuizQuestionDTO: Decodable {
             text: text,
             options: options.map { QuizOption(value: $0.value, label: $0.label) },
             multiSelect: multiSelect ?? false,
-            isSpicy: isSpicy ?? false
+            isSpicy: isSpicy ?? false,
+            userSubmitted: userSubmitted ?? QuizCatalog.isCommunityQuestion(id: id)
         )
     }
 }

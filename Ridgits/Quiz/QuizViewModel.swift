@@ -1,5 +1,6 @@
 import Foundation
 import FirebaseAuth
+import FirebaseFirestore
 
 enum QuizCardViewMode: String, CaseIterable, Identifiable {
     case card
@@ -40,6 +41,7 @@ final class QuizViewModel: ObservableObject {
     private var autoAdvanceTask: Task<Void, Never>?
     var hasBootstrapped = false
     private var wasQuizCompleteAtBootstrap = false
+    private(set) var bootstrapUserId: String?
 
     init(mode: QuizMode = .onboarding) {
         self.mode = mode
@@ -124,22 +126,38 @@ final class QuizViewModel: ObservableObject {
 
     func bootstrap() async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
+        bootstrapUserId = uid
         isLoading = true
         defer {
             isLoading = false
             hasBootstrapped = true
         }
         do {
-            if let progress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid) {
+            let source: FirestoreSource = mode == .modify ? .server : .default
+            if let progress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid, source: source) {
                 answers = progress.answers
                 freePassesRemaining = progress.freePassesRemaining
                 dealbreakerEngaged = Set(progress.answers.keys)
                 wasQuizCompleteAtBootstrap = progress.completed
                     || QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
+                    || progress.questionsAnswered >= QuizCatalog.onboardingSkipThreshold
                 if mode == .modify {
                     poolPosition = min(progress.currentQuestion, max(activePool.count - 1, 0))
                 } else if progress.currentQuestion > 0 {
                     poolPosition = min(progress.currentQuestion, max(activePool.count - 1, 0))
+                }
+
+                if personalityAnsweredCount == 0 && wasQuizCompleteAtBootstrap,
+                   let repaired = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid, source: .server) {
+                    answers = repaired.answers
+                    dealbreakerEngaged = Set(repaired.answers.keys)
+                    freePassesRemaining = repaired.freePassesRemaining
+                    if !repaired.answers.isEmpty {
+                        wasQuizCompleteAtBootstrap = repaired.completed
+                            || QuizCatalog.hasEnoughPersonalityAnswers(in: repaired.answers)
+                    } else {
+                        errorMessage = "Could not load your saved quiz answers. Try closing and reopening."
+                    }
                 }
             }
             if mode == .modify, let archetype = await RidgitsFirebaseClient.shared.fetchQuizArchetype(uid: uid) {
@@ -389,7 +407,8 @@ final class QuizViewModel: ObservableObject {
             answers: answers,
             currentQuestion: poolPosition,
             completed: true,
-            freePassesRemaining: freePassesRemaining
+            freePassesRemaining: freePassesRemaining,
+            questionsAnswered: personalityAnsweredCount
         )
         return QuizFullResultsPresentation(
             archetypeName: archetype?.name ?? "Your Archetype",
@@ -401,12 +420,21 @@ final class QuizViewModel: ObservableObject {
         )
     }
 
+    var canPersistForCurrentUser: Bool {
+        guard let bootstrapUserId else { return false }
+        return Auth.auth().currentUser?.uid == bootstrapUserId
+    }
+
     func persistProgress(completed: Bool, uid: String? = nil) async throws {
-        let userId = uid ?? Auth.auth().currentUser?.uid
+        let userId = uid ?? bootstrapUserId ?? Auth.auth().currentUser?.uid
         guard let userId else { return }
         guard hasBootstrapped else { return }
+        guard canPersistForCurrentUser || uid != nil else { return }
 
         let markCompleted = resolvedCompletedFlag(requested: completed)
+        if answers.isEmpty && !markCompleted {
+            return
+        }
         // Only recalculate archetype when explicitly finishing — not on modify autosaves.
         let archetype = completed && markCompleted
             ? QuizArchetypeCalculator.calculate(answers: answers, questions: questions)

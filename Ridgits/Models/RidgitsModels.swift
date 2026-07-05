@@ -418,6 +418,7 @@ struct QuizQuestion: Identifiable, Equatable {
     let options: [QuizOption]
     let multiSelect: Bool
     let isSpicy: Bool
+    let userSubmitted: Bool
 }
 
 enum QuizImportance: Int, CaseIterable, Identifiable {
@@ -469,6 +470,7 @@ struct LoadedQuizProgress: Equatable {
     var currentQuestion: Int
     var completed: Bool
     var freePassesRemaining: Int
+    var questionsAnswered: Int
 }
 
 extension Timestamp {

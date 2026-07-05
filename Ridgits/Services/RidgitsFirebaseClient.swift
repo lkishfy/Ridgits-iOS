@@ -147,8 +147,8 @@ final class RidgitsFirebaseClient {
         return true
     }
 
-    func fetchQuizProgress(uid: String) async throws -> LoadedQuizProgress? {
-        let doc = try await db.collection("quizProgress").document(uid).getDocument()
+    func fetchQuizProgress(uid: String, source: FirestoreSource = .default) async throws -> LoadedQuizProgress? {
+        let doc = try await db.collection("quizProgress").document(uid).getDocument(source: source)
         guard let data = doc.data() else { return nil }
 
         let flatAnswers = data["answers"] as? [String: Any] ?? [:]
@@ -157,7 +157,12 @@ final class RidgitsFirebaseClient {
         let dealbreakers = data["dealbreakers"] as? [String: Bool] ?? [:]
 
         var answers: [String: QuizAnswerRecord] = [:]
-        let sortedKeys = flatAnswers.keys.sorted { lhs, rhs in
+        let allRawKeys = Set(flatAnswers.keys)
+            .union(preferredAnswers.keys)
+            .union(importanceMap.keys)
+            .union(dealbreakers.keys)
+
+        let sortedKeys = allRawKeys.sorted { lhs, rhs in
             let lhsIsId = lhs.first?.isLetter == true
             let rhsIsId = rhs.first?.isLetter == true
             if lhsIsId != rhsIsId { return !lhsIsId && rhsIsId }
@@ -165,42 +170,53 @@ final class RidgitsFirebaseClient {
         }
 
         for rawKey in sortedKeys {
-            guard let rawValue = flatAnswers[rawKey] else { continue }
             let questionId = QuizCatalog.normalizedQuestionId(forStorageKey: rawKey)
             var record = answers[questionId] ?? QuizAnswerRecord(
                 preferredAnswers: parseIntArray(preferredAnswers[questionId] ?? preferredAnswers[rawKey]) ?? [],
                 importance: parseInt(importanceMap[questionId] ?? importanceMap[rawKey]) ?? QuizImportance.somewhat.rawValue,
                 dealbreaker: dealbreakers[questionId] == true || dealbreakers[rawKey] == true
             )
-            if let array = parseIntArray(rawValue) {
-                record.answers = array
-                record.answer = array.count == 1 ? array[0] : nil
-            } else if let single = parseInt(rawValue) {
-                record.answer = single
-                if record.preferredAnswers.isEmpty {
-                    record.preferredAnswers = [single]
-                }
+
+            if let rawValue = flatAnswers[questionId] ?? flatAnswers[rawKey],
+               let parsed = parseStoredAnswerValue(rawValue) {
+                record.answers = parsed.answers
+                record.answer = parsed.answer
             }
+
             if record.preferredAnswers.isEmpty,
                let preferred = parseIntArray(preferredAnswers[questionId] ?? preferredAnswers[rawKey]) {
                 record.preferredAnswers = preferred
             }
+
+            if !record.hasAnswer,
+               let preferred = parseIntArray(preferredAnswers[questionId] ?? preferredAnswers[rawKey]),
+               !preferred.isEmpty {
+                record.answers = preferred
+                record.answer = preferred.count == 1 ? preferred[0] : nil
+            }
+
             if let importance = parseInt(importanceMap[questionId] ?? importanceMap[rawKey]) {
                 record.importance = importance
             }
-            answers[questionId] = record
+
+            if record.hasAnswer {
+                answers[questionId] = record
+            }
         }
 
         let currentQuestion = parseInt(data["currentQuestion"]) ?? parseInt(data["currentIndex"]) ?? 0
         let freePasses = parseInt(data["freePassesRemaining"]) ?? deriveFreePassesRemaining(from: flatAnswers)
         let serverCompleted = data["completed"] as? Bool ?? false
         let derivedCompleted = serverCompleted || QuizCatalog.hasEnoughPersonalityAnswers(in: answers)
+        let questionsAnswered = parseInt(data["questionsAnswered"])
+            ?? QuizCatalog.personalityAnsweredCount(in: answers)
 
         return LoadedQuizProgress(
             answers: answers,
             currentQuestion: currentQuestion,
             completed: derivedCompleted,
-            freePassesRemaining: freePasses
+            freePassesRemaining: freePasses,
+            questionsAnswered: questionsAnswered
         )
     }
 
@@ -212,6 +228,20 @@ final class RidgitsFirebaseClient {
         completed: Bool,
         archetype: QuizArchetypeDefinition? = nil
     ) async throws {
+        let personalityAnswered = QuizCatalog.personalityAnsweredCount(in: answers)
+
+        if answers.isEmpty && !completed {
+            if let existing = try await fetchQuizProgress(uid: uid),
+               QuizCatalog.personalityAnsweredCount(in: existing.answers) > 0 {
+                return
+            }
+            let snapshot = try await db.collection("quizProgress").document(uid).getDocument()
+            let serverAnswered = parseInt(snapshot.data()?["questionsAnswered"]) ?? 0
+            if serverAnswered >= QuizCatalog.onboardingSkipThreshold {
+                return
+            }
+        }
+
         var flatAnswers: [String: Any] = [:]
         var preferredAnswers: [String: Any] = [:]
         var importance: [String: Int] = [:]
@@ -231,10 +261,6 @@ final class RidgitsFirebaseClient {
                 dealbreakers[questionId] = true
             }
         }
-
-        let personalityAnswered = answers.filter { _, record in
-            record.hasAnswer
-        }.count
 
         var payload: [String: Any] = [
             "answers": flatAnswers,
@@ -283,6 +309,29 @@ final class RidgitsFirebaseClient {
         if let array = value as? [Double] { return array.map { Int($0.rounded()) } }
         if let array = value as? [NSNumber] { return array.map(\.intValue) }
         if let single = parseInt(value) { return [single] }
+        return nil
+    }
+
+    private func parseStoredAnswerValue(_ value: Any?) -> (answer: Int?, answers: [Int]?)? {
+        if let array = parseIntArray(value) {
+            return (array.count == 1 ? array[0] : nil, array)
+        }
+        if let single = parseInt(value) {
+            return (single, [single])
+        }
+        if let dict = value as? [String: Any] {
+            if let nestedAnswers = dict["answers"], let array = parseIntArray(nestedAnswers) {
+                return (array.count == 1 ? array[0] : nil, array)
+            }
+            if let nestedAnswer = dict["answer"] {
+                if let array = parseIntArray(nestedAnswer) {
+                    return (array.count == 1 ? array[0] : nil, array)
+                }
+                if let single = parseInt(nestedAnswer) {
+                    return (single, [single])
+                }
+            }
+        }
         return nil
     }
 

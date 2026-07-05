@@ -50,7 +50,8 @@ enum PackQuizCatalog {
                 text: $0.text,
                 options: $0.options.map { QuizOption(value: $0.value, label: $0.label) },
                 multiSelect: false,
-                isSpicy: false
+                isSpicy: false,
+                userSubmitted: false
             )
         }
     }
