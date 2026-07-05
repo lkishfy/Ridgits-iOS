@@ -194,7 +194,7 @@ struct SubscriptionPaywallView: View {
     private func tierCard(_ tier: RidgitsSubscriptionTier) -> some View {
         let activeBilling = RidgitsSubscriptionCatalog.offersMonthlySubscriptions ? selectedBilling : billing
         let isCurrent = ridgitsStore.isMembershipActive && ridgitsStore.membershipTier == tier
-        let canUpgrade = ridgitsStore.canUpgrade(to: tier)
+        let canPurchase = ridgitsStore.canUpgrade(to: tier)
         let resolvedUltraVariant = tier == .ultra && activeBilling == .yearly ? ultraYearlyVariant : .standard
         let price = ridgitsStore.priceLine(
             tier: tier,
@@ -305,7 +305,7 @@ struct SubscriptionPaywallView: View {
                     .font(RidgitsTypography.label(12))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .frame(maxWidth: .infinity)
-                } else if canUpgrade {
+                } else if canPurchase {
                     RidgitsSquareButton(
                         title: buttonTitle(for: tier),
                         style: .filled

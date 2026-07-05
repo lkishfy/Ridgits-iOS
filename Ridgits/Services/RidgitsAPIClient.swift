@@ -138,6 +138,22 @@ final class RidgitsAPIClient {
         )
     }
 
+    func syncRenewalPreference(
+        renewalProductId: String,
+        signedRenewalInfo: String?
+    ) async throws -> Bool {
+        var body: [String: Any] = ["renewalProductId": renewalProductId]
+        if let signedRenewalInfo, !signedRenewalInfo.isEmpty {
+            body["signedRenewalInfo"] = signedRenewalInfo
+        }
+        let data = try await authorizedRequest(
+            path: "/api/iap/sync-renewal",
+            method: "POST",
+            body: body
+        )
+        return data["synced"] as? Bool ?? false
+    }
+
     func findMatches(
         maxDistance: Int,
         previewCloseMatches: Bool = false

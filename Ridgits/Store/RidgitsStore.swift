@@ -210,6 +210,11 @@ final class RidgitsStore: ObservableObject {
             purchaseError = "Downgrades aren't available in the app. Cancel your current plan in Apple Subscriptions, then resubscribe after it expires."
             return false
         }
+        await refreshAccessInBackground()
+        if membershipTier.rank >= tier.rank && isMembershipActive {
+            purchaseError = "You're already on \(membershipTier.displayName)."
+            return false
+        }
         guard membershipTier != tier || !isMembershipActive else {
             purchaseError = "You're already on this plan."
             return false
@@ -370,9 +375,94 @@ final class RidgitsStore: ObservableObject {
             access.expirationDate = bestExpiration ?? access.expirationDate
             access.subscriptionSource = "app_store"
         }
+
+        await applySubscriptionGroupStatus()
         // When StoreKit has no active membership, keep existing access until the server
         // confirms in `applyServerAccessIfAvailable` — avoids flashing free tier on refresh.
     }
+
+    /// Reads the subscription group status so pending upgrades (autoRenewPreference) match Apple.
+    private func applySubscriptionGroupStatus() async {
+        guard let statuses = try? await Product.SubscriptionInfo.status(
+            for: RidgitsSubscriptionCatalog.appStoreSubscriptionGroupId
+        ) else { return }
+
+        var entitledTier: RidgitsSubscriptionTier = .free
+        var entitledProductId: String?
+        var renewalTier: RidgitsSubscriptionTier = .free
+        var renewalProductId: String?
+        var renewalJWS: String?
+        var bestExpiration = access.expirationDate
+
+        for status in statuses {
+            switch status.state {
+            case .subscribed, .inGracePeriod, .inBillingRetryPeriod:
+                break
+            default:
+                continue
+            }
+
+            guard case .verified(let transaction) = status.transaction,
+                  let transactionTier = RidgitsSubscriptionCatalog.tier(for: transaction.productID) else {
+                continue
+            }
+
+            if transactionTier.rank > entitledTier.rank {
+                entitledTier = transactionTier
+                entitledProductId = transaction.productID
+                if let expiration = transaction.expirationDate {
+                    if bestExpiration == nil || expiration > bestExpiration! {
+                        bestExpiration = expiration
+                    }
+                }
+            }
+
+            guard case .verified(let renewalInfo) = status.renewalInfo,
+                  renewalInfo.willAutoRenew,
+                  let nextProductId = renewalInfo.autoRenewPreference,
+                  let nextTier = RidgitsSubscriptionCatalog.tier(for: nextProductId) else {
+                continue
+            }
+
+            if nextTier.rank > renewalTier.rank {
+                renewalTier = nextTier
+                renewalProductId = nextProductId
+                renewalJWS = status.renewalInfo.jwsRepresentation
+            }
+        }
+
+        let scannedTier = access.resolvedMembershipTier
+        var effectiveTier = scannedTier
+        var effectiveProductId = access.activeProductId
+
+        if renewalTier.rank > entitledTier.rank {
+            effectiveTier = renewalTier
+            effectiveProductId = renewalProductId ?? entitledProductId
+        } else if entitledTier.rank > effectiveTier.rank {
+            effectiveTier = entitledTier
+            effectiveProductId = entitledProductId
+        }
+
+        if effectiveTier != .free {
+            access.isSubscribed = true
+            access.hasNearbyAccess = true
+            access.subscriptionTier = effectiveTier.rawValue
+            if let effectiveProductId {
+                access.activeProductId = effectiveProductId
+            }
+            if let billing = effectiveProductId.flatMap(RidgitsSubscriptionCatalog.billing(for:)) {
+                access.subscriptionBillingPeriod = billing.rawValue
+            }
+            access.expirationDate = bestExpiration ?? access.expirationDate
+            access.subscriptionSource = "app_store"
+        }
+
+        if renewalTier.rank > entitledTier.rank, let renewalProductId {
+            _ = try? await RidgitsAPIClient.shared.syncRenewalPreference(
+                renewalProductId: renewalProductId,
+                signedRenewalInfo: renewalJWS
+            )
+        }
 
     func purchaseYearly() async -> Bool {
         guard let product = yearlyProduct else {
@@ -476,12 +566,11 @@ final class RidgitsStore: ObservableObject {
 
             let serverTier = RidgitsSubscriptionTier.from(stored: account.subscriptionTier)
             let mergedTier: RidgitsSubscriptionTier
-            if account.hasNearbyAccess {
+            if account.hasNearbyAccess || storeKitSubscribed {
                 mergedTier = storeKitTier.rank >= serverTier.rank ? storeKitTier : serverTier
                 access.subscriptionTier = mergedTier.rawValue
-                if mergedTier != .free {
-                    access.isSubscribed = true
-                }
+                access.isSubscribed = mergedTier != .free
+                access.hasNearbyAccess = true
             } else if storeKitSubscribed && storeKitTier.rank > 0 {
                 // StoreKit shows an upgrade the server hasn't linked yet.
                 mergedTier = storeKitTier
