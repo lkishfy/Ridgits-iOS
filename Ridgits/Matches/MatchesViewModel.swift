@@ -37,6 +37,10 @@ final class MatchesViewModel: ObservableObject {
         }
     }
 
+    private func shouldTrackCloseMatches(access: RidgitsNearbySearchAccess) -> Bool {
+        access.showsCloseMatchTeaser || access.showsPremiumCloseTeaser
+    }
+
     func hydrateFromCache(uid: String, access: RidgitsNearbySearchAccess) {
         if let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 10) {
             rawNationwideMatches = cached
@@ -49,8 +53,8 @@ final class MatchesViewModel: ObservableObject {
         }
 
         nearbyPool = pool.matches
-        closeMatchCount = access.showsCloseMatchTeaser ? pool.closeMatchCount : 0
-        closeMatchPreviews = access.showsCloseMatchTeaser ? pool.closeMatches : []
+        closeMatchCount = shouldTrackCloseMatches(access: access) ? pool.closeMatchCount : 0
+        closeMatchPreviews = shouldTrackCloseMatches(access: access) ? pool.closeMatches : []
         applyDisplayedRadius(access: access)
         refreshNationwideDistances()
     }
@@ -235,8 +239,8 @@ final class MatchesViewModel: ObservableObject {
            cached.poolAccessKey == accessKey,
            !RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid) {
             nearbyPool = cached.matches
-            closeMatchCount = access.showsCloseMatchTeaser ? cached.closeMatchCount : 0
-            closeMatchPreviews = access.showsCloseMatchTeaser ? cached.closeMatches : []
+            closeMatchCount = shouldTrackCloseMatches(access: access) ? cached.closeMatchCount : 0
+            closeMatchPreviews = shouldTrackCloseMatches(access: access) ? cached.closeMatches : []
             applyDisplayedRadius(access: access)
             refreshNationwideDistances()
             await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
@@ -309,8 +313,8 @@ final class MatchesViewModel: ObservableObject {
         )
         guard !Task.isCancelled else { return }
         nearbyPool = result.matches
-        closeMatchCount = access.showsCloseMatchTeaser ? max(0, result.closeMatchCount) : 0
-        closeMatchPreviews = access.showsCloseMatchTeaser ? result.closeMatches : []
+        closeMatchCount = shouldTrackCloseMatches(access: access) ? max(0, result.closeMatchCount) : 0
+        closeMatchPreviews = shouldTrackCloseMatches(access: access) ? result.closeMatches : []
         applyDisplayedRadius(access: access)
         refreshNationwideDistances()
         await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
@@ -340,9 +344,14 @@ final class MatchesViewModel: ObservableObject {
 
     /// Accurate count and avatar previews for compatible matches within the close-match threshold.
     private func refreshCloseMatchCount(access: RidgitsNearbySearchAccess, forceRefresh: Bool) async {
-        guard access.showsCloseMatchTeaser else {
+        guard shouldTrackCloseMatches(access: access) else {
             closeMatchCount = 0
             closeMatchPreviews = []
+            return
+        }
+
+        if access.showsPremiumCloseTeaser {
+            persistCloseMatchPreviews(access: access)
             return
         }
 

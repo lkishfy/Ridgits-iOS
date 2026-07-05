@@ -463,6 +463,7 @@ final class RidgitsStore: ObservableObject {
                 signedRenewalInfo: renewalJWS
             )
         }
+    }
 
     func purchaseYearly() async -> Bool {
         guard let product = yearlyProduct else {

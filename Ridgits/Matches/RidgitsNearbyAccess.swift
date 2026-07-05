@@ -48,6 +48,11 @@ struct RidgitsNearbySearchAccess: Equatable {
         !hasMembership
     }
 
+    /// Ridgits+ can search 25mi+ but close matches are hidden until Premium.
+    var showsPremiumCloseTeaser: Bool {
+        hasMembership && tier == .plus
+    }
+
     /// Subscription tier to upsell when a locked radius preset is tapped.
     func lockedRadiusPaywallTier(for preset: Int) -> RidgitsSubscriptionTier {
         RidgitsNearbyAccess.paywallTier(forLockedPreset: preset, access: self)

@@ -115,6 +115,7 @@ struct MatchesView: View {
                 viewModel.maxDistance,
                 access: nearbyAccess
             )
+            Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
             guard showSubscriptionPaywall else { return }
             if !shouldPresentSubscriptionPaywall(requiredTier: subscriptionPaywallHighlight) {
                 showSubscriptionPaywall = false
@@ -125,6 +126,7 @@ struct MatchesView: View {
                 viewModel.maxDistance,
                 access: nearbyAccess
             )
+            Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
         }
         .sheet(isPresented: $showPokePackPaywall) {
             PokePackPaywallView {
@@ -346,6 +348,8 @@ struct MatchesView: View {
         Group {
             if nearbyAccess.showsCloseMatchTeaser {
                 closeMatchesTeaser
+            } else if nearbyAccess.showsPremiumCloseTeaser, viewModel.closeMatchCount > 0 {
+                premiumCloseMatchesTeaser
             }
             distanceSlider
             nearbyMatchesSection
@@ -445,12 +449,60 @@ struct MatchesView: View {
         return "Try a closer radius to see matches within \(threshold) miles."
     }
 
+    private var premiumCloseMatchesTeaser: some View {
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
+                if !viewModel.closeMatchPreviews.isEmpty {
+                    closeMatchAvatarStack
+                }
+
+                Text(premiumCloseMatchesTeaserMessage)
+                    .font(RidgitsTypography.caption(13))
+                    .foregroundStyle(RidgitsColors.forestGreenDark.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+
+            Button("Unlock closer") {
+                presentSubscriptionPaywall(
+                    requiredTier: .premium,
+                    headline: "See closer matches",
+                    subheadline: "Premium unlocks search within 10 and 0 miles."
+                )
+            }
+            .font(RidgitsTypography.caption(13))
+            .fontWeight(.semibold)
+            .foregroundStyle(RidgitsColors.forestGreenDark)
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(RidgitsColors.forestGreenLight)
+        .overlay(
+            RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                .stroke(RidgitsColors.forestGreen.opacity(0.25), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+    }
+
+    private var premiumCloseMatchesTeaserMessage: String {
+        let threshold = RidgitsNearbyAccess.plusMinRadiusMiles
+        let noun = viewModel.closeMatchCount == 1 ? "match is" : "matches are"
+        return "\(viewModel.closeMatchCount) \(noun) within \(threshold) miles — hidden on Ridgits+."
+    }
+
     private var nearbyRadiusRangeLabel: String {
         RidgitsNearbyAccess.radiusRangeLabel(maxRadius: viewModel.maxDistance, access: nearbyAccess)
     }
 
     private var distanceSliderSubtitle: String {
         let count = viewModel.nearbyMatches.count
+        let inRange = viewModel.unfilteredNearbyCount(access: nearbyAccess)
+        if count > 0, inRange > count {
+            let noun = inRange == 1 ? "person" : "people"
+            return "\(count) shown · \(inRange) \(noun) in range · \(nearbyRadiusRangeLabel)"
+        }
         guard count > 0 else { return nearbyRadiusRangeLabel }
         let noun = count == 1 ? "person" : "people"
         return "\(count) \(noun) · \(nearbyRadiusRangeLabel)"
