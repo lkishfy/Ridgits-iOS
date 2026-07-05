@@ -61,6 +61,7 @@ final class RidgitsStore: ObservableObject {
     @Published private(set) var isLoadingProducts = false
     @Published private(set) var isPurchasing = false
     @Published private(set) var isRestoring = false
+    @Published private(set) var isOpeningSubscriptionManagement = false
     @Published var purchaseError: String?
     @Published var restoreStatusMessage: String?
 
@@ -253,9 +254,45 @@ final class RidgitsStore: ObservableObject {
         return verified
     }
 
+    /// Opens Apple's subscription management page (Settings / App Store). Prefer this over
+    /// `AppStore.showManageSubscriptions`, which often shows a blank sheet with "Cannot connect".
+    @discardableResult
+    func openSubscriptionManagement() async -> Bool {
+        isOpeningSubscriptionManagement = true
+        defer { isOpeningSubscriptionManagement = false }
+
+        if let url = await AppStore.subscriptionManagementURL {
+            let opened = await openExternalURL(url)
+            if opened { return true }
+        }
+
+        let fallbacks = [
+            URL(string: "itms-apps://apps.apple.com/account/subscriptions"),
+            URL(string: "https://apps.apple.com/account/subscriptions"),
+        ].compactMap { $0 }
+
+        for url in fallbacks {
+            if await openExternalURL(url) {
+                return true
+            }
+        }
+
+        purchaseError = "Open Settings → your name → Subscriptions to manage your Ridgits plan."
+        return false
+    }
+
+    /// Legacy entry point — routes to `openSubscriptionManagement()`.
     func showManageSubscriptions() async {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        try? await AppStore.showManageSubscriptions(in: scene)
+        _ = await openSubscriptionManagement()
+    }
+
+    @MainActor
+    private func openExternalURL(_ url: URL) async -> Bool {
+        await withCheckedContinuation { continuation in
+            UIApplication.shared.open(url, options: [:]) { success in
+                continuation.resume(returning: success)
+            }
+        }
     }
 
     func purchaseArchetypeBundle() async -> Bool {

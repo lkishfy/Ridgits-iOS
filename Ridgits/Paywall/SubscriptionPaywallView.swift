@@ -15,6 +15,7 @@ struct SubscriptionPaywallView: View {
     @State private var ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant = .standard
     @State private var selectedBilling: RidgitsSubscriptionBilling = .yearly
     @State private var showPostPurchaseIdentityVerification = false
+    @State private var showManageSubscriptionSheet = false
 
     private let tiers: [RidgitsSubscriptionTier] = [.plus, .premium, .ultra]
     private var billing: RidgitsSubscriptionBilling { .yearly }
@@ -110,6 +111,12 @@ struct SubscriptionPaywallView: View {
                 }
             }
             .environmentObject(ridgitsStore)
+        }
+        .sheet(isPresented: $showManageSubscriptionSheet) {
+            ManageSubscriptionSheet()
+                .environmentObject(ridgitsStore)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -293,7 +300,7 @@ struct SubscriptionPaywallView: View {
                     RidgitsSquareButton(title: "Current Plan", style: .ghost) {}
                         .disabled(true)
                     Button("Manage Plan") {
-                        Task { await ridgitsStore.showManageSubscriptions() }
+                        showManageSubscriptionSheet = true
                     }
                     .font(RidgitsTypography.label(12))
                     .foregroundStyle(RidgitsColors.textSecondary)
@@ -371,6 +378,109 @@ private struct SubscriptionPaywallSheetPresentation: ViewModifier {
                 .presentationDragIndicator(.hidden)
         } else {
             content
+        }
+    }
+}
+
+private struct ManageSubscriptionSheet: View {
+    @EnvironmentObject private var ridgitsStore: RidgitsStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var openError: String?
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Manage your plan")
+                    .font(RidgitsTypography.headline(22))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+
+                if ridgitsStore.isMembershipActive {
+                    HStack(spacing: 10) {
+                        RidgitsVerifiedBadge(tier: ridgitsStore.membershipTier, size: 18)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Current plan")
+                                .font(RidgitsTypography.caption(11))
+                                .foregroundStyle(RidgitsColors.textMuted)
+                            Text(ridgitsStore.membershipTier.displayName)
+                                .font(RidgitsTypography.label(15))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                        }
+                    }
+                }
+
+                Text("Ridgits subscriptions are billed through Apple. Change or cancel your plan in your Apple account, then return here and tap Restore purchases if Ridgits doesn't update right away.")
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    instructionRow(
+                        number: 1,
+                        title: "Open Apple Subscriptions",
+                        detail: "Use the button below to jump to your Ridgits subscription."
+                    )
+                    instructionRow(
+                        number: 2,
+                        title: "Change or cancel there",
+                        detail: "Downgrades and cancellations take effect at the end of your billing period."
+                    )
+                    instructionRow(
+                        number: 3,
+                        title: "Upgrade in Ridgits",
+                        detail: "To move to a higher tier, choose a plan on the previous screen instead."
+                    )
+                }
+
+                if let openError {
+                    Text(openError)
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.destructive)
+                }
+
+                RidgitsSquareButton(
+                    title: ridgitsStore.isOpeningSubscriptionManagement
+                        ? "Opening…"
+                        : "Open Apple Subscriptions",
+                    style: .filled
+                ) {
+                    Task {
+                        openError = nil
+                        let opened = await ridgitsStore.openSubscriptionManagement()
+                        if opened {
+                            dismiss()
+                        } else {
+                            openError = ridgitsStore.purchaseError
+                        }
+                    }
+                }
+                .disabled(ridgitsStore.isOpeningSubscriptionManagement)
+
+                Button("Done") { dismiss() }
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(20)
+        }
+        .background(RidgitsColors.feedBackground)
+    }
+
+    private func instructionRow(number: Int, title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(number)")
+                .font(RidgitsTypography.label(12))
+                .foregroundStyle(RidgitsColors.textHeadline)
+                .frame(width: 24, height: 24)
+                .background(RidgitsColors.hoverSurface)
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Text(detail)
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+            }
         }
     }
 }

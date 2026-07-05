@@ -71,8 +71,10 @@ struct RidgitsSubscriptionFeature: Identifiable {
 }
 
 enum RidgitsSubscriptionCatalog {
-    /// App Store Connect subscription group display name: "Yearly" (ID 22207786).
-    static let subscriptionGroupId = "Yearly"
+    /// App Store Connect subscription group ID for the "Yearly" group.
+    static let appStoreSubscriptionGroupId = "22207786"
+    /// Display name in App Store Connect (informational only).
+    static let subscriptionGroupDisplayName = "Yearly"
 
     /// Paywall and new purchases use yearly only; monthly SKUs may still renew for existing subscribers.
     static let offersMonthlySubscriptions = false
