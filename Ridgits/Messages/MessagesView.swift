@@ -249,6 +249,7 @@ struct MessagesView: View {
     @State private var pokeProfileMatch: RidgitsMatch?
     @State private var showPokePackPaywall = false
     @State private var pokeConfirmMatch: RidgitsMatch?
+    @State private var unpokeConfirmMatch: RidgitsMatch?
 
     var body: some View {
         NavigationStack {
@@ -277,6 +278,9 @@ struct MessagesView: View {
                     },
                     onPoke: {
                         Task { await requestPoke(for: match) }
+                    },
+                    onUnpoke: {
+                        unpokeConfirmMatch = match
                     }
                 )
             }
@@ -369,6 +373,27 @@ struct MessagesView: View {
                 Text(matchesViewModel.pokeConfirmationMessage(for: match.name))
             }
         }
+        .alert("Remove poke?", isPresented: Binding(
+            get: { unpokeConfirmMatch != nil },
+            set: { if !$0 { unpokeConfirmMatch = nil } }
+        )) {
+            Button("Remove", role: .destructive) {
+                guard let match = unpokeConfirmMatch,
+                      let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] else {
+                    unpokeConfirmMatch = nil
+                    return
+                }
+                unpokeConfirmMatch = nil
+                Task { await matchesViewModel.unpoke(pokeId: pokeId) }
+            }
+            Button("Cancel", role: .cancel) {
+                unpokeConfirmMatch = nil
+            }
+        } message: {
+            if let match = unpokeConfirmMatch {
+                Text("Remove your poke to \(match.name)?")
+            }
+        }
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
             guard showPaywall else { return }
             viewModel.showPaywallPrompt = false
@@ -450,67 +475,75 @@ struct MessagesView: View {
     }
 
     private var conversationList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 0) {
-                if !pokeInbox.receivedPokesSorted.isEmpty {
-                    pokesInboxSection
+        List {
+            if !pokeInbox.receivedPokesSorted.isEmpty {
+                Section {
+                    ForEach(pokeInbox.receivedPokesSorted) { poke in
+                        PokeInboxRow(
+                            poke: poke,
+                            sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
+                            onViewProfile: { Task { await openPokeProfile(poke) } },
+                            onPokeBack: { Task { await pokeBack(poke) } }
+                        )
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                Task { await deleteReceivedPoke(poke) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.white)
+                    }
+                } header: {
+                    pokeSectionHeader("Pokes")
                 }
+            }
 
-                if viewModel.activeConversations.isEmpty && pokeInbox.receivedPokesSorted.isEmpty {
+            if viewModel.activeConversations.isEmpty && pokeInbox.receivedPokesSorted.isEmpty {
+                Section {
                     emptyInbox
-                } else {
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+            } else if !viewModel.activeConversations.isEmpty {
+                Section {
                     ForEach(viewModel.activeConversations) { convo in
                         DMConversationRow(conversation: convo) {
                             viewModel.selectConversation(convo)
                         }
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.white)
+                    }
+                } header: {
+                    if !pokeInbox.receivedPokesSorted.isEmpty {
+                        pokeSectionHeader("Chats")
                     }
                 }
             }
-            .ridgitsTabBarScrollTracking()
-            .ridgitsFloatingTabBarPadding()
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.white)
         .coordinateSpace(name: "ridgitsTabScroll")
         .refreshable {
             await viewModel.refresh()
         }
+        .ridgitsTabBarScrollTracking()
+        .ridgitsFloatingTabBarPadding()
     }
 
-    private var pokesInboxSection: some View {
-        VStack(spacing: 0) {
-            Text("Pokes")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(RidgitsColors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 8)
-
-            SwipeablePokeInboxList(
-                pokes: pokeInbox.receivedPokesSorted,
-                sentPokeIdsByUser: pokeInbox.sentPokeIdsByUser,
-                onViewProfile: { poke in
-                    Task { await openPokeProfile(poke) }
-                },
-                onPokeBack: { poke in
-                    Task { await pokeBack(poke) }
-                },
-                onDelete: { poke in
-                    Task { await deleteReceivedPoke(poke) }
-                }
-            )
-
-            if !viewModel.activeConversations.isEmpty {
-                Divider()
-                    .padding(.top, 8)
-                Text("Chats")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 8)
-            }
-        }
+    private func pokeSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(RidgitsColors.textSecondary)
+            .textCase(nil)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 4)
+            .padding(.bottom, 4)
     }
 
     @MainActor
@@ -622,7 +655,7 @@ struct MessagesView: View {
                 .font(RidgitsTypography.body(15))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .multilineTextAlignment(.center)
-            Text("When someone pokes you, they'll show up here — tap their name to view their profile or poke back.")
+            Text("When someone pokes you, they'll show up here — tap their name to view their profile, poke back, or swipe left to delete.")
                 .font(RidgitsTypography.caption(13))
                 .foregroundStyle(RidgitsColors.textMuted)
                 .multilineTextAlignment(.center)
@@ -648,39 +681,55 @@ private struct MessageRequestsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    if pokeInbox.receivedPokesSorted.isEmpty
-                        && viewModel.pendingIncoming.isEmpty
-                        && viewModel.awaitingApproval.isEmpty {
+            List {
+                if pokeInbox.receivedPokesSorted.isEmpty
+                    && viewModel.pendingIncoming.isEmpty
+                    && viewModel.awaitingApproval.isEmpty {
+                    Section {
                         Text("No message or poke requests")
                             .font(RidgitsTypography.body(15))
                             .foregroundStyle(RidgitsColors.textSecondary)
                             .frame(maxWidth: .infinity)
-                            .padding(.top, 48)
+                            .padding(.top, 32)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                     }
+                }
 
-                    if !pokeInbox.receivedPokesSorted.isEmpty {
-                        requestsSectionHeader("Pokes")
-                        SwipeablePokeInboxList(
-                            pokes: pokeInbox.receivedPokesSorted,
-                            sentPokeIdsByUser: pokeInbox.sentPokeIdsByUser,
-                            onViewProfile: { poke in
-                                dismiss()
-                                Task { await onViewPokeProfile(poke) }
-                            },
-                            onPokeBack: { poke in
-                                dismiss()
-                                Task { await onPokeBack(poke) }
-                            },
-                            onDelete: { poke in
-                                Task { await onDeletePoke(poke) }
+                if !pokeInbox.receivedPokesSorted.isEmpty {
+                    Section {
+                        ForEach(pokeInbox.receivedPokesSorted) { poke in
+                            PokeInboxRow(
+                                poke: poke,
+                                sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
+                                onViewProfile: {
+                                    dismiss()
+                                    Task { await onViewPokeProfile(poke) }
+                                },
+                                onPokeBack: {
+                                    dismiss()
+                                    Task { await onPokeBack(poke) }
+                                }
+                            )
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    Task { await onDeletePoke(poke) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
                             }
-                        )
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.white)
+                        }
+                    } header: {
+                        requestsSectionHeader("Pokes")
                     }
+                }
 
-                    if !viewModel.pendingIncoming.isEmpty {
-                        requestsSectionHeader("Message requests")
+                if !viewModel.pendingIncoming.isEmpty {
+                    Section {
                         ForEach(viewModel.pendingIncoming) { convo in
                             DMConversationRow(
                                 conversation: convo,
@@ -701,11 +750,17 @@ private struct MessageRequestsView: View {
                                 viewModel.selectConversation(convo)
                                 dismiss()
                             }
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.white)
                         }
+                    } header: {
+                        requestsSectionHeader("Message requests")
                     }
+                }
 
-                    if !viewModel.awaitingApproval.isEmpty {
-                        requestsSectionHeader("Awaiting approval")
+                if !viewModel.awaitingApproval.isEmpty {
+                    Section {
                         ForEach(viewModel.awaitingApproval) { convo in
                             DMConversationRow(
                                 conversation: convo,
@@ -719,11 +774,17 @@ private struct MessageRequestsView: View {
                                 viewModel.selectConversation(convo)
                                 dismiss()
                             }
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.white)
                         }
+                    } header: {
+                        requestsSectionHeader("Awaiting approval")
                     }
                 }
-                .padding(.bottom, 24)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(Color.white)
             .navigationTitle("Requests")
             .navigationBarTitleDisplayMode(.inline)
@@ -745,46 +806,10 @@ private struct MessageRequestsView: View {
         Text(title)
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(RidgitsColors.textSecondary)
+            .textCase(nil)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.top, 20)
-            .padding(.bottom, 8)
-    }
-}
-
-private struct SwipeablePokeInboxList: View {
-    let pokes: [RidgitsPoke]
-    let sentPokeIdsByUser: [String: String]
-    let onViewProfile: (RidgitsPoke) -> Void
-    let onPokeBack: (RidgitsPoke) -> Void
-    let onDelete: (RidgitsPoke) -> Void
-
-    private let rowHeight: CGFloat = 76
-
-    var body: some View {
-        List {
-            ForEach(pokes) { poke in
-                PokeInboxRow(
-                    poke: poke,
-                    sentPokeBack: sentPokeIdsByUser[poke.fromUserId] != nil,
-                    onViewProfile: { onViewProfile(poke) },
-                    onPokeBack: { onPokeBack(poke) }
-                )
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) {
-                        onDelete(poke)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-                .listRowInsets(EdgeInsets())
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.white)
-            }
-        }
-        .listStyle(.plain)
-        .scrollDisabled(true)
-        .frame(height: rowHeight * CGFloat(pokes.count))
+            .padding(.top, 8)
+            .padding(.bottom, 4)
     }
 }
 

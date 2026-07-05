@@ -5,6 +5,8 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     let id: String
     var name: String
     var location: String
+    var locationCity: String
+    var locationStateCode: String
     var age: Int?
     var image: String
     var about: String
@@ -21,7 +23,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
 
     var isCompleteForMatching: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && hasNormalizedLocation
             && age != nil
             && !image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !about.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -30,12 +32,17 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     }
 
     var hasBasicProfile: Bool {
-        !name.isEmpty && !location.isEmpty && age != nil
+        !name.isEmpty && hasNormalizedLocation && age != nil
+    }
+
+    var hasNormalizedLocation: Bool {
+        RidgitsUSLocations.normalize(city: locationCity, stateCode: locationStateCode) != nil
+            || !location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     static func empty(uid: String) -> RidgitsUserProfile {
         RidgitsUserProfile(
-            id: uid, name: "", location: "", age: nil, image: "",
+            id: uid, name: "", location: "", locationCity: "", locationStateCode: "", age: nil, image: "",
             about: "", interests: [], aspirations: "", additionalImages: [],
             socialHandle: "", ageRangeMin: nil, ageRangeMax: nil, subscriptionTier: "free",
             visibleInCommunity: true,
@@ -44,10 +51,28 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     }
 
     static func from(uid: String, data: [String: Any]) -> RidgitsUserProfile {
-        RidgitsUserProfile(
+        var location = data["location"] as? String ?? ""
+        var locationCity = data["locationCity"] as? String ?? ""
+        var locationStateCode = data["locationStateCode"] as? String ?? ""
+
+        if locationCity.isEmpty || locationStateCode.isEmpty, !location.isEmpty {
+            let parsed = RidgitsUSLocations.parse(location, city: locationCity, stateCode: locationStateCode)
+            if locationCity.isEmpty { locationCity = parsed.city }
+            if locationStateCode.isEmpty { locationStateCode = parsed.stateCode }
+        }
+
+        if let normalized = RidgitsUSLocations.normalize(city: locationCity, stateCode: locationStateCode) {
+            locationCity = normalized.city
+            locationStateCode = normalized.stateCode
+            location = normalized.display
+        }
+
+        return RidgitsUserProfile(
             id: uid,
             name: data["name"] as? String ?? "",
-            location: data["location"] as? String ?? "",
+            location: location,
+            locationCity: locationCity,
+            locationStateCode: locationStateCode,
             age: data["age"] as? Int ?? (data["age"] as? String).flatMap(Int.init),
             image: data["image"] as? String ?? "",
             about: data["about"] as? String ?? "",
@@ -168,6 +193,20 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
             location: location,
             distanceMiles: miles,
             compatibility: compatibility,
+            about: about,
+            subscriptionTier: subscriptionTier
+        )
+    }
+
+    func withCompatibility(_ scores: RidgitsCompatibility) -> RidgitsMatch {
+        RidgitsMatch(
+            id: id,
+            userId: userId,
+            name: name,
+            image: image,
+            location: location,
+            distanceMiles: distanceMiles,
+            compatibility: scores,
             about: about,
             subscriptionTier: subscriptionTier
         )

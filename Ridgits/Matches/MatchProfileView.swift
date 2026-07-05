@@ -8,6 +8,7 @@ struct MatchProfileView: View {
     let match: RidgitsMatch
     let onMessage: () -> Void
     let onPoke: () -> Void
+    var onUnpoke: () -> Void = {}
 
     @State private var profile: RidgitsUserProfile?
     @State private var compatibility = RidgitsCompatibility.empty
@@ -153,15 +154,17 @@ struct MatchProfileView: View {
                 dismiss()
             }
             if sentPoke {
-                Text("Poked")
-                    .font(RidgitsTypography.label(14))
-                    .foregroundStyle(RidgitsColors.textMuted)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                            .stroke(RidgitsColors.border, lineWidth: 1)
-                    )
+                Button("Poked") {
+                    onUnpoke()
+                }
+                .font(RidgitsTypography.label(14))
+                .foregroundStyle(RidgitsColors.textMuted)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .overlay(
+                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                        .stroke(RidgitsColors.border, lineWidth: 1)
+                )
             } else {
                 Button("Poke") {
                     onPoke()

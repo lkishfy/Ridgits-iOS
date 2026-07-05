@@ -53,7 +53,7 @@ struct QuizView: View {
         }
         .task { await viewModel.bootstrap() }
         .onDisappear {
-            guard !viewModel.didComplete else { return }
+            guard !viewModel.didComplete, viewModel.hasBootstrapped else { return }
             Task { await viewModel.saveProgressForExit() }
         }
         .onChange(of: viewModel.currentQuestionIndex) { _, _ in
@@ -163,6 +163,7 @@ struct QuizView: View {
                     }
                 }
                 .font(RidgitsTypography.label(12))
+                .disabled(viewModel.isLoading)
             }
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 2) {
@@ -202,11 +203,12 @@ struct QuizView: View {
     }
 
     private var signOutButton: some View {
-        Button("Sign Out") {
+        Button("SIGN OUT") {
             showSignOutConfirmation = true
         }
         .font(RidgitsTypography.label(12))
         .foregroundStyle(RidgitsColors.textSecondary)
+        .buttonStyle(.plain)
         .disabled(isSigningOut || viewModel.isLoading)
     }
 

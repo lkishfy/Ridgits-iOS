@@ -20,7 +20,7 @@ struct IdentityVerificationView: View {
                             bullet("Confirm you're 18+ with a driver's license or passport.")
                             bullet("Verify your phone number with a one-time code.")
                             bullet("Take a quick selfie so we know it's really you.")
-                            bullet("Your ID images stay with Stripe — Ridgits only stores verification status and a hashed phone fingerprint.")
+                            bullet("Ridgits only stores your verification stats and a hashed phone fingerprint.")
                             bullet("After subscribing, your profile photo must match your verified selfie.")
                         }
                         .padding(16)
@@ -33,7 +33,7 @@ struct IdentityVerificationView: View {
                     }
 
                     RidgitsSquareButton(
-                        title: coordinator.isVerifying ? "Verifying…" : "Continue to verification",
+                        title: coordinator.isVerifying ? "Verifying…" : "Continue",
                         style: .filled
                     ) {
                         Task {
@@ -52,9 +52,13 @@ struct IdentityVerificationView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button {
                         onComplete(false)
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(RidgitsColors.textHeadline)
                     }
                 }
             }

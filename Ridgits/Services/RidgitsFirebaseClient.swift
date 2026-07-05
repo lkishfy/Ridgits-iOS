@@ -41,32 +41,54 @@ final class RidgitsFirebaseClient {
     }
 
     func saveUserProfile(_ profile: RidgitsUserProfile) async throws {
+        var normalizedProfile = profile
+        RidgitsUSLocations.applyNormalizedLocation(to: &normalizedProfile)
+
         let payload: [String: Any] = [
-            "name": profile.name,
-            "location": profile.location,
-            "age": profile.age as Any,
-            "image": profile.image,
-            "about": profile.about,
-            "interests": profile.interests,
-            "aspirations": profile.aspirations,
-            "additionalImages": profile.additionalImages,
-            "socialHandle": profile.socialHandle,
-            "ageRangeMin": profile.ageRangeMin as Any,
-            "ageRangeMax": profile.ageRangeMax as Any,
-            "visibleInCommunity": profile.visibleInCommunity,
+            "name": normalizedProfile.name,
+            "location": normalizedProfile.location,
+            "locationCity": normalizedProfile.locationCity,
+            "locationStateCode": normalizedProfile.locationStateCode,
+            "age": normalizedProfile.age as Any,
+            "image": normalizedProfile.image,
+            "about": normalizedProfile.about,
+            "interests": normalizedProfile.interests,
+            "aspirations": normalizedProfile.aspirations,
+            "additionalImages": normalizedProfile.additionalImages,
+            "socialHandle": normalizedProfile.socialHandle,
+            "ageRangeMin": normalizedProfile.ageRangeMin as Any,
+            "ageRangeMax": normalizedProfile.ageRangeMax as Any,
+            "visibleInCommunity": normalizedProfile.visibleInCommunity,
+            "coordinates": FieldValue.delete(),
+            "coordinatesUpdatedAt": FieldValue.delete(),
+            "geocodedFromLocation": FieldValue.delete(),
         ]
-        try await db.collection("users").document(profile.id).setData(payload, merge: true)
-        try await db.collection("publicProfiles").document(profile.id).setData(payload, merge: true)
-        RidgitsProfileCache.shared.save(profile)
+        try await db.collection("users").document(normalizedProfile.id).setData(payload, merge: true)
+        try await db.collection("publicProfiles").document(normalizedProfile.id).setData(payload, merge: true)
+        RidgitsProfileCache.shared.save(normalizedProfile)
     }
 
     func isQuizCompleted(uid: String) async throws -> Bool {
-        let doc = try await db.collection("quizProgress").document(uid).getDocument()
-        guard let data = doc.data() else { return false }
-        if data["completed"] as? Bool == true { return true }
-        if let progress = try await fetchQuizProgress(uid: uid) {
-            return QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
+        async let quizSnapTask = db.collection("quizProgress").document(uid).getDocument()
+        async let userSnapTask = db.collection("users").document(uid).getDocument()
+        let quizSnap = try await quizSnapTask
+        let userSnap = try await userSnapTask
+
+        if let data = quizSnap.data() {
+            if data["completed"] as? Bool == true { return true }
+            if let answered = parseInt(data["questionsAnswered"]),
+               answered >= QuizCatalog.onboardingSkipThreshold {
+                return true
+            }
+            if let progress = try await fetchQuizProgress(uid: uid),
+               QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers) {
+                return true
+            }
         }
+
+        let userData = userSnap.data() ?? [:]
+        if userData["onboardingCompleted"] as? Bool == true { return true }
+        if userData["quizCompletedAt"] != nil { return true }
         return false
     }
 
@@ -75,17 +97,21 @@ final class RidgitsFirebaseClient {
     @discardableResult
     func ensureQuizCompletionRecorded(uid: String) async throws -> Bool {
         guard let progress = try await fetchQuizProgress(uid: uid) else { return false }
-        let eligible = progress.completed || QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
-        guard eligible else { return false }
 
         let doc = try await db.collection("quizProgress").document(uid).getDocument()
+        let questionsAnswered = parseInt(doc.data()?["questionsAnswered"]) ?? 0
+        let eligible = progress.completed
+            || QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
+            || questionsAnswered >= QuizCatalog.onboardingSkipThreshold
+        guard eligible else { return false }
+
         let rawAnswers = doc.data()?["answers"] as? [String: Any] ?? [:]
         let keysNeedMigration = rawAnswers.keys.contains {
             QuizCatalog.normalizedQuestionId(forStorageKey: $0) != $0
         }
         let needsCompletionFlag = !(doc.data()?["completed"] as? Bool ?? false)
 
-        if needsCompletionFlag || keysNeedMigration {
+        if keysNeedMigration || (needsCompletionFlag && QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)) {
             let archetype = QuizArchetypeCalculator.calculate(
                 answers: progress.answers,
                 questions: QuizCatalog.questions
@@ -97,6 +123,15 @@ final class RidgitsFirebaseClient {
                 freePassesRemaining: progress.freePassesRemaining,
                 completed: true,
                 archetype: archetype
+            )
+        } else if needsCompletionFlag {
+            try await db.collection("quizProgress").document(uid).setData(
+                [
+                    "completed": true,
+                    "completedAt": FieldValue.serverTimestamp(),
+                    "questionsAnswered": max(questionsAnswered, QuizCatalog.onboardingSkipThreshold),
+                ],
+                merge: true
             )
         }
 
@@ -627,14 +662,41 @@ final class RidgitsFirebaseClient {
         }
 
         let result = try await api.findMatches(maxDistance: poolRadius)
+        let enrichedMatches = await enrichMatchCompatibilityIfNeeded(result.matches, uid: uid)
         RidgitsMatchesCache.shared.saveNearbyPool(
-            result.matches,
+            enrichedMatches,
             closeMatchCount: result.closeMatchCount,
             poolRadius: poolRadius,
             poolAccessKey: poolAccessKey,
             uid: uid
         )
-        return result
+        return RidgitsNearbyMatchesResult(
+            matches: enrichedMatches,
+            closeMatchCount: result.closeMatchCount
+        )
+    }
+
+    private func enrichMatchCompatibilityIfNeeded(_ matches: [RidgitsMatch], uid: String) async -> [RidgitsMatch] {
+        guard !matches.isEmpty else { return matches }
+        guard matches.contains(where: { !$0.compatibility.hasScores }) else { return matches }
+
+        var enriched: [RidgitsMatch] = []
+        enriched.reserveCapacity(matches.count)
+        for match in matches {
+            if match.compatibility.hasScores {
+                enriched.append(match)
+                continue
+            }
+            if let compatibility = await RidgitsQuizCompatibility.compatibilityBetween(
+                currentUserId: uid,
+                otherUserId: match.userId
+            ), compatibility.hasScores {
+                enriched.append(match.withCompatibility(compatibility))
+            } else {
+                enriched.append(match)
+            }
+        }
+        return enriched
     }
 
     func getTopNationwideMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
@@ -651,17 +713,16 @@ final class RidgitsFirebaseClient {
             return cached
         }
 
-        let matches = try await api.getTopNationwideMatches(limit: limit, forceRefresh: shouldRefresh)
-        RidgitsMatchesCache.shared.saveNationwide(matches, uid: uid, limit: limit)
+        var matches = try await api.getTopNationwideMatches(limit: limit, forceRefresh: shouldRefresh)
 
         let apiLooksBroken = !matches.isEmpty
             && matches.allSatisfy({ $0.compatibility.overall == 0 && $0.compatibility.communication == 0 })
         if apiLooksBroken && !forceRefresh {
-            let refreshed = try await api.getTopNationwideMatches(limit: limit, forceRefresh: true)
-            RidgitsMatchesCache.shared.saveNationwide(refreshed, uid: uid, limit: limit)
-            return refreshed
+            matches = try await api.getTopNationwideMatches(limit: limit, forceRefresh: true)
         }
 
+        matches = await enrichMatchCompatibilityIfNeeded(matches, uid: uid)
+        RidgitsMatchesCache.shared.saveNationwide(matches, uid: uid, limit: limit)
         return matches
     }
 

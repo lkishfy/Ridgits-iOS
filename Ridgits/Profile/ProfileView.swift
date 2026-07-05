@@ -283,7 +283,11 @@ struct ProfileView: View {
                 }
 
                 fieldBlock("Location", required: true) {
-                    RidgitsTextField(placeholder: "City, State", text: $profile.location)
+                    RidgitsLocationPicker(
+                        city: $profile.locationCity,
+                        stateCode: $profile.locationStateCode,
+                        legacyLocation: profile.location
+                    )
                 }
 
                 fieldBlock("Social Handle") {

@@ -30,8 +30,12 @@ struct ProfileSetupView: View {
                             field("Name", required: true) {
                                 RidgitsTextField(placeholder: "Username", text: $profile.name)
                             }
-                            field("City", required: true) {
-                                RidgitsTextField(placeholder: "City, State", text: $profile.location)
+                            field("City & state", required: true) {
+                                RidgitsLocationPicker(
+                                    city: $profile.locationCity,
+                                    stateCode: $profile.locationStateCode,
+                                    legacyLocation: profile.location
+                                )
                             }
                             field("Age", required: true) {
                                 RidgitsTextField(

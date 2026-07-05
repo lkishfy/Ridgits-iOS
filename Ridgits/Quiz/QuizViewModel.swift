@@ -38,6 +38,8 @@ final class QuizViewModel: ObservableObject {
 
     private var previousArchetypeName: String?
     private var autoAdvanceTask: Task<Void, Never>?
+    var hasBootstrapped = false
+    private var wasQuizCompleteAtBootstrap = false
 
     init(mode: QuizMode = .onboarding) {
         self.mode = mode
@@ -123,12 +125,17 @@ final class QuizViewModel: ObservableObject {
     func bootstrap() async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            isLoading = false
+            hasBootstrapped = true
+        }
         do {
             if let progress = try await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid) {
                 answers = progress.answers
                 freePassesRemaining = progress.freePassesRemaining
                 dealbreakerEngaged = Set(progress.answers.keys)
+                wasQuizCompleteAtBootstrap = progress.completed
+                    || QuizCatalog.hasEnoughPersonalityAnswers(in: progress.answers)
                 if mode == .modify {
                     poolPosition = min(progress.currentQuestion, max(activePool.count - 1, 0))
                 } else if progress.currentQuestion > 0 {
@@ -366,6 +373,7 @@ final class QuizViewModel: ObservableObject {
         defer { isSaving = false }
         do {
             try await persistProgress(completed: true, uid: uid)
+            _ = try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
             if mode == .modify {
                 updatedResultsPresentation = buildFullResultsPresentation()
             }
@@ -396,6 +404,7 @@ final class QuizViewModel: ObservableObject {
     func persistProgress(completed: Bool, uid: String? = nil) async throws {
         let userId = uid ?? Auth.auth().currentUser?.uid
         guard let userId else { return }
+        guard hasBootstrapped else { return }
 
         let markCompleted = resolvedCompletedFlag(requested: completed)
         // Only recalculate archetype when explicitly finishing — not on modify autosaves.
@@ -425,8 +434,10 @@ final class QuizViewModel: ObservableObject {
 
     private func resolvedCompletedFlag(requested completed: Bool) -> Bool {
         if completed { return true }
-        if mode == .modify && QuizCatalog.hasEnoughPersonalityAnswers(in: answers) {
-            return true
+        if mode == .modify {
+            if QuizCatalog.hasEnoughPersonalityAnswers(in: answers) { return true }
+            // Keep match eligibility while a previously finished user edits answers.
+            if wasQuizCompleteAtBootstrap { return true }
         }
         return false
     }

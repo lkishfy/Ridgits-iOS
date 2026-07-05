@@ -146,6 +146,7 @@ final class MatchesViewModel: ObservableObject {
 
     private func performLoad(uid: String, access: RidgitsNearbySearchAccess, forceRefresh: Bool) async {
         await refreshPokeCredits()
+        await repairQuizCompletionIfNeeded(uid: uid)
 
         let accessKey = access.poolCacheKey
         let accessChanged = lastPoolAccessKey.map { $0 != accessKey } ?? false
@@ -154,7 +155,10 @@ final class MatchesViewModel: ObservableObject {
         if !forceRefresh && !accessChanged {
             hydrateFromCache(uid: uid, access: access)
 
-            let needsNationwide = !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
+            let nationwideLooksBroken = !rawNationwideMatches.isEmpty
+                && rawNationwideMatches.allSatisfy { !$0.compatibility.hasScores }
+            let needsNationwide = nationwideLooksBroken
+                || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
                 || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: 10)
             let needsNearby = nearbyPool.isEmpty
                 || RidgitsMatchesCache.shared.nearbyPool(for: uid) == nil
@@ -204,7 +208,7 @@ final class MatchesViewModel: ObservableObject {
             return
         } catch {
             if !Task.isCancelled {
-                errorMessage = error.localizedDescription
+                await applyMatchingError(error, uid: uid)
             }
         }
     }
@@ -242,25 +246,87 @@ final class MatchesViewModel: ObservableObject {
         }
 
         do {
-            let result = try await RidgitsFirebaseClient.shared.findNearbyPool(
+            try await fetchNearbyPool(
+                uid: uid,
                 poolRadius: poolRadius,
-                poolAccessKey: accessKey,
+                accessKey: accessKey,
+                access: access,
                 forceRefresh: forceRefresh
             )
-            guard !Task.isCancelled else { return }
-            nearbyPool = result.matches
-            closeMatchCount = access.showsCloseMatchTeaser ? max(0, result.closeMatchCount) : 0
-            applyDisplayedRadius(access: access)
-            refreshNationwideDistances()
-            await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
-            errorMessage = nil
         } catch is CancellationError {
             return
         } catch {
             if !Task.isCancelled {
-                errorMessage = error.localizedDescription
+                await applyMatchingError(error, uid: uid)
             }
         }
+    }
+
+    private func fetchNearbyPool(
+        uid: String,
+        poolRadius: Int,
+        accessKey: String,
+        access: RidgitsNearbySearchAccess,
+        forceRefresh: Bool
+    ) async throws {
+        do {
+            try await loadNearbyPool(
+                poolRadius: poolRadius,
+                accessKey: accessKey,
+                access: access,
+                forceRefresh: forceRefresh
+            )
+        } catch {
+            guard await shouldRetryMatchingAfterQuizRepair(error, uid: uid) else { throw error }
+            await repairQuizCompletionIfNeeded(uid: uid)
+            try await loadNearbyPool(
+                poolRadius: poolRadius,
+                accessKey: accessKey,
+                access: access,
+                forceRefresh: true
+            )
+        }
+    }
+
+    private func loadNearbyPool(
+        poolRadius: Int,
+        accessKey: String,
+        access: RidgitsNearbySearchAccess,
+        forceRefresh: Bool
+    ) async throws {
+        let result = try await RidgitsFirebaseClient.shared.findNearbyPool(
+            poolRadius: poolRadius,
+            poolAccessKey: accessKey,
+            forceRefresh: forceRefresh
+        )
+        guard !Task.isCancelled else { return }
+        nearbyPool = result.matches
+        closeMatchCount = access.showsCloseMatchTeaser ? max(0, result.closeMatchCount) : 0
+        applyDisplayedRadius(access: access)
+        refreshNationwideDistances()
+        await refreshCloseMatchCount(access: access, forceRefresh: forceRefresh)
+        errorMessage = nil
+    }
+
+    private func repairQuizCompletionIfNeeded(uid: String) async {
+        guard (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) == true else { return }
+        _ = try? await RidgitsFirebaseClient.shared.ensureQuizCompletionRecorded(uid: uid)
+    }
+
+    private func applyMatchingError(_ error: Error, uid: String) async {
+        let message = error.localizedDescription
+        if message.localizedCaseInsensitiveContains("complete the quiz"),
+           (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) == true {
+            errorMessage = nil
+            return
+        }
+        errorMessage = message
+    }
+
+    private func shouldRetryMatchingAfterQuizRepair(_ error: Error, uid: String) async -> Bool {
+        let message = error.localizedDescription.lowercased()
+        guard message.contains("complete the quiz") else { return false }
+        return (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) == true
     }
 
     /// Accurate count of compatible matches within the close-match threshold (free-user teaser).
@@ -321,6 +387,14 @@ final class MatchesViewModel: ObservableObject {
                 return
             }
             errorMessage = ridgitsError.localizedDescription
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func unpoke(pokeId: String) async {
+        do {
+            try await RidgitsAPIClient.shared.unpoke(pokeId: pokeId)
         } catch {
             errorMessage = error.localizedDescription
         }

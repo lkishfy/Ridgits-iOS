@@ -104,9 +104,6 @@ struct SubscriptionPaywallView: View {
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
             }
-            Text("Verify with a government ID to subscribe and message.")
-                .font(RidgitsTypography.caption(12))
-                .foregroundStyle(RidgitsColors.textSecondary)
         }
     }
 

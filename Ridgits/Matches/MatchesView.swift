@@ -19,6 +19,7 @@ struct MatchesView: View {
     @State private var composeMessage = ""
     @State private var showCompatibilityFilter = false
     @State private var pokeConfirmMatch: RidgitsMatch?
+    @State private var unpokeConfirmMatch: RidgitsMatch?
 
     private var nearbyAccess: RidgitsNearbySearchAccess {
         RidgitsNearbySearchAccess.from(store: ridgitsStore)
@@ -79,6 +80,9 @@ struct MatchesView: View {
                 onMessage: { requestMessage(to: match) },
                 onPoke: {
                     Task { await requestPoke(for: match) }
+                },
+                onUnpoke: {
+                    unpokeConfirmMatch = match
                 }
             )
         }
@@ -141,6 +145,27 @@ struct MatchesView: View {
         } message: {
             if let match = pokeConfirmMatch {
                 Text(viewModel.pokeConfirmationMessage(for: match.name))
+            }
+        }
+        .alert("Remove poke?", isPresented: Binding(
+            get: { unpokeConfirmMatch != nil },
+            set: { if !$0 { unpokeConfirmMatch = nil } }
+        )) {
+            Button("Remove", role: .destructive) {
+                guard let match = unpokeConfirmMatch,
+                      let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] else {
+                    unpokeConfirmMatch = nil
+                    return
+                }
+                unpokeConfirmMatch = nil
+                Task { await viewModel.unpoke(pokeId: pokeId) }
+            }
+            Button("Cancel", role: .cancel) {
+                unpokeConfirmMatch = nil
+            }
+        } message: {
+            if let match = unpokeConfirmMatch {
+                Text("Remove your poke to \(match.name)?")
             }
         }
     }
@@ -475,6 +500,10 @@ struct MatchesView: View {
                         onPoke: {
                             guard allowInteraction else { return }
                             Task { await requestPoke(for: match) }
+                        },
+                        onUnpoke: {
+                            guard allowInteraction else { return }
+                            unpokeConfirmMatch = match
                         }
                     )
                 }
@@ -702,6 +731,7 @@ private struct MatchCard: View {
     let onOpenProfile: () -> Void
     let onMessage: () -> Void
     let onPoke: () -> Void
+    let onUnpoke: () -> Void
 
     var body: some View {
         RidgitsCard {
@@ -754,13 +784,12 @@ private struct MatchCard: View {
                         .padding(.vertical, 6)
                         .background(RidgitsColors.ctaBlack)
                         .clipShape(Capsule())
-                    Button(sentPoke ? "Poked" : "Poke", action: onPoke)
+                    Button(sentPoke ? "Poked" : "Poke", action: sentPoke ? onUnpoke : onPoke)
                         .font(RidgitsTypography.label(13))
                         .foregroundStyle(sentPoke ? RidgitsColors.textMuted : RidgitsColors.textHeadline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .overlay(Capsule().stroke(RidgitsColors.border, lineWidth: 1))
-                        .disabled(sentPoke)
                 }
                 .padding(.top, 10)
                 .blur(radius: locked ? 6 : 0)

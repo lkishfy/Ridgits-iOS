@@ -76,6 +76,8 @@
 		7E0CD284A9E4C83CC738F086 /* messaging.json in Resources */ = {isa = PBXBuildFile; fileRef = 60B356C301BEF70E0088F297 /* messaging.json */; };
 		82997486DD1023518B5D27B2 /* RidgitsPushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA72A5B2CF06E521CEA03330 /* RidgitsPushNotificationService.swift */; };
 		83A11966B318AD48C2C82869 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F4CFC12B5334639E03A439 /* LocationManager.swift */; };
+		A1B2C3D4E5F60718293A4B5D /* RidgitsLocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A4B /* RidgitsLocationPicker.swift */; };
+		B1C2D3E4F5A60718293A4B5E /* us_cities.json in Resources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A60718293A4B5C6D /* us_cities.json */; };
 		85FB925181885C6E39052B3F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 826ECC07B38FF72BE29ED9F4 /* FirebaseStorage */; };
 		88E23B25FEF5B0B84065E3E0 /* RidgitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C012308069A29AC80D2321 /* RidgitsApp.swift */; };
 		89492A3071E466C1D9C34FC2 /* RidgitsTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D71B5B93F5D5907DE500364 /* RidgitsTheme.swift */; };
@@ -211,6 +213,8 @@
 		C551E7EC553D460C4392FFC1 /* SubscriptionPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPaywallView.swift; sourceTree = "<group>"; };
 		C6F3D8B82EEE0B85BA578E36 /* RidgitQuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitQuizView.swift; sourceTree = "<group>"; };
 		C7F4CFC12B5334639E03A439 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		F0E1D2C3B4A5968778695A4B /* RidgitsLocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsLocationPicker.swift; sourceTree = "<group>"; };
+		C2D3E4F5A60718293A4B5C6D /* us_cities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = us_cities.json; sourceTree = "<group>"; };
 		C885678211DF9A31049C50DC /* RidgitsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsModels.swift; sourceTree = "<group>"; };
 		C93D3E5D3445BF088CD27B6F /* AdditionalArchetypesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdditionalArchetypesSection.swift; sourceTree = "<group>"; };
 		CA72A5B2CF06E521CEA03330 /* RidgitsPushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsPushNotificationService.swift; sourceTree = "<group>"; };
@@ -491,6 +495,8 @@
 			isa = PBXGroup;
 			children = (
 				C7F4CFC12B5334639E03A439 /* LocationManager.swift */,
+				F0E1D2C3B4A5968778695A4B /* RidgitsLocationPicker.swift */,
+				C2D3E4F5A60718293A4B5C6D /* us_cities.json */,
 			);
 			path = Location;
 			sourceTree = "<group>";
@@ -661,6 +667,7 @@
 				E773BDF4712E6792435CF789 /* self-sabotage.json in Resources */,
 				16DB2910726A760EBDC04546 /* situationship.json in Resources */,
 				D315E62B79646F4E2D84B94F /* social-battery.json in Resources */,
+				B1C2D3E4F5A60718293A4B5E /* us_cities.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -686,6 +693,7 @@
 				5E1F7DDEFE7623BB75D10158 /* IdentityVerificationCoordinator.swift in Sources */,
 				AF44BF8ADF734C786F744083 /* IdentityVerificationView.swift in Sources */,
 				83A11966B318AD48C2C82869 /* LocationManager.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5D /* RidgitsLocationPicker.swift in Sources */,
 				E7E009B45965B5B850FA2337 /* LoginView.swift in Sources */,
 				09E6D693F2712BC24B2AF972 /* MakeRidgitView.swift in Sources */,
 				6C20876A2E1C98E07F8A9CFE /* MatchProfileView.swift in Sources */,
