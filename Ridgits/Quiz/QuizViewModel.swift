@@ -84,7 +84,7 @@ final class QuizViewModel: ObservableObject {
             if hideAnsweredQuestions || selectedCategory != nil {
                 return max(activePool.count, 1)
             }
-            return totalPersonalityQuestions
+            return orderedIndices.count
         }
         return activePool.count
     }
@@ -229,9 +229,9 @@ final class QuizViewModel: ObservableObject {
     }
 
     func canSelectAnswer(for question: QuizQuestion) -> Bool {
-        if mode == .onboarding { return true }
-        if let record = answers[question.id], record.hasAnswer { return true }
-        return dealbreakerEngaged.contains(question.id)
+        // Modify mode must allow tapping options on unanswered questions without
+        // requiring dealbreaker to be toggled first.
+        mode == .onboarding || mode == .modify
     }
 
     func toggleDealbreaker(for question: QuizQuestion) {

@@ -150,6 +150,7 @@ enum QuizCatalog {
             return ordered
         case .modify:
             var ordered: [Int] = []
+            ordered.append(contentsOf: all.filter { questions[$0].category == "Demographics" })
             for category in personalityCategories {
                 ordered.append(contentsOf: all.filter { questions[$0].category == category }.prefix(5))
             }

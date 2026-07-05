@@ -438,7 +438,7 @@ struct QuizView: View {
 
     private var demographicsProgressHeader: some View {
         VStack(spacing: 8) {
-            Text("Getting Started")
+            Text(mode == .modify ? "Your match preferences" : "Getting Started")
                 .font(RidgitsTypography.caption(11))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .tracking(1.1)
