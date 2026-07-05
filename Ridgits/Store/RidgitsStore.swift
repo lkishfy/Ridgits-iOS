@@ -261,17 +261,12 @@ final class RidgitsStore: ObservableObject {
         isOpeningSubscriptionManagement = true
         defer { isOpeningSubscriptionManagement = false }
 
-        if let url = await AppStore.subscriptionManagementURL {
-            let opened = await openExternalURL(url)
-            if opened { return true }
-        }
-
-        let fallbacks = [
+        let candidates = [
             URL(string: "itms-apps://apps.apple.com/account/subscriptions"),
             URL(string: "https://apps.apple.com/account/subscriptions"),
         ].compactMap { $0 }
 
-        for url in fallbacks {
+        for url in candidates {
             if await openExternalURL(url) {
                 return true
             }
