@@ -262,9 +262,9 @@ struct MatchesView: View {
     private var subscriptionPaywallSubheadline: String {
         switch subscriptionPaywallHighlight {
         case .plus:
-            return "Free members see matches from 30 miles and up. Ridgits+ unlocks search within 25 miles."
+            return "Free members search from 30 to 150 miles. Ridgits+ unlocks search from 10 miles."
         case .premium:
-            return "Premium unlocks search within 10 and 0 miles."
+            return "Premium unlocks metro search (0 mi) and full range down to 0 miles."
         case .ultra:
             return "Ultra includes full nearby search from 0 to 150 miles."
         default:
@@ -408,7 +408,7 @@ struct MatchesView: View {
                 presentSubscriptionPaywall(
                     requiredTier: .plus,
                     headline: "See nearby matches",
-                    subheadline: "Free members see matches from 30 miles and up. Ridgits+ unlocks search within 25 miles."
+                    subheadline: "Free members search from 30 to 150 miles. Ridgits+ unlocks search from 10 miles."
                 )
             }
             .font(RidgitsTypography.caption(13))
@@ -468,7 +468,7 @@ struct MatchesView: View {
                 presentSubscriptionPaywall(
                     requiredTier: .premium,
                     headline: "See closer matches",
-                    subheadline: "Premium unlocks search within 10 and 0 miles."
+                    subheadline: "Premium unlocks metro search (0 mi) and the full 0–150 mile range."
                 )
             }
             .font(RidgitsTypography.caption(13))
@@ -487,9 +487,8 @@ struct MatchesView: View {
     }
 
     private var premiumCloseMatchesTeaserMessage: String {
-        let threshold = RidgitsNearbyAccess.plusMinRadiusMiles
         let noun = viewModel.closeMatchCount == 1 ? "match is" : "matches are"
-        return "\(viewModel.closeMatchCount) \(noun) within \(threshold) miles — hidden on Ridgits+."
+        return "\(viewModel.closeMatchCount) \(noun) in your metro area — unlock with Premium."
     }
 
     private var nearbyRadiusRangeLabel: String {
@@ -581,7 +580,7 @@ struct MatchesView: View {
         Button {
             attemptRadiusChange(to: Double(preset))
         } label: {
-            Text("\(preset)")
+            Text(preset == 0 ? "Metro" : "\(preset)")
                 .font(RidgitsTypography.caption(11))
                 .foregroundStyle(isSelected ? .white : RidgitsColors.textSecondary)
                 .padding(.horizontal, 8)
@@ -591,6 +590,7 @@ struct MatchesView: View {
                 .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
+        .opacity(isLocked ? 0.45 : 1)
         .disabled(viewModel.isLoadingNearby)
     }
 
