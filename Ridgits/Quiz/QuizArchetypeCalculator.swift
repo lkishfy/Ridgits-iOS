@@ -1,6 +1,26 @@
 import Foundation
 
 enum QuizArchetypeCalculator {
+    private static let dimensionKeys = ["communication", "intimacy", "values", "social", "commitment"]
+
+    private static let dimensionVotes: [String: [String: String]] = [
+        "communication": ["low": "thoughtful", "mid": "romantic", "high": "independent"],
+        "intimacy": ["low": "adventurous", "mid": "cautious", "high": "independent"],
+        "values": ["low": "practical", "mid": "freeSpirit", "high": "romantic"],
+        "social": ["low": "adventurous", "mid": "thoughtful", "high": "cautious"],
+        "commitment": ["low": "practical", "mid": "cautious", "high": "freeSpirit"],
+    ]
+
+    private static let archetypeMap: [String: Int] = [
+        "romantic": 0,
+        "thoughtful": 1,
+        "independent": 2,
+        "adventurous": 3,
+        "cautious": 4,
+        "practical": 5,
+        "freeSpirit": 6,
+    ]
+
     static func calculate(answers: [String: QuizAnswerRecord], questions: [QuizQuestion]) -> QuizArchetypeDefinition? {
         let archetypes = QuizCatalog.archetypes
         guard !archetypes.isEmpty else { return nil }
@@ -44,81 +64,35 @@ enum QuizArchetypeCalculator {
             return values.reduce(0, +) / Double(values.count)
         }
 
-        let avgComm = average(groups["communication"] ?? [])
-        let avgIntimacy = average(groups["intimacy"] ?? [])
-        let avgValues = average(groups["values"] ?? [])
-        let avgSocial = average(groups["social"] ?? [])
-        let avgCommit = average(groups["commitment"] ?? [])
-
-        var scores: [String: Int] = [
-            "romantic": 0,
-            "thoughtful": 0,
-            "independent": 0,
-            "adventurous": 0,
-            "cautious": 0,
-            "practical": 0,
-            "freeSpirit": 0,
-        ]
-
-        switch avgComm {
-        case ...0.75: scores["thoughtful", default: 0] += 2
-        case 0.75...1.5: scores["romantic", default: 0] += 2
-        case 1.5...2.25: scores["independent", default: 0] += 2
-        default: scores["freeSpirit", default: 0] += 2
-        }
-
-        switch avgIntimacy {
-        case ...0.75: scores["adventurous", default: 0] += 2
-        case 0.75...1.5: scores["romantic", default: 0] += 2
-        case 1.5...2.25: scores["cautious", default: 0] += 2
-        default: scores["independent", default: 0] += 2
-        }
-
-        switch avgValues {
-        case ...0.75: scores["practical", default: 0] += 2
-        case 0.75...1.5: scores["thoughtful", default: 0] += 2
-        case 1.5...2.25: scores["freeSpirit", default: 0] += 2
-        default: scores["adventurous", default: 0] += 2
-        }
-
-        switch avgSocial {
-        case ...0.75: scores["adventurous", default: 0] += 2
-        case 0.75...1.5: scores["practical", default: 0] += 2
-        case 1.5...2.25: scores["cautious", default: 0] += 2
-        default: scores["thoughtful", default: 0] += 2
-        }
-
-        switch avgCommit {
-        case ...0.75: scores["practical", default: 0] += 2
-        case 0.75...1.5: scores["cautious", default: 0] += 2
-        case 1.5...2.25: scores["freeSpirit", default: 0] += 2
-        default: scores["independent", default: 0] += 2
-        }
-
-        let maxScore = scores.values.max() ?? 0
-        let minScore = scores.values.min() ?? 0
-        let closeCount = scores.values.filter { $0 >= maxScore - 1 }.count
-        let isBalanced = (maxScore - minScore) <= 1 && closeCount >= 4
-
-        let map: [String: Int] = [
-            "romantic": 0,
-            "thoughtful": 1,
-            "independent": 2,
-            "adventurous": 3,
-            "cautious": 4,
-            "practical": 5,
-            "freeSpirit": 6,
-        ]
+        let dimensionAverages = dimensionKeys.map { average(groups[$0] ?? []) }
+        let maxDeviation = dimensionAverages.map { abs($0 - 1.5) }.max() ?? 0
+        let isBalanced = maxDeviation < 0.35
 
         if isBalanced, archetypes.count > 7 {
             return archetypes[7]
         }
 
-        guard let top = scores.max(by: { $0.value < $1.value })?.key,
-              let index = map[top],
+        var primaryIndex = 0
+        for index in 1..<dimensionAverages.count {
+            if abs(dimensionAverages[index] - 1.5) > abs(dimensionAverages[primaryIndex] - 1.5) {
+                primaryIndex = index
+            }
+        }
+
+        let primaryDimension = dimensionKeys[primaryIndex]
+        let primaryTertile = tertile(for: dimensionAverages[primaryIndex])
+        guard let topArchetype = dimensionVotes[primaryDimension]?[primaryTertile],
+              let index = archetypeMap[topArchetype],
               index < archetypes.count else {
             return archetypes.first
         }
+
         return archetypes[index]
+    }
+
+    private static func tertile(for average: Double) -> String {
+        if average < 1.25 { return "low" }
+        if average < 1.75 { return "mid" }
+        return "high"
     }
 }
