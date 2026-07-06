@@ -131,7 +131,7 @@ final class AuthManager: ObservableObject {
         return year == nil
     }
 
-    /// Completes the birth-year requirement for OAuth sign-ups (18+ enforced both here and
+    /// Completes the birth-year requirement for OAuth sign-ups (minimum age enforced both here and
     /// server-side via `/api/auth/validate-signup` + Firestore rules).
     func completeBirthYear(_ birthYear: Int) async throws {
         guard let uid = currentUser?.uid else { throw RidgitsError.notAuthenticated }

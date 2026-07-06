@@ -29,7 +29,7 @@ struct IdentityVerificationView: View {
 
                     RidgitsDashboardCard {
                         VStack(alignment: .leading, spacing: 14) {
-                            bullet("Confirm you're 18+ with a driver's license or passport.")
+                            bullet("Confirm you're \(RidgitsMinimumAge.accountYears)+ with a driver's license or passport.")
                             bullet("Verify your phone number with a one-time code.")
                             bullet("Take a quick selfie so we know it's really you.")
                             bullet("Ridgits only stores your verification status and a hashed phone fingerprint.")

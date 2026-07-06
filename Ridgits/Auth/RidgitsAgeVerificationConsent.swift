@@ -2,16 +2,15 @@ import SwiftUI
 
 enum RidgitsAgeVerificationCopy {
     static let termsSummary =
-        "You must be at least 18 years old to create an account or use Ridgits. By continuing, you represent that you are 18 or older. Ridgits may request additional proof of age if we suspect misrepresentation, as described in our Terms of Service."
+        "You must be at least \(RidgitsMinimumAge.accountYears) years old to create an account or use Ridgits. By continuing, you represent that you are \(RidgitsMinimumAge.accountYears) or older. Ridgits may request additional proof of age if we suspect misrepresentation, as described in our Terms of Service."
 
     static let checkboxLabel =
-        "I confirm that I am 18 years of age or older and agree to comply with Ridgits' Terms of Service, operated by GEISTS, LLC."
+        "I confirm that I am \(RidgitsMinimumAge.accountYears) years of age or older and agree to comply with Ridgits' Terms of Service, operated by GEISTS, LLC."
 
     static let complianceNote =
         "This information is required for legal compliance and will be stored securely."
 
-    static let confirmRequired =
-        "You must confirm that you are 18 years or older."
+    static let confirmRequired = RidgitsMinimumAge.confirmRequiredMessage
 }
 
 struct RidgitsAgeVerificationConsent: View {

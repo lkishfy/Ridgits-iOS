@@ -371,7 +371,7 @@ final class RidgitsAPIClient {
         return try JSONDecoder().decode(RidgitsReferralQualifyResponse.self, from: json)
     }
 
-    /// Authoritative pre-signup / post-OAuth check (disposable email, 18+ birth year).
+    /// Authoritative pre-signup / post-OAuth check (disposable email, minimum-age birth year).
     /// Unauthenticated — safe to call before a Firebase Auth account exists.
     func validateSignup(email: String? = nil, birthYear: Int? = nil) async throws -> RidgitsSignupValidation {
         var body: [String: Any] = [:]

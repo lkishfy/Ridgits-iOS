@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Blocking screen shown to Google/Apple sign-ins that don't have a `birthYear` on file
 /// yet (OAuth doesn't collect it the way the email/password signup sheet does). Ridgits
-/// requires everyone to be 18+, enforced again server-side via `validate-signup` and by
+/// requires everyone to be 21+, enforced again server-side via `validate-signup` and by
 /// Firestore rules on the `users`/`publicProfiles` documents.
 struct BirthYearPromptView: View {
     @EnvironmentObject private var authManager: AuthManager
@@ -21,7 +21,7 @@ struct BirthYearPromptView: View {
                     .font(RidgitsTypography.headline(22))
                     .foregroundStyle(RidgitsColors.textHeadline)
 
-                Text("Ridgits is for adults 18 and older. We use your birth year to confirm your age.")
+                Text("Ridgits is for adults \(RidgitsMinimumAge.accountYears) and older. We use your birth year to confirm your age.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
 
@@ -81,8 +81,8 @@ struct BirthYearPromptView: View {
 
         let currentYear = Calendar.current.component(.year, from: Date())
         let age = currentYear - year
-        if age < 18 {
-            errorMessage = "You must be at least 18 years old to use Ridgits."
+        if age < RidgitsMinimumAge.accountYears {
+            errorMessage = RidgitsMinimumAge.underageErrorMessage
             return
         }
         if age > 120 || year < 1900 {

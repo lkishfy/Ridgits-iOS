@@ -80,6 +80,7 @@ final class RidgitsFirebaseClient {
         let userSnap = try await userSnapTask
 
         if let data = quizSnap.data() {
+            if data["eligibleForMatching"] as? Bool == true { return true }
             if data["completed"] as? Bool == true { return true }
             if let answered = parseInt(data["questionsAnswered"]),
                answered >= QuizCatalog.onboardingSkipThreshold {
@@ -133,6 +134,7 @@ final class RidgitsFirebaseClient {
             try await db.collection("quizProgress").document(uid).setData(
                 [
                     "completed": true,
+                    "eligibleForMatching": true,
                     "completedAt": FieldValue.serverTimestamp(),
                     "questionsAnswered": max(questionsAnswered, QuizCatalog.onboardingSkipThreshold),
                 ],
@@ -281,6 +283,7 @@ final class RidgitsFirebaseClient {
             "questionsAnswered": personalityAnswered,
             "totalQuestions": QuizCatalog.questions.count,
             "completed": completed,
+            "eligibleForMatching": completed || personalityAnswered >= QuizCatalog.onboardingSkipThreshold,
             "updatedAt": FieldValue.serverTimestamp(),
             "lastUpdated": ISO8601DateFormatter().string(from: Date()),
             "completedAt": completed ? FieldValue.serverTimestamp() : NSNull(),

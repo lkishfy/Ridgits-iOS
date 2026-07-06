@@ -198,8 +198,8 @@ struct EmailAuthSheet: View {
         }
         let currentYear = Calendar.current.component(.year, from: Date())
         let age = currentYear - year
-        if age < 18 {
-            return "You must be at least 18 years old to use Ridgits."
+        if age < RidgitsMinimumAge.accountYears {
+            return RidgitsMinimumAge.underageErrorMessage
         }
         if age > 120 || year < 1900 {
             return "Please enter a valid birth year."

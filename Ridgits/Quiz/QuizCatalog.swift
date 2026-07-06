@@ -82,8 +82,8 @@ enum QuizCatalog {
 
     static let minimumAnswersToComplete = 53
 
-    /// Enough personality answers to unlock results / matching / modify quiz updates.
-    static let onboardingSkipThreshold = 50
+    /// Enough personality answers to unlock results / matching (mirrors API threshold).
+    static let onboardingSkipThreshold = minimumAnswersToComplete
 
     static func personalityAnsweredCount(in answers: [String: QuizAnswerRecord]) -> Int {
         answers.filter { key, record in
@@ -112,7 +112,7 @@ enum QuizCatalog {
     }
 
     static func hasEnoughPersonalityAnswers(in answers: [String: QuizAnswerRecord]) -> Bool {
-        personalityAnsweredCount(in: answers) >= onboardingSkipThreshold
+        personalityAnsweredCount(in: answers) >= minimumAnswersToComplete
     }
 
     static var personalityQuestionCount: Int {

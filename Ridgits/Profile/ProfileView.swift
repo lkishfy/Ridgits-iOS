@@ -555,7 +555,7 @@ struct ProfileView: View {
 }
 
 private enum RidgitsMatchAgeRange {
-    static let minimumAge = 18
+    static let minimumAge = RidgitsMinimumAge.matchFilterYears
     static let maximumAge = 45
 
     static func suggestedMin(userAge: Int?) -> Int {

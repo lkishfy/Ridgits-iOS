@@ -17,20 +17,11 @@ struct ProfileSettingsView: View {
     @State private var confirmedPermanentDelete = false
     @State private var isDeleting = false
     @State private var deleteError: String?
-    @State private var isResendingVerification = false
-    @State private var verificationResendMessage: String?
     @State private var showIdentityVerification = false
     @State private var showSubscriptionPaywall = false
 
     private var requiresPassword: Bool {
         authManager.currentUser?.providerData.contains { $0.providerID == EmailAuthProviderID } == true
-    }
-
-    /// Pokes/messages/community visibility require a verified email server-side. OAuth
-    /// (Google/Apple) accounts are verified automatically, so this only ever shows for
-    /// password accounts that haven't clicked their verification link yet.
-    private var showsUnverifiedEmailCard: Bool {
-        requiresPassword && !authManager.emailVerified
     }
 
     var body: some View {
@@ -106,36 +97,6 @@ struct ProfileSettingsView: View {
                         )
                     }
                     .padding(.vertical, 4)
-                }
-
-                if showsUnverifiedEmailCard {
-                    RidgitsDashboardCard {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "envelope.badge.fill")
-                                    .foregroundStyle(RidgitsColors.destructive)
-                                Text("Verify your email")
-                                    .font(RidgitsTypography.label(14))
-                                    .foregroundStyle(RidgitsColors.textHeadline)
-                            }
-                            Text("You need to verify your email before you can appear in the community, poke, or message anyone.")
-                                .font(RidgitsTypography.caption(12))
-                                .foregroundStyle(RidgitsColors.textSecondary)
-                            if let verificationResendMessage {
-                                Text(verificationResendMessage)
-                                    .font(RidgitsTypography.caption(12))
-                                    .foregroundStyle(RidgitsColors.textSecondary)
-                            }
-                            RidgitsSquareButton(
-                                title: isResendingVerification ? "Sending…" : "Resend verification email",
-                                style: .ghost
-                            ) {
-                                Task { await resendVerification() }
-                            }
-                            .disabled(isResendingVerification)
-                        }
-                        .padding(16)
-                    }
                 }
 
                 IdentityVerificationStatusCard(
@@ -266,18 +227,6 @@ struct ProfileSettingsView: View {
         } catch {
             profile.visibleInCommunity = !savedValue
             privacyStatusMessage = error.localizedDescription
-        }
-    }
-
-    private func resendVerification() async {
-        isResendingVerification = true
-        verificationResendMessage = nil
-        defer { isResendingVerification = false }
-        do {
-            try await authManager.resendVerificationEmail()
-            verificationResendMessage = "Verification email sent — check your inbox."
-        } catch {
-            verificationResendMessage = error.localizedDescription
         }
     }
 
