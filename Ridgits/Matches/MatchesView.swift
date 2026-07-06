@@ -868,29 +868,9 @@ struct MatchesView: View {
     }
 
     private var composeMessageField: some View {
-        ZStack(alignment: .topLeading) {
-            TextEditor(text: $composeMessage)
-                .font(RidgitsTypography.body(16))
-                .foregroundStyle(RidgitsColors.textHeadline)
-                .scrollContentBackground(.hidden)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .frame(minHeight: 132)
-
-            if composeMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text("Say something to start the conversation…")
-                    .font(RidgitsTypography.body(16))
-                    .foregroundStyle(RidgitsColors.textMuted)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 18)
-                    .allowsHitTesting(false)
-            }
-        }
-        .background(RidgitsColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
-        .overlay(
-            RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                .stroke(RidgitsColors.border, lineWidth: 1)
+        RidgitsMultilineTextEditor(
+            text: $composeMessage,
+            placeholder: "Say something to start the conversation…"
         )
     }
 }

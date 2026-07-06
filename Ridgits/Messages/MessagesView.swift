@@ -1328,6 +1328,9 @@ struct ConversationDetailView: View {
                 HStack(spacing: 8) {
                     TextField("Message", text: $viewModel.messageText, axis: .vertical)
                         .lineLimit(1...4)
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                        .tint(RidgitsColors.ctaBlack)
+                        .colorScheme(.light)
                         .padding(10)
                         .background(RidgitsColors.inputSurface)
                         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))

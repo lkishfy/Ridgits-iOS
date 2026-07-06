@@ -56,29 +56,9 @@ struct StartConversationSheet: View {
                         .frame(maxWidth: .infinity)
                     }
 
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $messageText)
-                            .font(RidgitsTypography.body(16))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                            .scrollContentBackground(.hidden)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .frame(minHeight: 132)
-
-                        if messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Text("Say something to start the conversation…")
-                                .font(RidgitsTypography.body(16))
-                                .foregroundStyle(RidgitsColors.textMuted)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 18)
-                                .allowsHitTesting(false)
-                        }
-                    }
-                    .background(RidgitsColors.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    RidgitsMultilineTextEditor(
+                        text: $messageText,
+                        placeholder: "Say something to start the conversation…"
                     )
 
                     RidgitsPrimaryButton(

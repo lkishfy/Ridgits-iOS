@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct RidgitsPrimaryButton: View {
     let title: String
@@ -228,6 +229,9 @@ struct RidgitsTextField: View {
             }
         }
         .font(RidgitsTypography.body(13))
+        .foregroundStyle(RidgitsColors.textHeadline)
+        .tint(RidgitsColors.ctaBlack)
+        .colorScheme(.light)
         .keyboardType(keyboard)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -332,5 +336,123 @@ extension View {
             title: title,
             subtitle: subtitle
         ))
+    }
+}
+
+// MARK: - Multiline text editor (visible typed text in light & dark mode)
+
+struct RidgitsMultilineTextEditor: View {
+    @Binding var text: String
+    var placeholder: String = ""
+    var minHeight: CGFloat = 132
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            RidgitsTextEditorRepresentable(text: $text)
+                .frame(minHeight: minHeight)
+
+            if !placeholder.isEmpty && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(placeholder)
+                    .font(RidgitsTypography.body(16))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 18)
+                    .allowsHitTesting(false)
+            }
+        }
+        .background(RidgitsColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+                .stroke(RidgitsColors.border, lineWidth: 1)
+        )
+    }
+}
+
+private struct RidgitsTextEditorRepresentable: UIViewRepresentable {
+    @Binding var text: String
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text)
+    }
+
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.delegate = context.coordinator
+        textView.backgroundColor = .clear
+        textView.textColor = UIColor(red: 10 / 255, green: 10 / 255, blue: 10 / 255, alpha: 1)
+        textView.tintColor = UIColor(red: 10 / 255, green: 10 / 255, blue: 10 / 255, alpha: 1)
+        textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
+        textView.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
+        textView.textContainer.lineFragmentPadding = 0
+        textView.isScrollEnabled = true
+        textView.text = text
+        textView.overrideUserInterfaceStyle = .light
+        return textView
+    }
+
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        if uiView.text != text {
+            uiView.text = text
+        }
+    }
+
+    final class Coordinator: NSObject, UITextViewDelegate {
+        @Binding var text: String
+
+        init(text: Binding<String>) {
+            _text = text
+        }
+
+        func textViewDidChange(_ textView: UITextView) {
+            text = textView.text
+        }
+    }
+}
+
+// MARK: - AI markdown rendering (Quick Tools)
+
+enum RidgitsAIMarkdown {
+    /// Normalizes common AI markdown shapes before Swift's markdown parser runs.
+    static func normalize(_ raw: String) -> String {
+        var text = raw
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Lines like "**Header:** body" → bullet with bold header
+        text = text.replacingOccurrences(
+            of: "(?m)^\\s*\\*\\*(.+?)\\*\\*\\s*:",
+            with: "- **$1:**",
+            options: .regularExpression
+        )
+
+        return text
+    }
+
+    static func attributedString(from raw: String) -> AttributedString {
+        let normalized = normalize(raw)
+        let options = AttributedString.MarkdownParsingOptions(
+            interpretedSyntax: .full,
+            failurePolicy: .returnPartiallyParsedIfPossible
+        )
+        if let attributed = try? AttributedString(markdown: normalized, options: options) {
+            return attributed
+        }
+        return AttributedString(raw)
+    }
+}
+
+struct RidgitsFormattedAIText: View {
+    let content: String
+    var font: Font = RidgitsTypography.body(14)
+    var foreground: Color = RidgitsColors.textSecondary
+    var lineSpacing: CGFloat = 4
+
+    var body: some View {
+        Text(RidgitsAIMarkdown.attributedString(from: content))
+            .font(font)
+            .foregroundStyle(foreground)
+            .lineSpacing(lineSpacing)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

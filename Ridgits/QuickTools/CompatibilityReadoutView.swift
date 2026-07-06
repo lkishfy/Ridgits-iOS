@@ -184,10 +184,10 @@ struct CompatibilityReadoutView: View {
                     Text("SUMMARY")
                         .font(RidgitsTypography.sectionLabel(11))
                         .foregroundStyle(RidgitsColors.textSecondary)
-                    Text(summary)
-                        .font(RidgitsTypography.body(13))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                        .lineSpacing(4)
+                    RidgitsFormattedAIText(
+                        content: summary,
+                        font: RidgitsTypography.body(13)
+                    )
                 }
             }
 

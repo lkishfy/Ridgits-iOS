@@ -100,18 +100,12 @@ struct MessageAnalysisView: View {
         VStack(alignment: .leading, spacing: 16) {
             if result.isLocked {
                 if let preview = result.preview, !preview.isEmpty {
-                    Text(preview)
-                        .font(RidgitsTypography.body(14))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                        .lineSpacing(4)
+                    RidgitsFormattedAIText(content: preview)
                 }
                 lockedCTA
             } else {
                 ForEach(Array(result.insights.enumerated()), id: \.offset) { _, insight in
-                    Text(insight)
-                        .font(RidgitsTypography.body(14))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                        .lineSpacing(4)
+                    RidgitsFormattedAIText(content: insight)
                         .padding(.bottom, 4)
                 }
 
