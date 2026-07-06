@@ -213,10 +213,14 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     quickToolsSection
-                    archetypesCard
+
+                    VStack(alignment: .leading, spacing: 20) {
+                        archetypesCard
+                        CommunitySection(userArchetypeName: archetypeName)
+                    }
+                    .padding(.horizontal, 16)
                 }
                 .ridgitsTabBarScrollTracking()
-                .padding(.horizontal, 16)
                 .padding(.top, 12)
                 .ridgitsFloatingTabBarPadding()
             }
@@ -282,50 +286,84 @@ struct DashboardView: View {
     }
 
     private var quickToolsSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-            quickToolCard(icon: "message", title: "Messages", subtitle: "Analyze chats") {
+        VStack(spacing: 0) {
+            quickToolCard(
+                icon: "message",
+                title: "Messages",
+                subtitle: "Analyze chats",
+                showsDivider: true
+            ) {
                 showMessageAnalysis = true
             }
-            quickToolCard(icon: "waveform.path.ecg", title: "Compatibility", subtitle: "Get a readout before you meet") {
+            quickToolCard(
+                icon: "waveform.path.ecg",
+                title: "Compatibility",
+                subtitle: "Get a readout before you meet",
+                showsDivider: false
+            ) {
                 showCompatibilityReadout = true
             }
         }
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(RidgitsColors.border)
+                .frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(RidgitsColors.border)
+                .frame(height: 1)
+        }
     }
 
-    private func quickToolCard(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
+    private func quickToolCard(
+        icon: String,
+        title: String,
+        subtitle: String,
+        showsDivider: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 10) {
-                RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+            HStack(alignment: .center, spacing: 14) {
+                RoundedRectangle(cornerRadius: RidgitsRadius.md)
                     .fill(RidgitsColors.hoverSurface)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 36, height: 36)
                     .overlay(
                         Image(systemName: icon)
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(RidgitsColors.textHeadline)
                     )
-                Text(title)
-                    .font(RidgitsTypography.label(13))
-                    .foregroundStyle(RidgitsColors.textHeadline)
-                    .lineLimit(1)
-                Text(subtitle)
-                    .font(RidgitsTypography.caption(11))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
-                Spacer(minLength: 0)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(RidgitsTypography.label(15))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textMuted)
             }
-            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
-            .padding(14)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(RidgitsColors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                    .stroke(RidgitsColors.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+            .overlay(alignment: .bottom) {
+                if showsDivider {
+                    Rectangle()
+                        .fill(RidgitsColors.border)
+                        .frame(height: 1)
+                }
+            }
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var archetypesCard: some View {

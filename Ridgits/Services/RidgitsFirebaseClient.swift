@@ -1043,6 +1043,131 @@ final class RidgitsFirebaseClient {
                 }
             }
     }
+
+    func listenQuestionRatings(
+        onChange: @escaping (PopularQuestionRating?, PopularQuestionRating?) -> Void
+    ) -> ListenerRegistration {
+        db.collection("questionRatingsGlobal")
+            .addSnapshotListener { snapshot, error in
+                guard error == nil, let snapshot, !snapshot.documents.isEmpty else {
+                    Task { @MainActor in
+                        onChange(nil, nil)
+                    }
+                    return
+                }
+
+                var mostPopularCommunity: PopularQuestionRating?
+                var highestCommunityUpCount = -1
+                var mostPopularOriginal: PopularQuestionRating?
+                var highestOriginalUpCount = -1
+
+                for document in snapshot.documents {
+                    let data = document.data()
+                    guard let questionText = data["questionText"] as? String,
+                          let upCount = data["upCount"] as? Int else {
+                        continue
+                    }
+
+                    let rating = PopularQuestionRating(questionText: questionText, upCount: upCount)
+                    if data["userSubmitted"] as? Bool == true {
+                        if upCount > highestCommunityUpCount {
+                            highestCommunityUpCount = upCount
+                            mostPopularCommunity = rating
+                        }
+                    } else if upCount > highestOriginalUpCount {
+                        highestOriginalUpCount = upCount
+                        mostPopularOriginal = rating
+                    }
+                }
+
+                Task { @MainActor in
+                    onChange(mostPopularCommunity, mostPopularOriginal)
+                }
+            }
+    }
+
+    func listenCommunityArchetypeDistribution(
+        onChange: @escaping ([String: Int]) -> Void
+    ) -> ListenerRegistration {
+        db.collection("quizProgress")
+            .whereField("completed", isEqualTo: true)
+            .addSnapshotListener { snapshot, error in
+                guard error == nil, let snapshot else {
+                    Task { @MainActor in
+                        onChange(Self.emptyArchetypeDistribution)
+                    }
+                    return
+                }
+
+                var distribution = Self.emptyArchetypeDistribution
+                for document in snapshot.documents {
+                    guard let archetypeName = Self.normalizedArchetypeName(from: document.data()) else {
+                        continue
+                    }
+                    if distribution.keys.contains(archetypeName) {
+                        distribution[archetypeName, default: 0] += 1
+                    }
+                }
+
+                Task { @MainActor in
+                    onChange(distribution)
+                }
+            }
+    }
+
+    func submitQuestionIdea(idea: String, userId: String?) async throws {
+        let trimmed = idea.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        var payload: [String: Any] = [
+            "idea": trimmed,
+            "timestamp": FieldValue.serverTimestamp(),
+            "status": "pending",
+            "source": "ios-dashboard",
+        ]
+        if let userId {
+            payload["userId"] = userId
+        }
+
+        try await db.collection("questionIdeas").addDocument(data: payload)
+    }
+
+    private static let emptyArchetypeDistribution: [String: Int] = [
+        "The Deep Connector": 0,
+        "The Enthusiast": 0,
+        "The Independent Spirit": 0,
+        "The Explorer": 0,
+        "The Steady Builder": 0,
+        "The Pragmatist": 0,
+        "The Free Spirit": 0,
+        "The Well-Rounded": 0,
+    ]
+
+    private static let legacyArchetypeNameMap: [String: String] = [
+        "The Hopeless Romantic": "The Deep Connector",
+        "The Thoughtful Partner": "The Enthusiast",
+        "The Adventure Seeker": "The Explorer",
+        "The Slow Burn": "The Steady Builder",
+        "The Practical Partner": "The Pragmatist",
+        "The Balanced One": "The Well-Rounded",
+    ]
+
+    private static func normalizedArchetypeName(from data: [String: Any]) -> String? {
+        guard let archetype = data["archetype"] else { return nil }
+
+        let rawName: String
+        if let name = archetype as? String {
+            rawName = name
+        } else if let dict = archetype as? [String: Any] {
+            rawName = (dict["name"] as? String) ?? (dict["title"] as? String) ?? ""
+        } else {
+            return nil
+        }
+
+        guard !rawName.isEmpty else { return nil }
+        let mapped = legacyArchetypeNameMap[rawName] ?? rawName
+        return emptyArchetypeDistribution.keys.contains(mapped) ? mapped : nil
+    }
 }
 
 extension Notification.Name {

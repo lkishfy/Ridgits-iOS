@@ -219,65 +219,327 @@ struct AdditionalArchetypesSection: View {
 }
 
 struct CommunitySection: View {
+    let userArchetypeName: String
     @StateObject private var statsViewModel = CommunityStatsViewModel()
 
     var body: some View {
         RidgitsDashboardCard {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top) {
-                    Text("Community")
-                        .font(RidgitsTypography.label(15))
-                        .foregroundStyle(RidgitsColors.textHeadline)
-                    Spacer()
-                    ShareLink(
-                        item: RidgitsAppLinks.appStoreURL,
-                        subject: Text("Ridgits"),
-                        message: Text("Take personality quizzes and find compatible people nearby — only on Ridgits.")
-                    ) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 11, weight: .medium))
-                            Text("Invite friends")
-                                .font(RidgitsTypography.label(11))
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(RidgitsColors.ctaBlack)
-                        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+            VStack(alignment: .leading, spacing: 0) {
+                headerRow
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .overlay(alignment: .bottom) {
+                        Rectangle().fill(RidgitsColors.border).frame(height: 1)
                     }
-                }
 
                 if statsViewModel.isLoading {
                     Text("Loading community stats…")
                         .font(RidgitsTypography.caption(12))
                         .foregroundStyle(RidgitsColors.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 32)
                 } else {
-                    VStack(spacing: 6) {
-                        Text("\(statsViewModel.stats.completedThisWeek.formatted())")
-                            .font(.system(size: 44, weight: .semibold))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                            .monospacedDigit()
-
-                        Text("Quizzes completed this week")
-                            .font(RidgitsTypography.caption(13))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-
-                        Text("\(statsViewModel.stats.totalCompleted.formatted()) total all time")
-                            .font(RidgitsTypography.caption(11))
-                            .foregroundStyle(RidgitsColors.textMuted)
-                            .padding(.top, 2)
+                    VStack(alignment: .leading, spacing: 24) {
+                        quizStatsBlock
+                        popularQuestionsBlock
+                        suggestQuestionBlock
+                        if !statsViewModel.archetypeDistribution.isEmpty {
+                            archetypeDistributionBlock
+                        }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 4)
+                    .padding(16)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
         }
         .onAppear { statsViewModel.startListening() }
         .onDisappear { statsViewModel.stopListening() }
+    }
+
+    private var headerRow: some View {
+        HStack(alignment: .center) {
+            Text("Community")
+                .font(RidgitsTypography.label(15))
+                .foregroundStyle(RidgitsColors.textHeadline)
+            Spacer()
+            ShareLink(
+                item: RidgitsAppLinks.appStoreURL,
+                subject: Text("Ridgits"),
+                message: Text("Take personality quizzes and find compatible people nearby — only on Ridgits.")
+            ) {
+                HStack(spacing: 6) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 11, weight: .medium))
+                    Text("Invite your friends")
+                        .font(RidgitsTypography.label(11))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(RidgitsColors.ctaBlack)
+                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+            }
+        }
+    }
+
+    private var quizStatsBlock: some View {
+        VStack(spacing: 6) {
+            Text("Quizzes completed this week")
+                .font(RidgitsTypography.caption(13))
+                .foregroundStyle(RidgitsColors.textSecondary)
+
+            Text(statsViewModel.stats.completedThisWeek.formatted())
+                .font(.system(size: 44, weight: .semibold))
+                .foregroundStyle(RidgitsColors.textHeadline)
+                .monospacedDigit()
+
+            Text("\(statsViewModel.stats.totalCompleted.formatted()) total all time")
+                .font(RidgitsTypography.caption(11))
+                .foregroundStyle(RidgitsColors.textMuted)
+                .padding(.top, 2)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var popularQuestionsBlock: some View {
+        VStack(spacing: 12) {
+            popularQuestionCard(
+                icon: "person.2",
+                label: "Most Popular Community Question",
+                question: statsViewModel.popularCommunityQuestion,
+                emptyMessage: "No community questions rated yet"
+            )
+            popularQuestionCard(
+                icon: "hand.thumbsup",
+                label: "Most Popular Original Question",
+                question: statsViewModel.popularOriginalQuestion,
+                emptyMessage: "No original questions rated yet"
+            )
+        }
+    }
+
+    private func popularQuestionCard(
+        icon: String,
+        label: String,
+        question: PopularQuestionRating?,
+        emptyMessage: String
+    ) -> some View {
+        Group {
+            if let question, question.upCount > 0 {
+                HStack(alignment: .top, spacing: 12) {
+                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                        .fill(RidgitsColors.hoverSurface)
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: icon)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                        )
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(label)
+                            .font(RidgitsTypography.caption(10))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                            .tracking(0.6)
+                        Text("\"\(question.questionText)\"")
+                            .font(RidgitsTypography.body(13))
+                            .foregroundStyle(RidgitsColors.textHeadline)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(14)
+                .background(RidgitsColors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+                        .stroke(RidgitsColors.border, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+            } else {
+                Text(emptyMessage)
+                    .font(RidgitsTypography.body(13))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(14)
+                    .background(RidgitsColors.feedBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+            }
+        }
+    }
+
+    private var suggestQuestionBlock: some View {
+        VStack(spacing: 12) {
+            Text("Suggest a Question")
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .frame(maxWidth: .infinity)
+
+            HStack(spacing: 8) {
+                Image(systemName: "person.3")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Text("\(CommunityStatsViewModel.communityQuestionCount) questions added")
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(RidgitsColors.hoverSurface)
+            .overlay(
+                RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                    .stroke(RidgitsColors.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+
+            Text("Help improve the quiz by suggesting new questions")
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+
+            if statsViewModel.questionSubmitStatus == .success {
+                VStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundStyle(Color(hex: 0x22C55E))
+                    Text("Thanks for your suggestion!")
+                        .font(RidgitsTypography.label(13))
+                        .foregroundStyle(Color(hex: 0x16A34A))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color(hex: 0xF0FDF4))
+                .overlay(
+                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                        .stroke(Color(hex: 0x86EFAC), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+            } else {
+                VStack(spacing: 10) {
+                    TextField(
+                        "What question would help people find better matches?",
+                        text: $statsViewModel.questionDraft,
+                        axis: .vertical
+                    )
+                    .lineLimit(3...6)
+                    .font(RidgitsTypography.body(13))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(RidgitsColors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+                    .disabled(statsViewModel.isSubmittingQuestion)
+                    .onChange(of: statsViewModel.questionDraft) { _, newValue in
+                        if newValue.count > 500 {
+                            statsViewModel.questionDraft = String(newValue.prefix(500))
+                        }
+                    }
+
+                    if statsViewModel.questionSubmitStatus == .error {
+                        Text("Something went wrong. Please try again.")
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+
+                    HStack {
+                        Text("\(statsViewModel.questionDraft.count)/500")
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.textMuted)
+
+                        Spacer()
+
+                        Button {
+                            Task { await statsViewModel.submitQuestionIdea() }
+                        } label: {
+                            Text(statsViewModel.isSubmittingQuestion ? "Sending…" : "Submit")
+                                .font(RidgitsTypography.label(13))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(RidgitsColors.ctaBlack)
+                                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+                                .opacity(
+                                    statsViewModel.isSubmittingQuestion
+                                        || statsViewModel.questionDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                        ? 0.5
+                                        : 1
+                                )
+                        }
+                        .buttonStyle(RidgitsHapticPlainButtonStyle())
+                        .disabled(
+                            statsViewModel.isSubmittingQuestion
+                                || statsViewModel.questionDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        )
+                    }
+                }
+            }
+        }
+        .padding(.top, 4)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(RidgitsColors.border)
+                .frame(height: 1)
+                .offset(y: -12)
+        }
+    }
+
+    private var archetypeDistributionBlock: some View {
+        VStack(spacing: 12) {
+            Text("Community Archetypes")
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .frame(maxWidth: .infinity)
+
+            VStack(spacing: 12) {
+                ForEach(statsViewModel.archetypeDistribution) { entry in
+                    archetypeRow(entry)
+                }
+            }
+        }
+        .padding(.top, 4)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(RidgitsColors.border)
+                .frame(height: 1)
+                .offset(y: -12)
+        }
+    }
+
+    private func archetypeRow(_ entry: ArchetypeDistributionEntry) -> some View {
+        let total = max(statsViewModel.stats.totalCompleted, 1)
+        let percentage = Double(entry.count) / Double(total) * 100
+        let isUserArchetype = entry.name == userArchetypeName
+
+        return VStack(spacing: 4) {
+            HStack {
+                Text("\(entry.name)\(isUserArchetype ? " (You)" : "")")
+                    .font(RidgitsTypography.caption(12))
+                    .fontWeight(isUserArchetype ? .bold : .regular)
+                    .foregroundStyle(isUserArchetype ? RidgitsColors.textHeadline : RidgitsColors.textSecondary)
+                Spacer()
+                Text("\(entry.count) (\(String(format: "%.1f", percentage))%)")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textMuted)
+            }
+
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color(hex: 0xE0E0E0))
+                    Rectangle()
+                        .fill(isUserArchetype ? RidgitsColors.textHeadline : Color(hex: 0x666666))
+                        .frame(width: geometry.size.width * CGFloat(entry.count) / CGFloat(total))
+                }
+            }
+            .frame(height: 8)
+        }
     }
 }
