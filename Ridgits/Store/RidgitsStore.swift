@@ -17,6 +17,7 @@ struct RidgitsAccess {
     var profilePhotoIdentityMatchStatus: String = "none"
     var canSubscribe: Bool = false
     var canMessage: Bool = false
+    var skipsOnboarding: Bool = false
 
     var membershipTier: RidgitsSubscriptionTier {
         RidgitsSubscriptionTier.from(stored: subscriptionTier)
@@ -52,6 +53,10 @@ struct RidgitsAccess {
     var isFullyIdentityVerified: Bool {
         isIdentityVerified && isPhoneVerified
     }
+
+    var isReviewBypassAccount: Bool {
+        skipsOnboarding
+    }
 }
 
 @MainActor
@@ -74,9 +79,11 @@ final class RidgitsStore: ObservableObject {
     var hasPlusMembership: Bool {
         isMembershipActive && membershipTier.rank >= RidgitsSubscriptionTier.plus.rank
     }
+    /// App Review / QA bypass from `RIDGITS_BYPASS_EMAILS` on ridgits-api.
+    var skipsOnboarding: Bool { access.skipsOnboarding }
     /// ID + phone verified via Stripe Identity — required to message.
     var isVerifiedForMessaging: Bool {
-        access.isFullyIdentityVerified
+        access.isReviewBypassAccount || access.isFullyIdentityVerified
     }
     var subscriptionBillingPeriod: RidgitsSubscriptionBilling? {
         guard let raw = access.subscriptionBillingPeriod else { return nil }
@@ -595,6 +602,7 @@ final class RidgitsStore: ObservableObject {
             }
             access.canSubscribe = account.canSubscribe ?? access.isFullyIdentityVerified
             access.canMessage = account.canMessage ?? false
+            access.skipsOnboarding = account.skipOnboarding ?? false
         } catch {
             // Keep StoreKit entitlements if the API is unreachable.
         }

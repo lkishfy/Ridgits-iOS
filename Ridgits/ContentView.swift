@@ -105,6 +105,14 @@ struct ContentView: View {
 
         await referralStore.loadReferral()
 
+        if ridgitsStore.skipsOnboarding {
+            quizCompleted = true
+            profileComplete = true
+            needsBirthYear = false
+            needsReferralWelcome = false
+            return
+        }
+
         let progress = try? await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid)
         let answeredCount = progress.map { QuizCatalog.personalityAnsweredCount(in: $0.answers) } ?? 0
         let answeredEnough = answeredCount >= QuizCatalog.onboardingSkipThreshold

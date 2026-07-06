@@ -15,6 +15,7 @@ struct RidgitsAccountAccess: Decodable {
     let profilePhotoIdentityMatchScore: Double?
     let canSubscribe: Bool?
     let canMessage: Bool?
+    let skipOnboarding: Bool?
 }
 
 struct RidgitsLinkPurchaseResult: Decodable {
@@ -83,7 +84,8 @@ final class RidgitsAPIClient {
             profilePhotoIdentityMatchAt: data["profilePhotoIdentityMatchAt"] as? String,
             profilePhotoIdentityMatchScore: data["profilePhotoIdentityMatchScore"] as? Double,
             canSubscribe: data["canSubscribe"] as? Bool,
-            canMessage: data["canMessage"] as? Bool
+            canMessage: data["canMessage"] as? Bool,
+            skipOnboarding: data["skipOnboarding"] as? Bool
         )
     }
 

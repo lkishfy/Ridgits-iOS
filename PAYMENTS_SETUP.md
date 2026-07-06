@@ -106,7 +106,7 @@ Set on the **ridgits-api** Vercel project:
 | `APP_STORE_ISSUER_ID` | From App Store Connect API |
 | `APP_STORE_KEY_ID` | IAP key ID |
 | `APP_STORE_PRIVATE_KEY` | Contents of `.p8` (escaped `\n`) |
-| `RIDGITS_BYPASS_EMAILS` | Optional comma-separated QA emails with full access |
+| `RIDGITS_BYPASS_EMAILS` | Optional comma-separated QA / App Review emails: Premium access, skip onboarding in iOS, skip identity gates |
 
 Deploy after changing env vars:
 
