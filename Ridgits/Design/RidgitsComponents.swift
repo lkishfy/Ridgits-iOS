@@ -127,17 +127,44 @@ struct RidgitsCard<Content: View>: View {
     }
 }
 
+struct RidgitsFullWidthDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(RidgitsColors.border)
+            .frame(height: 1)
+            .frame(maxWidth: .infinity)
+    }
+}
+
 struct RidgitsDashboardCard<Content: View>: View {
+    var edgeToEdge: Bool = false
     @ViewBuilder let content: Content
 
     var body: some View {
-        content
-            .background(RidgitsColors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                    .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+        Group {
+            if edgeToEdge {
+                content
+                    .background(RidgitsColors.surface)
+                    .overlay(alignment: .top) {
+                        Rectangle()
+                            .fill(RidgitsColors.dashboardBorder)
+                            .frame(height: 1)
+                    }
+                    .overlay(alignment: .bottom) {
+                        Rectangle()
+                            .fill(RidgitsColors.dashboardBorder)
+                            .frame(height: 1)
+                    }
+            } else {
+                content
+                    .background(RidgitsColors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+                            .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
+            }
+        }
     }
 }
 

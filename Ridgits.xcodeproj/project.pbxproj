@@ -19,6 +19,7 @@
 		118263B6C75B1D0A178DA2FE /* RidgitsGlassTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C8DEF4825245CE962B2090 /* RidgitsGlassTabBar.swift */; };
 		14A94371D51B0733755639A8 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D9859145D608A07A50BDDFD /* MessagesView.swift */; };
 		167CD503E48BF17B7ECEF1ED /* RidgitsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */; };
+		4B2A1908F9786756E4536271 /* RidgitsDisplaySanitize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C3D2E1F0A9B8C7D6E5F4A3B /* RidgitsDisplaySanitize.swift */; };
 		16D08A6E61200405EE7EB161 /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */; };
 		16DB2910726A760EBDC04546 /* situationship.json in Resources */ = {isa = PBXBuildFile; fileRef = 95EEBD58747E55965608D152 /* situationship.json */; };
 		1782FB36024A93277A2F3EA2 /* RidgitsReferralStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC68F82E9245FBC3F7AEB950 /* RidgitsReferralStore.swift */; };
@@ -138,6 +139,7 @@
 		07DF792BAD9B3D9AD4656B0B /* Ridgits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ridgits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C1D8E4F95CACE2E9C676B09 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsComponents.swift; sourceTree = "<group>"; };
+		5C3D2E1F0A9B8C7D6E5F4A3B /* RidgitsDisplaySanitize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsDisplaySanitize.swift; sourceTree = "<group>"; };
 		1168AC77C397F24F9864845A /* RidgitsCachedProfileImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsCachedProfileImage.swift; sourceTree = "<group>"; };
 		13B32D97E1C79608E68BAFC2 /* MakeRidgitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRidgitView.swift; sourceTree = "<group>"; };
 		167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
@@ -305,6 +307,7 @@
 			children = (
 				1168AC77C397F24F9864845A /* RidgitsCachedProfileImage.swift */,
 				0DE96CD61DDD21D94F89E0C1 /* RidgitsComponents.swift */,
+				5C3D2E1F0A9B8C7D6E5F4A3B /* RidgitsDisplaySanitize.swift */,
 				32C8DEF4825245CE962B2090 /* RidgitsGlassTabBar.swift */,
 				1D2377DD59EF01D8EED2C9C2 /* RidgitsHaptics.swift */,
 				5BA7CBA03EC9DB6F415C5C7C /* RidgitsHeroImageStack.swift */,
@@ -743,6 +746,7 @@
 				C53953CE67935AE207E01700 /* RidgitsCachedProfileImage.swift in Sources */,
 				ED32A01BAFC50CFFE068AD17 /* RidgitsCompatibilityFilter.swift in Sources */,
 				167CD503E48BF17B7ECEF1ED /* RidgitsComponents.swift in Sources */,
+				4B2A1908F9786756E4536271 /* RidgitsDisplaySanitize.swift in Sources */,
 				24C1222B70FFFECBB74B08B4 /* RidgitsConversationsCache.swift in Sources */,
 				3BE3E1C1C4375DFAB5BA2DB4 /* RidgitsDeepLinkRouter.swift in Sources */,
 				19A08B8CDF71B195D6EA4750 /* RidgitsFirebaseBootstrap.swift in Sources */,

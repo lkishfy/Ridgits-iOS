@@ -213,12 +213,8 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     quickToolsSection
-
-                    VStack(alignment: .leading, spacing: 20) {
-                        archetypesCard
-                        CommunitySection(userArchetypeName: archetypeName)
-                    }
-                    .padding(.horizontal, 16)
+                    archetypesCard
+                    CommunitySection(userArchetypeName: archetypeName)
                 }
                 .ridgitsTabBarScrollTracking()
                 .padding(.top, 12)
@@ -286,98 +282,66 @@ struct DashboardView: View {
     }
 
     private var quickToolsSection: some View {
-        VStack(spacing: 0) {
-            quickToolCard(
-                icon: "message",
-                title: "Messages",
-                subtitle: "Analyze chats",
-                showsDivider: true
-            ) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+            quickToolCard(icon: "message", title: "Messages", subtitle: "Analyze chats") {
                 showMessageAnalysis = true
             }
-            quickToolCard(
-                icon: "waveform.path.ecg",
-                title: "Compatibility",
-                subtitle: "Get a readout before you meet",
-                showsDivider: false
-            ) {
+            quickToolCard(icon: "waveform.path.ecg", title: "Compatibility", subtitle: "Get a readout before you meet") {
                 showCompatibilityReadout = true
             }
         }
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(RidgitsColors.border)
-                .frame(height: 1)
-        }
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(RidgitsColors.border)
-                .frame(height: 1)
-        }
+        .padding(.horizontal, 16)
     }
 
-    private func quickToolCard(
-        icon: String,
-        title: String,
-        subtitle: String,
-        showsDivider: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
+    private func quickToolCard(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(alignment: .center, spacing: 14) {
-                RoundedRectangle(cornerRadius: RidgitsRadius.md)
+            VStack(alignment: .leading, spacing: 10) {
+                RoundedRectangle(cornerRadius: RidgitsRadius.lg)
                     .fill(RidgitsColors.hoverSurface)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 32, height: 32)
                     .overlay(
                         Image(systemName: icon)
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(RidgitsColors.textHeadline)
                     )
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(RidgitsTypography.label(15))
-                        .foregroundStyle(RidgitsColors.textHeadline)
-                        .lineLimit(1)
-                    Text(subtitle)
-                        .font(RidgitsTypography.caption(12))
-                        .foregroundStyle(RidgitsColors.textSecondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(RidgitsColors.textMuted)
+                Text(title)
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(RidgitsTypography.caption(11))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
+            .padding(14)
             .background(RidgitsColors.surface)
-            .overlay(alignment: .bottom) {
-                if showsDivider {
-                    Rectangle()
-                        .fill(RidgitsColors.border)
-                        .frame(height: 1)
-                }
-            }
+            .overlay(
+                RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+                    .stroke(RidgitsColors.optionBorder, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var archetypesCard: some View {
-        RidgitsDashboardCard {
+        RidgitsDashboardCard(edgeToEdge: true) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Your Archetypes")
                     .font(RidgitsTypography.label(15))
                     .foregroundStyle(RidgitsColors.textHeadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .overlay(alignment: .bottom) {
-                    Rectangle().fill(RidgitsColors.border).frame(height: 1)
-                }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+
+                Rectangle()
+                    .fill(RidgitsColors.border)
+                    .frame(height: 1)
 
                 VStack(alignment: .leading, spacing: 14) {
                     Text(archetypeName)
@@ -421,22 +385,22 @@ struct DashboardView: View {
                     RidgitsSquareButton(title: "Modify Quiz Answers", style: .ghost) {
                         showModifyQuiz = true
                     }
-
-                    ReferralQuizzesSection(
-                        packProfile: packProfile,
-                        onSelectPack: handlePackSelection,
-                        onViewAnalysis: handleViewPackAnalysis
-                    )
-
-                    AdditionalArchetypesSection(
-                        packProfile: packProfile,
-                        ownsBundle: ownsArchetypeBundle,
-                        showAll: $showAllArchetypes,
-                        onSelectPack: handlePackSelection,
-                        onViewAnalysis: handleViewPackAnalysis
-                    )
                 }
                 .padding(16)
+
+                ReferralQuizzesSection(
+                    packProfile: packProfile,
+                    onSelectPack: handlePackSelection,
+                    onViewAnalysis: handleViewPackAnalysis
+                )
+
+                AdditionalArchetypesSection(
+                    packProfile: packProfile,
+                    ownsBundle: ownsArchetypeBundle,
+                    showAll: $showAllArchetypes,
+                    onSelectPack: handlePackSelection,
+                    onViewAnalysis: handleViewPackAnalysis
+                )
             }
         }
     }

@@ -32,7 +32,7 @@ struct RidgitsNavLogoView: View {
                 if let badgeTier {
                     RidgitsVerifiedBadge(tier: badgeTier, size: badgeSize)
                         .background(Circle().fill(RidgitsColors.surface))
-                        .offset(x: 3, y: 3)
+                        .offset(x: 4, y: 4)
                 }
             }
             .accessibilityElement(children: .combine)
@@ -45,7 +45,7 @@ struct RidgitsNavLogoView: View {
     }
 
     private var badgeSize: CGFloat {
-        max(9, size * 0.45)
+        max(12, size * 0.58)
     }
 
     private var accessibilityLabel: String {

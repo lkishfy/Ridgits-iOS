@@ -18,9 +18,7 @@ struct AdditionalArchetypesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Rectangle()
-                .fill(RidgitsColors.border)
-                .frame(height: 1)
+            RidgitsFullWidthDivider()
 
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
@@ -223,14 +221,13 @@ struct CommunitySection: View {
     @StateObject private var statsViewModel = CommunityStatsViewModel()
 
     var body: some View {
-        RidgitsDashboardCard {
+        RidgitsDashboardCard(edgeToEdge: true) {
             VStack(alignment: .leading, spacing: 0) {
                 headerRow
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
-                    .overlay(alignment: .bottom) {
-                        Rectangle().fill(RidgitsColors.border).frame(height: 1)
-                    }
+
+                RidgitsFullWidthDivider()
 
                 if statsViewModel.isLoading {
                     Text("Loading community stats…")
@@ -239,15 +236,27 @@ struct CommunitySection: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 32)
                 } else {
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 0) {
                         quizStatsBlock
+                            .padding(16)
+
+                        RidgitsFullWidthDivider()
+
                         popularQuestionsBlock
+                            .padding(16)
+
+                        RidgitsFullWidthDivider()
+
                         suggestQuestionBlock
+                            .padding(16)
+
                         if !statsViewModel.archetypeDistribution.isEmpty {
+                            RidgitsFullWidthDivider()
+
                             archetypeDistributionBlock
+                                .padding(16)
                         }
                     }
-                    .padding(16)
                 }
             }
         }
@@ -483,12 +492,6 @@ struct CommunitySection: View {
             }
         }
         .padding(.top, 4)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(RidgitsColors.border)
-                .frame(height: 1)
-                .offset(y: -12)
-        }
     }
 
     private var archetypeDistributionBlock: some View {
@@ -503,13 +506,6 @@ struct CommunitySection: View {
                     archetypeRow(entry)
                 }
             }
-        }
-        .padding(.top, 4)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(RidgitsColors.border)
-                .frame(height: 1)
-                .offset(y: -12)
         }
     }
 

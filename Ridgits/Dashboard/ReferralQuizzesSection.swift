@@ -14,9 +14,7 @@ struct ReferralQuizzesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Rectangle()
-                .fill(RidgitsColors.border)
-                .frame(height: 1)
+            RidgitsFullWidthDivider()
 
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
