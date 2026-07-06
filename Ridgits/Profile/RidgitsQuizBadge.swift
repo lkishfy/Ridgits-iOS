@@ -58,7 +58,7 @@ enum RidgitsQuizBadgeBuilder {
     private static let personalityBadge = RidgitsQuizBadge(
         id: personalityQuizId,
         title: "Personality Quiz",
-        icon: "sparkles",
+        icon: "brain.head.profile",
         gradientStart: 0x111827,
         gradientEnd: 0x374151
     )

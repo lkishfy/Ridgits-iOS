@@ -40,9 +40,14 @@ struct RidgitsNearbySearchAccess: Equatable {
         !hasMembership
     }
 
-    /// Ridgits+ can search 10mi+ but 0mi (metro) is hidden until Premium.
+    /// Ridgits+ can search 10mi+; metro (0 mi) is Premium and Ultra only.
     var showsPremiumCloseTeaser: Bool {
         hasMembership && tier == .plus
+    }
+
+    /// Same-metro search (0 mi preset) requires Premium or Ultra.
+    var canAccessMetroSearch: Bool {
+        hasMembership && (tier == .premium || tier == .ultra)
     }
 
     /// Subscription tier to upsell when a locked radius preset is tapped.
@@ -61,8 +66,16 @@ enum RidgitsNearbyAccess {
     /// Ridgits+ searches from 10 to 150 miles.
     static let plusMinRadiusMiles = 10
 
-    /// Only the 0 mi metro preset requires Premium (10mi is Ridgits+).
+    /// Only the 0 mi metro preset requires Premium or Ultra (10 mi is Ridgits+).
     static let premiumOnlyPresetMiles: Set<Int> = [0]
+
+    static func canAccessMetroSearch(access: RidgitsNearbySearchAccess) -> Bool {
+        access.canAccessMetroSearch
+    }
+
+    static func isMetroPreset(_ preset: Int) -> Bool {
+        premiumOnlyPresetMiles.contains(preset)
+    }
 
     static let maxRadiusMiles = 150
 
@@ -80,12 +93,15 @@ enum RidgitsNearbyAccess {
     }
 
     static func isLockedPreset(_ preset: Int, access: RidgitsNearbySearchAccess) -> Bool {
-        preset < access.minRadiusMiles
+        if isMetroPreset(preset) {
+            return !canAccessMetroSearch(access: access)
+        }
+        return preset < access.minRadiusMiles
     }
 
     /// Which subscription tier unlocks a locked preset.
     static func paywallTier(forLockedPreset preset: Int, access: RidgitsNearbySearchAccess) -> RidgitsSubscriptionTier {
-        if premiumOnlyPresetMiles.contains(preset) {
+        if isMetroPreset(preset) {
             return .premium
         }
         return .plus
@@ -101,6 +117,9 @@ enum RidgitsNearbyAccess {
 
     static func clampRadius(_ radius: Int, access: RidgitsNearbySearchAccess) -> Int {
         let snapped = snapToPresetMiles(radius, access: access)
+        if isMetroPreset(snapped), !canAccessMetroSearch(access: access) {
+            return max(defaultRadiusMiles, access.minRadiusMiles)
+        }
         if isLockedPreset(snapped, access: access) {
             return max(defaultRadiusMiles, access.minRadiusMiles)
         }
@@ -140,8 +159,12 @@ enum RidgitsNearbyAccess {
         let clamped = clampRadius(radius, access: access)
         let floor = access.closeMatchFloorMiles
         return pool.filter { match in
+            if clamped == 0 {
+                guard canAccessMetroSearch(access: access) else { return false }
+                return match.sameMetro
+            }
             guard let miles = match.distanceMiles else {
-                return floor == 0
+                return false
             }
             if floor > 0 && miles < Double(floor) {
                 return false

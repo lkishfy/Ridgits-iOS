@@ -837,7 +837,7 @@ final class RidgitsFirebaseClient {
         return enriched
     }
 
-    func getTopNationwideMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
+    func getTopNationwideMatches(limit: Int = 50, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
         guard let uid = Auth.auth().currentUser?.uid else { return [] }
 
         let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: limit)

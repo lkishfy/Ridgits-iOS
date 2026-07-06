@@ -7,8 +7,13 @@ final class MatchesViewModel: ObservableObject {
     @Published var nationwideMatches: [RidgitsMatch] = []
     @Published var maxDistance = RidgitsNearbyAccess.defaultRadiusMiles
     @Published var compatibilityFilter = RidgitsCompatibilityFilter()
+    @Published var sortOrder: MatchesSortOrder = .highestMatch
+    @Published private(set) var nearbyDisplayLimit = MatchListPagination.pageSize
+    @Published private(set) var nationwideDisplayLimit = MatchListPagination.pageSize
     @Published var closeMatchCount = 0
     @Published var closeMatchPreviews: [RidgitsCloseMatchPreview] = []
+    /// Radius (mi) used for the latest close-match preview count (matches paywall / selected chip).
+    @Published var closeMatchPreviewRadiusMiles = RidgitsNearbyAccess.closeMatchesThresholdMiles
     @Published var isLoading = false
     @Published var isLoadingNearby = false
     @Published var errorMessage: String?
@@ -28,6 +33,48 @@ final class MatchesViewModel: ObservableObject {
         RidgitsNearbyAccess.clampRadius(maxDistance, access: access)
     }
 
+    var visibleNearbyMatches: [RidgitsMatch] {
+        Array(nearbyMatches.prefix(nearbyDisplayLimit))
+    }
+
+    var visibleNationwideMatches: [RidgitsMatch] {
+        Array(nationwideMatches.prefix(nationwideDisplayLimit))
+    }
+
+    var canLoadMoreNearby: Bool {
+        nearbyDisplayLimit < nearbyMatches.count
+    }
+
+    var canLoadMoreNationwide: Bool {
+        nationwideDisplayLimit < nationwideMatches.count
+    }
+
+    func loadMoreNearby() {
+        nearbyDisplayLimit = min(
+            nearbyMatches.count,
+            nearbyDisplayLimit + MatchListPagination.pageSize
+        )
+    }
+
+    func loadMoreNationwide() {
+        nationwideDisplayLimit = min(
+            nationwideMatches.count,
+            nationwideDisplayLimit + MatchListPagination.pageSize
+        )
+    }
+
+    private func resetNearbyPagination() {
+        nearbyDisplayLimit = MatchListPagination.pageSize
+    }
+
+    private func resetNationwidePagination() {
+        nationwideDisplayLimit = MatchListPagination.pageSize
+    }
+
+    private func applySortAndFilter(to matches: [RidgitsMatch]) -> [RidgitsMatch] {
+        sortOrder.sorted(compatibilityFilter.filtered(matches))
+    }
+
     private func enrichDistances(_ matches: [RidgitsMatch]) -> [RidgitsMatch] {
         matches.map { match in
             guard match.distanceMiles == nil else { return match }
@@ -42,9 +89,9 @@ final class MatchesViewModel: ObservableObject {
     }
 
     func hydrateFromCache(uid: String, access: RidgitsNearbySearchAccess) {
-        if let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: 10) {
+        if let cached = RidgitsMatchesCache.shared.nationwide(for: uid, limit: MatchListPagination.nationwideFetchLimit) {
             rawNationwideMatches = cached
-            nationwideMatches = compatibilityFilter.filtered(enrichDistances(cached))
+            nationwideMatches = applySortAndFilter(to: enrichDistances(cached))
         }
 
         guard let pool = RidgitsMatchesCache.shared.nearbyPool(for: uid),
@@ -61,7 +108,7 @@ final class MatchesViewModel: ObservableObject {
 
     private func refreshNationwideDistances() {
         guard !rawNationwideMatches.isEmpty else { return }
-        nationwideMatches = compatibilityFilter.filtered(enrichDistances(rawNationwideMatches))
+        nationwideMatches = applySortAndFilter(to: enrichDistances(rawNationwideMatches))
     }
 
     func applyDisplayedRadius(access: RidgitsNearbySearchAccess) {
@@ -70,7 +117,8 @@ final class MatchesViewModel: ObservableObject {
             within: fetchRadius(access: access),
             access: access
         )
-        nearbyMatches = compatibilityFilter.filtered(radiusMatches)
+        nearbyMatches = applySortAndFilter(to: radiusMatches)
+        resetNearbyPagination()
     }
 
     func onRadiusChanged(access: RidgitsNearbySearchAccess) {
@@ -79,7 +127,15 @@ final class MatchesViewModel: ObservableObject {
 
     func onCompatibilityFilterChanged(access: RidgitsNearbySearchAccess) {
         applyDisplayedRadius(access: access)
-        nationwideMatches = compatibilityFilter.filtered(enrichDistances(rawNationwideMatches))
+        nationwideMatches = applySortAndFilter(to: enrichDistances(rawNationwideMatches))
+        resetNationwidePagination()
+    }
+
+    func onSortOrderChanged(access: RidgitsNearbySearchAccess) {
+        applyDisplayedRadius(access: access)
+        nationwideMatches = applySortAndFilter(to: enrichDistances(rawNationwideMatches))
+        resetNearbyPagination()
+        resetNationwidePagination()
     }
 
     func resetCompatibilityFilter(access: RidgitsNearbySearchAccess) {
@@ -124,6 +180,7 @@ final class MatchesViewModel: ObservableObject {
             image: profile.image,
             location: profile.location,
             distanceMiles: nil,
+            sameMetro: false,
             compatibility: compatibility,
             about: about.isEmpty ? nil : about,
             subscriptionTier: profile.subscriptionTier,
@@ -166,8 +223,8 @@ final class MatchesViewModel: ObservableObject {
                 && rawNationwideMatches.allSatisfy { !$0.compatibility.hasScores }
             let needsNationwide = nationwideLooksBroken
                 || rawNationwideMatches.isEmpty
-                || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
-                || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: 10)
+                || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: MatchListPagination.nationwideFetchLimit)
+                || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: MatchListPagination.nationwideFetchLimit)
             let needsNearby = nearbyPool.isEmpty
                 || RidgitsMatchesCache.shared.nearbyPool(for: uid) == nil
                 || RidgitsMatchesCache.shared.isNearbyPoolStale(uid: uid)
@@ -194,13 +251,14 @@ final class MatchesViewModel: ObservableObject {
 
             if forceRefresh
                 || rawNationwideMatches.isEmpty
-                || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: 10)
-                || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: 10) {
+                || !RidgitsMatchesCache.shared.hasNationwide(uid: uid, limit: MatchListPagination.nationwideFetchLimit)
+                || RidgitsMatchesCache.shared.isNationwideStale(uid: uid, limit: MatchListPagination.nationwideFetchLimit) {
                 rawNationwideMatches = try await RidgitsFirebaseClient.shared.getTopNationwideMatches(
-                    limit: 10,
+                    limit: MatchListPagination.nationwideFetchLimit,
                     forceRefresh: forceRefresh
                 )
-                nationwideMatches = compatibilityFilter.filtered(enrichDistances(rawNationwideMatches))
+                nationwideMatches = applySortAndFilter(to: enrichDistances(rawNationwideMatches))
+                resetNationwidePagination()
             }
 
             if Task.isCancelled { return }
@@ -351,13 +409,22 @@ final class MatchesViewModel: ObservableObject {
         }
 
         if access.showsPremiumCloseTeaser {
+            closeMatchCount = nearbyPool.filter(\.sameMetro).count
+            closeMatchPreviews = nearbyPool
+                .filter(\.sameMetro)
+                .prefix(5)
+                .map { match in
+                    RidgitsCloseMatchPreview(userId: match.userId, name: match.name, image: match.image)
+                }
             persistCloseMatchPreviews(access: access)
             return
         }
 
         do {
+            let previewRadius = RidgitsNearbyAccess.closeMatchesThresholdMiles
+            closeMatchPreviewRadiusMiles = previewRadius
             let preview = try await RidgitsFirebaseClient.shared.findMatches(
-                maxDistance: RidgitsNearbyAccess.closeMatchesThresholdMiles,
+                maxDistance: previewRadius,
                 forceRefresh: forceRefresh,
                 previewCloseMatches: true
             )
@@ -367,6 +434,24 @@ final class MatchesViewModel: ObservableObject {
             persistCloseMatchPreviews(access: access)
         } catch is CancellationError {
             return
+        } catch {
+            closeMatchCount = 0
+            closeMatchPreviews = []
+        }
+    }
+
+    func refreshCloseMatchPreview(at radius: Int, access: RidgitsNearbySearchAccess) async {
+        guard access.showsCloseMatchTeaser else { return }
+        closeMatchPreviewRadiusMiles = radius
+        do {
+            let preview = try await RidgitsFirebaseClient.shared.findMatches(
+                maxDistance: radius,
+                forceRefresh: true,
+                previewCloseMatches: true
+            )
+            closeMatchCount = max(0, preview.closeMatchCount)
+            closeMatchPreviews = Array(preview.closeMatches.prefix(5))
+            persistCloseMatchPreviews(access: access)
         } catch {
             closeMatchCount = 0
             closeMatchPreviews = []

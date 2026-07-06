@@ -36,8 +36,11 @@ struct MatchesView: View {
                 }
                 nearbySection
                 RidgitsSectionHeader(title: "Top nationwide")
-                matchSection(
-                    viewModel.nationwideMatches,
+                paginatedMatchSection(
+                    matches: viewModel.visibleNationwideMatches,
+                    totalCount: viewModel.nationwideMatches.count,
+                    canLoadMore: viewModel.canLoadMoreNationwide,
+                    onLoadMore: { viewModel.loadMoreNationwide() },
                     locked: false,
                     allowInteraction: true,
                     emptyMessage: "No nationwide matches right now. Update match preferences in Profile, then pull to refresh."
@@ -80,6 +83,9 @@ struct MatchesView: View {
         }
         .onChange(of: viewModel.compatibilityFilter) { _, _ in
             viewModel.onCompatibilityFilterChanged(access: nearbyAccess)
+        }
+        .onChange(of: viewModel.sortOrder) { _, _ in
+            viewModel.onSortOrderChanged(access: nearbyAccess)
         }
         .ridgitsBlockingLoader(
             isPresented: viewModel.isLoadingNearby,
@@ -177,11 +183,11 @@ struct MatchesView: View {
                 Text(viewModel.pokeConfirmationMessage(for: match.name))
             }
         }
-        .alert("Remove poke?", isPresented: Binding(
+        .alert("Delete poke?", isPresented: Binding(
             get: { unpokeConfirmMatch != nil },
             set: { if !$0 { unpokeConfirmMatch = nil } }
         )) {
-            Button("Remove", role: .destructive) {
+            Button("Delete", role: .destructive) {
                 guard let match = unpokeConfirmMatch,
                       let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] else {
                     unpokeConfirmMatch = nil
@@ -195,7 +201,7 @@ struct MatchesView: View {
             }
         } message: {
             if let match = unpokeConfirmMatch {
-                Text("Remove your poke to \(match.name)?")
+                Text("Delete your poke to \(match.name)?")
             }
         }
     }
@@ -238,8 +244,18 @@ struct MatchesView: View {
         guard shouldPresentSubscriptionPaywall(requiredTier: requiredTier) else { return }
         subscriptionPaywallHighlight = requiredTier
         paywallHeadline = "Search closer"
-        paywallSubheadline = subscriptionPaywallSubheadline
+        paywallSubheadline = subscriptionPaywallSubheadline(for: preset)
+        Task { await viewModel.refreshCloseMatchPreview(at: preset, access: nearbyAccess) }
         showSubscriptionPaywall = true
+    }
+
+    private func subscriptionPaywallSubheadline(for preset: Int) -> String {
+        var parts = [subscriptionPaywallSubheadline]
+        if viewModel.closeMatchCount > 0 {
+            let noun = viewModel.closeMatchCount == 1 ? "person" : "people"
+            parts.append("\(viewModel.closeMatchCount) \(noun) within \(preset) miles")
+        }
+        return parts.joined(separator: " · ")
     }
 
     private func shouldPresentSubscriptionPaywall(requiredTier: RidgitsSubscriptionTier) -> Bool {
@@ -266,7 +282,7 @@ struct MatchesView: View {
         case .premium:
             return "Premium unlocks metro search (0 mi) and full range down to 0 miles."
         case .ultra:
-            return "Ultra includes full nearby search from 0 to 150 miles."
+            return "Ultra includes metro search (0 mi) and the full 0–150 mile range."
         default:
             return "Upgrade to search closer."
         }
@@ -368,7 +384,14 @@ struct MatchesView: View {
                     noNearbyCard
                 }
             } else {
-                matchSection(viewModel.nearbyMatches, locked: false, allowInteraction: true)
+                paginatedMatchSection(
+                    matches: viewModel.visibleNearbyMatches,
+                    totalCount: viewModel.nearbyMatches.count,
+                    canLoadMore: viewModel.canLoadMoreNearby,
+                    onLoadMore: { viewModel.loadMoreNearby() },
+                    locked: false,
+                    allowInteraction: true
+                )
             }
         }
     }
@@ -441,12 +464,12 @@ struct MatchesView: View {
     }
 
     private var closeMatchesTeaserMessage: String {
-        let threshold = RidgitsNearbyAccess.closeMatchesThresholdMiles
+        let radius = viewModel.closeMatchPreviewRadiusMiles
         if viewModel.closeMatchCount > 0 {
-            let noun = viewModel.closeMatchCount == 1 ? "match is" : "matches are"
-            return "\(viewModel.closeMatchCount) \(noun) closer than \(threshold) miles."
+            let noun = viewModel.closeMatchCount == 1 ? "match" : "matches"
+            return "\(viewModel.closeMatchCount) \(noun) within \(radius) miles."
         }
-        return "Try a closer radius to see matches within \(threshold) miles."
+        return "Subscribe to see matches within \(radius) miles."
     }
 
     private var premiumCloseMatchesTeaser: some View {
@@ -496,15 +519,26 @@ struct MatchesView: View {
     }
 
     private var distanceSliderSubtitle: String {
-        let count = viewModel.nearbyMatches.count
+        let total = viewModel.nearbyMatches.count
+        let visible = viewModel.visibleNearbyMatches.count
         let inRange = viewModel.unfilteredNearbyCount(access: nearbyAccess)
-        if count > 0, inRange > count {
-            let noun = inRange == 1 ? "person" : "people"
-            return "\(count) shown · \(inRange) \(noun) in range · \(nearbyRadiusRangeLabel)"
+        var parts: [String] = []
+
+        if total > 0 {
+            if total > visible {
+                parts.append("Showing \(visible) of \(total)")
+            } else {
+                let noun = total == 1 ? "person" : "people"
+                parts.append("\(total) \(noun)")
+            }
         }
-        guard count > 0 else { return nearbyRadiusRangeLabel }
-        let noun = count == 1 ? "person" : "people"
-        return "\(count) \(noun) · \(nearbyRadiusRangeLabel)"
+
+        if viewModel.compatibilityFilter.isActive, inRange > total, total > 0 {
+            parts.append("\(inRange) in range before filters")
+        }
+
+        parts.append(nearbyRadiusRangeLabel)
+        return parts.joined(separator: " · ")
     }
 
     private var distanceSlider: some View {
@@ -519,6 +553,8 @@ struct MatchesView: View {
                     .minimumScaleFactor(0.85)
 
                 Spacer(minLength: 8)
+
+                sortMenu
 
                 Button {
                     showCompatibilityFilter.toggle()
@@ -594,6 +630,32 @@ struct MatchesView: View {
         .disabled(viewModel.isLoadingNearby)
     }
 
+    private var sortMenu: some View {
+        Menu {
+            Picker("Sort", selection: $viewModel.sortOrder) {
+                ForEach(MatchesSortOrder.allCases) { order in
+                    Text(order.label).tag(order)
+                }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Sort")
+                    .font(RidgitsTypography.label(11))
+            }
+            .foregroundStyle(RidgitsColors.textHeadline)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(RidgitsColors.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                    .stroke(RidgitsColors.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
+        }
+    }
+
     private var noNearbyCard: some View {
         RidgitsCard {
             VStack(alignment: .leading, spacing: 8) {
@@ -602,6 +664,34 @@ struct MatchesView: View {
                 Text("There aren't compatible people in the \(nearbyRadiusRangeLabel) range right now. Try a wider radius or browse nationwide matches below.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
+            }
+        }
+    }
+
+    private func paginatedMatchSection(
+        matches: [RidgitsMatch],
+        totalCount: Int,
+        canLoadMore: Bool,
+        onLoadMore: @escaping () -> Void,
+        locked: Bool,
+        allowInteraction: Bool,
+        emptyMessage: String? = nil
+    ) -> some View {
+        VStack(spacing: 12) {
+            matchSection(
+                matches,
+                locked: locked,
+                allowInteraction: allowInteraction,
+                emptyMessage: emptyMessage
+            )
+
+            if canLoadMore {
+                RidgitsSquareButton(
+                    title: "Load more (\(totalCount - matches.count) remaining)",
+                    style: .outlined
+                ) {
+                    onLoadMore()
+                }
             }
         }
     }
@@ -879,6 +969,11 @@ private struct MatchCard: View {
     let onPoke: () -> Void
     let onUnpoke: () -> Void
 
+    private var matchLocationSubtitle: String {
+        guard let miles = match.distanceMiles else { return match.location }
+        return "\(match.location) · \(Int(miles.rounded())) mi"
+    }
+
     var body: some View {
         RidgitsCard {
             VStack(alignment: .leading, spacing: 0) {
@@ -904,7 +999,7 @@ private struct MatchCard: View {
                             RidgitsCompatibilityBadge(percent: match.compatibility.overall)
                         }
                         if !locked, !match.location.isEmpty {
-                            Text(match.location)
+                            Text(matchLocationSubtitle)
                                 .font(RidgitsTypography.caption())
                                 .foregroundStyle(RidgitsColors.textSecondary)
                         }

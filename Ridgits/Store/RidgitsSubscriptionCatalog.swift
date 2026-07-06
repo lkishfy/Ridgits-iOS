@@ -100,7 +100,7 @@ enum RidgitsSubscriptionCatalog {
         case .ultra:
             return RidgitsSubscriptionFeature(
                 title: "Nearby matches",
-                detail: "Full nearby search from 0 to 150 miles"
+                detail: "Metro search (0 mi) and full 0–150 mile range"
             )
         default:
             return RidgitsSubscriptionFeature(title: "Nearby matches")

@@ -6,6 +6,7 @@ struct RidgitsPoke: Identifiable, Equatable {
     let fromUserId: String
     let toUserId: String
     let fromName: String
+    let toName: String
     let createdAt: Date?
     let seen: Bool
     let profileVisited: Bool
@@ -22,6 +23,7 @@ struct RidgitsPoke: Identifiable, Equatable {
             fromUserId: fromUserId,
             toUserId: toUserId,
             fromName: data["fromName"] as? String ?? "Someone nearby",
+            toName: data["toName"] as? String ?? "Someone nearby",
             createdAt: (data["createdAt"] as? Timestamp)?.ridgitsDate,
             seen: data["seen"] as? Bool ?? false,
             profileVisited: data["profileVisited"] as? Bool ?? false
@@ -32,6 +34,7 @@ struct RidgitsPoke: Identifiable, Equatable {
 @MainActor
 final class RidgitsPokeInbox: ObservableObject {
     @Published private(set) var receivedPokes: [RidgitsPoke] = []
+    @Published private(set) var sentPokes: [RidgitsPoke] = []
     @Published private(set) var sentPokeIdsByUser: [String: String] = [:]
 
     var unseenCount: Int {
@@ -48,6 +51,13 @@ final class RidgitsPokeInbox: ObservableObject {
     /// Unseen / not-yet-visited pokes (badge + priority inbox rows).
     var actionableReceivedPokes: [RidgitsPoke] {
         receivedPokesSorted.filter(\.isActionable)
+    }
+
+    /// Sent pokes, newest first.
+    var sentPokesSorted: [RidgitsPoke] {
+        sentPokes.sorted {
+            ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast)
+        }
     }
 
     private var receivedListener: ListenerRegistration?
@@ -73,8 +83,12 @@ final class RidgitsPokeInbox: ObservableObject {
             .addSnapshotListener { [weak self] snapshot, _ in
                 guard let self else { return }
                 Task { @MainActor in
+                    let docs = snapshot?.documents ?? []
+                    self.sentPokes = docs.compactMap {
+                        RidgitsPoke.from(id: $0.documentID, data: $0.data())
+                    }
                     var map: [String: String] = [:]
-                    snapshot?.documents.forEach { doc in
+                    docs.forEach { doc in
                         if let toUserId = doc.data()["toUserId"] as? String {
                             map[toUserId] = doc.documentID
                         }
@@ -90,6 +104,7 @@ final class RidgitsPokeInbox: ObservableObject {
         receivedListener = nil
         sentListener = nil
         receivedPokes = []
+        sentPokes = []
         sentPokeIdsByUser = [:]
     }
 }

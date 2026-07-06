@@ -174,7 +174,7 @@ final class RidgitsAPIClient {
         )
     }
 
-    func getTopNationwideMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
+    func getTopNationwideMatches(limit: Int = 50, forceRefresh: Bool = false) async throws -> [RidgitsMatch] {
         var body: [String: Any] = ["limit": limit]
         if forceRefresh {
             body["forceRefresh"] = true

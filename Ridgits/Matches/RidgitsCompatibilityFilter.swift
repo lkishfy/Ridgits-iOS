@@ -81,3 +81,45 @@ enum RidgitsCompatibilityFilterDimension: CaseIterable, Identifiable {
         }
     }
 }
+
+enum MatchesSortOrder: String, CaseIterable, Identifiable {
+    case highestMatch
+    case nearest
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .highestMatch:
+            return "Highest match %"
+        case .nearest:
+            return "Nearest"
+        }
+    }
+
+    func sorted(_ matches: [RidgitsMatch]) -> [RidgitsMatch] {
+        switch self {
+        case .highestMatch:
+            return matches.sorted { lhs, rhs in
+                if lhs.compatibility.overall != rhs.compatibility.overall {
+                    return lhs.compatibility.overall > rhs.compatibility.overall
+                }
+                return (lhs.distanceMiles ?? .infinity) < (rhs.distanceMiles ?? .infinity)
+            }
+        case .nearest:
+            return matches.sorted { lhs, rhs in
+                let leftMiles = lhs.distanceMiles ?? .infinity
+                let rightMiles = rhs.distanceMiles ?? .infinity
+                if leftMiles != rightMiles {
+                    return leftMiles < rightMiles
+                }
+                return lhs.compatibility.overall > rhs.compatibility.overall
+            }
+        }
+    }
+}
+
+enum MatchListPagination {
+    static let pageSize = 5
+    static let nationwideFetchLimit = 50
+}

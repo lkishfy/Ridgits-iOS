@@ -196,7 +196,9 @@ struct ProfileView: View {
                         ProfileMatchPreferencesSummary(
                             gender: matchGender,
                             interestedIn: matchInterestedIn,
-                            lookingFor: matchLookingFor
+                            lookingFor: matchLookingFor,
+                            ageRangeMin: profile.ageRangeMin,
+                            ageRangeMax: profile.ageRangeMax
                         )
                     }
 
@@ -361,7 +363,10 @@ struct ProfileView: View {
                 ProfileMatchPreferencesEditor(
                     gender: $matchGender,
                     interestedIn: $matchInterestedIn,
-                    lookingFor: $matchLookingFor
+                    lookingFor: $matchLookingFor,
+                    ageRangeMin: $profile.ageRangeMin,
+                    ageRangeMax: $profile.ageRangeMax,
+                    userAge: profile.age
                 )
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -467,7 +472,11 @@ struct ProfileView: View {
     }
 
     private var hasMatchPreferences: Bool {
-        !matchGender.isEmpty || !matchInterestedIn.isEmpty || !matchLookingFor.isEmpty
+        !matchGender.isEmpty
+            || !matchInterestedIn.isEmpty
+            || !matchLookingFor.isEmpty
+            || profile.ageRangeMin != nil
+            || profile.ageRangeMax != nil
     }
 
     @MainActor
@@ -485,6 +494,7 @@ struct ProfileView: View {
 
         if let loaded = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid) {
             profile = loaded
+            RidgitsMatchAgeRange.normalize(on: &profile)
             if !loaded.hasBasicProfile {
                 isEditing = true
             }
@@ -519,6 +529,7 @@ struct ProfileView: View {
         isSaving = true
         statusMessage = nil
         defer { isSaving = false }
+        RidgitsMatchAgeRange.normalize(on: &profile)
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
             if let uid = authManager.currentUser?.uid {
@@ -543,10 +554,37 @@ struct ProfileView: View {
     }
 }
 
+private enum RidgitsMatchAgeRange {
+    static let minimumAge = 18
+    static let maximumAge = 45
+
+    static func suggestedMin(userAge: Int?) -> Int {
+        let age = userAge ?? 30
+        return min(maximumAge, max(minimumAge, age - 5))
+    }
+
+    static func suggestedMax(userAge: Int?) -> Int {
+        maximumAge
+    }
+
+    static func normalize(on profile: inout RidgitsUserProfile) {
+        var ageMin = profile.ageRangeMin ?? suggestedMin(userAge: profile.age)
+        var ageMax = profile.ageRangeMax ?? suggestedMax(userAge: profile.age)
+        ageMin = max(minimumAge, min(maximumAge, ageMin))
+        ageMax = max(minimumAge, min(maximumAge, ageMax))
+        if ageMin > ageMax { ageMin = ageMax }
+        profile.ageRangeMin = ageMin
+        profile.ageRangeMax = ageMax
+    }
+}
+
 private struct ProfileMatchPreferencesEditor: View {
     @Binding var gender: [Int]
     @Binding var interestedIn: [Int]
     @Binding var lookingFor: [Int]
+    @Binding var ageRangeMin: Int?
+    @Binding var ageRangeMax: Int?
+    let userAge: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -566,7 +604,38 @@ private struct ProfileMatchPreferencesEditor: View {
                     selection: binding(for: question.id)
                 )
             }
+
+            ProfileAgeRangeEditor(
+                rangeMin: minBinding,
+                rangeMax: maxBinding
+            )
         }
+    }
+
+    private var minBinding: Binding<Int> {
+        Binding(
+            get: { ageRangeMin ?? RidgitsMatchAgeRange.suggestedMin(userAge: userAge) },
+            set: { newValue in
+                ageRangeMin = newValue
+                let currentMax = ageRangeMax ?? RidgitsMatchAgeRange.suggestedMax(userAge: userAge)
+                if newValue > currentMax {
+                    ageRangeMax = newValue
+                }
+            }
+        )
+    }
+
+    private var maxBinding: Binding<Int> {
+        Binding(
+            get: { ageRangeMax ?? RidgitsMatchAgeRange.suggestedMax(userAge: userAge) },
+            set: { newValue in
+                ageRangeMax = newValue
+                let currentMin = ageRangeMin ?? RidgitsMatchAgeRange.suggestedMin(userAge: userAge)
+                if newValue < currentMin {
+                    ageRangeMin = newValue
+                }
+            }
+        )
     }
 
     private func binding(for questionID: String) -> Binding<[Int]> {
@@ -587,6 +656,8 @@ private struct ProfileMatchPreferencesSummary: View {
     let gender: [Int]
     let interestedIn: [Int]
     let lookingFor: [Int]
+    let ageRangeMin: Int?
+    let ageRangeMax: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -618,6 +689,23 @@ private struct ProfileMatchPreferencesSummary: View {
                     }
                 }
             }
+
+            if let ageRangeMin, let ageRangeMax {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Age range you want to connect with")
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                    Text("\(ageRangeMin)–\(ageRangeMax)")
+                        .font(RidgitsTypography.caption(12))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(RidgitsColors.hoverSurface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                                .stroke(RidgitsColors.border, lineWidth: 1)
+                        )
+                }
+            }
         }
     }
 
@@ -627,6 +715,62 @@ private struct ProfileMatchPreferencesSummary: View {
         case "demo_001": return interestedIn
         case "demo_002": return lookingFor
         default: return []
+        }
+    }
+}
+
+private struct ProfileAgeRangeEditor: View {
+    @Binding var rangeMin: Int
+    @Binding var rangeMax: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Age range you want to connect with")
+                .font(RidgitsTypography.body(13))
+                .foregroundStyle(RidgitsColors.textHeadline)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 10) {
+                agePicker(title: "Min", selection: $rangeMin)
+                Text("to")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                agePicker(title: "Max", selection: $rangeMax)
+            }
+
+            Text("Shows matches ages \(rangeMin)–\(rangeMax)")
+                .font(RidgitsTypography.caption(11))
+                .foregroundStyle(RidgitsColors.textMuted)
+        }
+    }
+
+    private func agePicker(title: String, selection: Binding<Int>) -> some View {
+        Menu {
+            ForEach(RidgitsMatchAgeRange.minimumAge...RidgitsMatchAgeRange.maximumAge, id: \.self) { age in
+                Button("\(age)") {
+                    selection.wrappedValue = age
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(RidgitsTypography.caption(11))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                Text("\(selection.wrappedValue)")
+                    .font(RidgitsTypography.label(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(RidgitsColors.textMuted)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(RidgitsColors.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                    .stroke(RidgitsColors.border, lineWidth: 1)
+            )
         }
     }
 }

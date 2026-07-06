@@ -317,6 +317,12 @@ struct MessagesView: View {
                 },
                 onDeletePoke: { poke in
                     await deleteReceivedPoke(poke)
+                },
+                onDeleteSentPoke: { poke in
+                    await deleteSentPoke(poke)
+                },
+                onViewSentPokeProfile: { poke in
+                    await openSentPokeProfile(poke)
                 }
             )
         }
@@ -387,11 +393,11 @@ struct MessagesView: View {
                 Text(matchesViewModel.pokeConfirmationMessage(for: match.name))
             }
         }
-        .alert("Remove poke?", isPresented: Binding(
+        .alert("Delete poke?", isPresented: Binding(
             get: { unpokeConfirmMatch != nil },
             set: { if !$0 { unpokeConfirmMatch = nil } }
         )) {
-            Button("Remove", role: .destructive) {
+            Button("Delete", role: .destructive) {
                 guard let match = unpokeConfirmMatch,
                       let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] else {
                     unpokeConfirmMatch = nil
@@ -405,7 +411,7 @@ struct MessagesView: View {
             }
         } message: {
             if let match = unpokeConfirmMatch {
-                Text("Remove your poke to \(match.name)?")
+                Text("Delete your poke to \(match.name)?")
             }
         }
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in
@@ -453,6 +459,10 @@ struct MessagesView: View {
         }
     }
 
+    private var pendingRequestCount: Int {
+        viewModel.incomingRequestCount + pokeInbox.unseenCount
+    }
+
     private var inboxHeader: some View {
         VStack(spacing: 0) {
             HStack(alignment: .center) {
@@ -465,22 +475,31 @@ struct MessagesView: View {
                 Button {
                     showRequests = true
                 } label: {
-                    HStack(spacing: 6) {
-                        Text("Requests")
-                            .font(.system(size: 16, weight: .regular))
-                            .foregroundStyle(RidgitsColors.textSecondary)
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "tray.full")
+                            .font(.system(size: 21, weight: .regular))
+                            .foregroundStyle(RidgitsColors.textHeadline)
+                            .frame(width: 32, height: 32)
 
-                        if viewModel.incomingRequestCount + pokeInbox.unseenCount > 0 {
-                            Text("\(viewModel.incomingRequestCount + pokeInbox.unseenCount)")
-                                .font(.system(size: 11, weight: .semibold))
+                        if pendingRequestCount > 0 {
+                            Text(pendingRequestCount > 99 ? "99+" : "\(pendingRequestCount)")
+                                .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(.white)
-                                .frame(minWidth: 18, minHeight: 18)
+                                .padding(.horizontal, pendingRequestCount > 9 ? 4 : 0)
+                                .frame(minWidth: 16, minHeight: 16)
                                 .background(RidgitsColors.destructive)
-                                .clipShape(Circle())
+                                .clipShape(Capsule())
+                                .offset(x: 6, y: -4)
                         }
                     }
                 }
                 .buttonStyle(RidgitsHapticPlainButtonStyle())
+                .accessibilityLabel("Requests")
+                .accessibilityValue(
+                    pendingRequestCount > 0
+                        ? "\(pendingRequestCount) pending"
+                        : "No pending requests"
+                )
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -498,7 +517,8 @@ struct MessagesView: View {
                             poke: poke,
                             sentPokeBack: pokeInbox.sentPokeIdsByUser[poke.fromUserId] != nil,
                             onViewProfile: { Task { await openPokeProfile(poke) } },
-                            onPokeBack: { Task { await pokeBack(poke) } }
+                            onPokeBack: { Task { await pokeBack(poke) } },
+                            onDelete: { Task { await deleteReceivedPoke(poke) } }
                         )
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
@@ -512,11 +532,37 @@ struct MessagesView: View {
                         .listRowBackground(Color.white)
                     }
                 } header: {
-                    pokeSectionHeader("Pokes")
+                    pokeSectionHeader("Received")
                 }
             }
 
-            if viewModel.activeConversations.isEmpty && pokeInbox.receivedPokesSorted.isEmpty {
+            if !pokeInbox.sentPokesSorted.isEmpty {
+                Section {
+                    ForEach(pokeInbox.sentPokesSorted) { poke in
+                        SentPokeInboxRow(
+                            poke: poke,
+                            onViewProfile: { Task { await openSentPokeProfile(poke) } },
+                            onDelete: { Task { await deleteSentPoke(poke) } }
+                        )
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                Task { await deleteSentPoke(poke) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.white)
+                    }
+                } header: {
+                    pokeSectionHeader("Sent")
+                }
+            }
+
+            if viewModel.activeConversations.isEmpty
+                && pokeInbox.receivedPokesSorted.isEmpty
+                && pokeInbox.sentPokesSorted.isEmpty {
                 Section {
                     emptyInbox
                         .listRowInsets(EdgeInsets())
@@ -534,7 +580,7 @@ struct MessagesView: View {
                         .listRowBackground(Color.white)
                     }
                 } header: {
-                    if !pokeInbox.receivedPokesSorted.isEmpty {
+                    if !pokeInbox.receivedPokesSorted.isEmpty || !pokeInbox.sentPokesSorted.isEmpty {
                         pokeSectionHeader("Chats")
                     }
                 }
@@ -620,6 +666,22 @@ struct MessagesView: View {
     }
 
     @MainActor
+    private func deleteSentPoke(_ poke: RidgitsPoke) async {
+        do {
+            try await RidgitsAPIClient.shared.unpoke(pokeId: poke.id)
+        } catch {
+            viewModel.errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func openSentPokeProfile(_ poke: RidgitsPoke) async {
+        if let match = await matchesViewModel.resolveMatch(for: poke.toUserId) {
+            pokeProfileMatch = match
+        }
+    }
+
+    @MainActor
     private func requestPoke(for match: RidgitsMatch) async {
         let alreadySent = pokeInbox.sentPokeIdsByUser[match.userId] != nil
         switch await matchesViewModel.preflightPoke(alreadySent: alreadySent) {
@@ -676,7 +738,7 @@ struct MessagesView: View {
                 .font(RidgitsTypography.body(15))
                 .foregroundStyle(RidgitsColors.textSecondary)
                 .multilineTextAlignment(.center)
-            Text("When someone pokes you, they'll show up here — tap their name to view their profile, poke back, or swipe left to delete.")
+            Text("When someone pokes you, they'll show up under Received — swipe left or tap the trash icon to delete. Sent pokes can be removed the same way.")
                 .font(RidgitsTypography.caption(13))
                 .foregroundStyle(RidgitsColors.textMuted)
                 .multilineTextAlignment(.center)
@@ -697,6 +759,8 @@ private struct MessageRequestsView: View {
     let onViewPokeProfile: (RidgitsPoke) async -> Void
     let onPokeBack: (RidgitsPoke) async -> Void
     let onDeletePoke: (RidgitsPoke) async -> Void
+    let onDeleteSentPoke: (RidgitsPoke) async -> Void
+    let onViewSentPokeProfile: (RidgitsPoke) async -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showSubscriptionPaywall = false
     @State private var showIdentityVerification = false
@@ -705,6 +769,7 @@ private struct MessageRequestsView: View {
         NavigationStack {
             List {
                 if pokeInbox.receivedPokesSorted.isEmpty
+                    && pokeInbox.sentPokesSorted.isEmpty
                     && viewModel.pendingIncoming.isEmpty
                     && viewModel.awaitingApproval.isEmpty {
                     Section {
@@ -732,6 +797,9 @@ private struct MessageRequestsView: View {
                                 onPokeBack: {
                                     dismiss()
                                     Task { await onPokeBack(poke) }
+                                },
+                                onDelete: {
+                                    Task { await onDeletePoke(poke) }
                                 }
                             )
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -746,7 +814,36 @@ private struct MessageRequestsView: View {
                             .listRowBackground(Color.white)
                         }
                     } header: {
-                        requestsSectionHeader("Pokes")
+                        requestsSectionHeader("Received pokes")
+                    }
+                }
+
+                if !pokeInbox.sentPokesSorted.isEmpty {
+                    Section {
+                        ForEach(pokeInbox.sentPokesSorted) { poke in
+                            SentPokeInboxRow(
+                                poke: poke,
+                                onViewProfile: {
+                                    dismiss()
+                                    Task { await onViewSentPokeProfile(poke) }
+                                },
+                                onDelete: {
+                                    Task { await onDeleteSentPoke(poke) }
+                                }
+                            )
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    Task { await onDeleteSentPoke(poke) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.white)
+                        }
+                    } header: {
+                        requestsSectionHeader("Sent pokes")
                     }
                 }
 
@@ -868,6 +965,7 @@ private struct PokeInboxRow: View {
     let sentPokeBack: Bool
     let onViewProfile: () -> Void
     let onPokeBack: () -> Void
+    let onDelete: () -> Void
 
     @State private var imageURL = ""
     @State private var subscriptionTier: String?
@@ -934,6 +1032,15 @@ private struct PokeInboxRow: View {
                 }
                 .buttonStyle(RidgitsHapticPlainButtonStyle())
             }
+
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+            .accessibilityLabel("Delete poke")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -943,6 +1050,78 @@ private struct PokeInboxRow: View {
                 subscriptionTier = cached.subscriptionTier
                 profilePhotoVerified = cached.profilePhotoVerified
             } else if let profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: poke.fromUserId) {
+                imageURL = profile.image
+                subscriptionTier = profile.subscriptionTier
+                profilePhotoVerified = profile.profilePhotoVerified
+                RidgitsPublicProfileCache.shared.save(profile)
+            }
+        }
+    }
+}
+
+private struct SentPokeInboxRow: View {
+    let poke: RidgitsPoke
+    let onViewProfile: () -> Void
+    let onDelete: () -> Void
+
+    @State private var imageURL = ""
+    @State private var subscriptionTier: String?
+    @State private var profilePhotoVerified = false
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Button(action: onViewProfile) {
+                HStack(alignment: .center, spacing: 12) {
+                    ChatAvatar(
+                        imageURL: imageURL,
+                        initial: String(poke.toName.prefix(1)).uppercased(),
+                        size: 56
+                    )
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: 6) {
+                            Text(poke.toName)
+                                .font(.system(size: 16, weight: .regular))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                                .lineLimit(1)
+                            RidgitsProfileTrustBadges(
+                                subscriptionTier: subscriptionTier,
+                                profilePhotoVerified: profilePhotoVerified,
+                                badgeSize: 16
+                            )
+                            Spacer(minLength: 0)
+                            if let timestamp = RidgitsMessageFormatting.relativeTimestamp(poke.createdAt) {
+                                Text(timestamp)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(RidgitsColors.textMuted)
+                            }
+                        }
+                        Text("You poked")
+                            .font(.system(size: 15))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+            .accessibilityLabel("Delete poke")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .task(id: poke.toUserId) {
+            if let cached = RidgitsPublicProfileCache.shared.profile(for: poke.toUserId) {
+                imageURL = cached.image
+                subscriptionTier = cached.subscriptionTier
+                profilePhotoVerified = cached.profilePhotoVerified
+            } else if let profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: poke.toUserId) {
                 imageURL = profile.image
                 subscriptionTier = profile.subscriptionTier
                 profilePhotoVerified = profile.profilePhotoVerified

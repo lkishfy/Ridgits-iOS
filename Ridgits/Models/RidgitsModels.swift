@@ -183,6 +183,7 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
     let image: String
     let location: String
     let distanceMiles: Double?
+    var sameMetro: Bool = false
     let compatibility: RidgitsCompatibility
     let about: String?
     let subscriptionTier: String?
@@ -200,6 +201,7 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
             image: image,
             location: location,
             distanceMiles: miles,
+            sameMetro: sameMetro,
             compatibility: compatibility,
             about: about,
             subscriptionTier: subscriptionTier,
@@ -215,6 +217,7 @@ struct RidgitsMatch: Identifiable, Equatable, Codable, Hashable {
             image: image,
             location: location,
             distanceMiles: distanceMiles,
+            sameMetro: sameMetro,
             compatibility: scores,
             about: about,
             subscriptionTier: subscriptionTier,
@@ -594,6 +597,7 @@ extension RidgitsMatch {
             image: image,
             location: dict["location"] as? String ?? "",
             distanceMiles: parsedDouble(dict["distance"]),
+            sameMetro: dict["sameMetro"] as? Bool ?? false,
             compatibility: parsedCompatibility,
             about: about,
             subscriptionTier: dict["subscriptionTier"] as? String,
