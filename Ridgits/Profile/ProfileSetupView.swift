@@ -3,6 +3,7 @@ import FirebaseAuth
 
 struct ProfileSetupView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var ridgitsStore: RidgitsStore
     @State private var profile: RidgitsUserProfile
     @State private var interestDraft = ""
     @State private var isSaving = false
@@ -91,7 +92,10 @@ struct ProfileSetupView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    RidgitsLogoView.onLight(size: 22)
+                    RidgitsNavLogoView(
+                        membershipTier: ridgitsStore.membershipTier,
+                        isMembershipActive: ridgitsStore.isMembershipActive
+                    )
                 }
             }
             .task { await loadExisting() }

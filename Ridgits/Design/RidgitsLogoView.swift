@@ -19,3 +19,39 @@ enum RidgitsLogoView {
             .brightness(-1)
     }
 }
+
+/// Top navigation logo with the active subscription tier badge in the bottom-right corner.
+struct RidgitsNavLogoView: View {
+    let membershipTier: RidgitsSubscriptionTier
+    let isMembershipActive: Bool
+    var size: CGFloat = 22
+
+    var body: some View {
+        RidgitsLogoView.onLight(size: size)
+            .overlay(alignment: .bottomTrailing) {
+                if let badgeTier {
+                    RidgitsVerifiedBadge(tier: badgeTier, size: badgeSize)
+                        .background(Circle().fill(RidgitsColors.surface))
+                        .offset(x: 3, y: 3)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var badgeTier: RidgitsSubscriptionTier? {
+        guard isMembershipActive, membershipTier.showsVerifiedBadge else { return nil }
+        return membershipTier
+    }
+
+    private var badgeSize: CGFloat {
+        max(9, size * 0.45)
+    }
+
+    private var accessibilityLabel: String {
+        if let badgeTier {
+            return "Ridgits, \(badgeTier.displayName) subscriber"
+        }
+        return "Ridgits"
+    }
+}

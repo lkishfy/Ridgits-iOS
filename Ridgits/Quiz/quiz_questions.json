@@ -4,7 +4,6 @@
       "id": "demo_000",
       "category": "Demographics",
       "text": "What is your gender? (Select all that apply)",
-      "multiSelect": true,
       "options": [
         {
           "value": 0,
@@ -26,13 +25,13 @@
           "value": 4,
           "label": "Prefer to self-describe"
         }
-      ]
+      ],
+      "multiSelect": true
     },
     {
       "id": "demo_001",
       "category": "Demographics",
       "text": "Who are you interested in meeting? (Select all that apply)",
-      "multiSelect": true,
       "options": [
         {
           "value": 0,
@@ -54,33 +53,37 @@
           "value": 4,
           "label": "Anyone/Everyone"
         }
-      ]
+      ],
+      "multiSelect": true
     },
     {
       "id": "demo_002",
       "category": "Demographics",
       "text": "What are you looking for? (Select all that apply)",
-      "multiSelect": true,
       "options": [
         {
           "value": 0,
-          "label": "Relationship"
+          "label": "Long-term relationship"
         },
         {
           "value": 1,
-          "label": "New friends"
+          "label": "Short-term relationship / Dating"
         },
         {
           "value": 2,
-          "label": "Open to anything"
+          "label": "New friends"
+        },
+        {
+          "value": 3,
+          "label": "Not sure yet / Open to anything"
         }
-      ]
+      ],
+      "multiSelect": true
     },
     {
       "id": "comm_000",
       "category": "Communication",
       "text": "How do you prefer to communicate when you're interested in someone?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -103,8 +106,7 @@
     {
       "id": "comm_001",
       "category": "Communication",
-      "text": "In a conflict with someone close to you, you're most likely to:",
-      "multiSelect": false,
+      "text": "In a conflict with a partner, you're most likely to:",
       "options": [
         {
           "value": 0,
@@ -127,8 +129,7 @@
     {
       "id": "comm_002",
       "category": "Communication",
-      "text": "How often do you expect to hear from someone you're getting close to?",
-      "multiSelect": false,
+      "text": "How often do you expect to hear from someone you're dating?",
       "options": [
         {
           "value": 0,
@@ -151,8 +152,7 @@
     {
       "id": "comm_003",
       "category": "Communication",
-      "text": "How important is it that the people close to you appreciate intellectual or cultural discussions?",
-      "multiSelect": false,
+      "text": "How important is it that your partner appreciates intellectual or cultural discussions?",
       "options": [
         {
           "value": 0,
@@ -176,7 +176,6 @@
       "id": "comm_004",
       "category": "Communication",
       "text": "When someone shares something vulnerable with you, you:",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -200,7 +199,6 @@
       "id": "comm_005",
       "category": "Communication",
       "text": "How do you express affection?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -224,7 +222,6 @@
       "id": "comm_006",
       "category": "Communication",
       "text": "Which is worse?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -247,12 +244,11 @@
     {
       "id": "comm_007",
       "category": "Communication",
-      "text": "How comfortable are you expressing deep appreciation or care first?",
-      "multiSelect": false,
+      "text": "How comfortable are you saying 'I love you' first?",
       "options": [
         {
           "value": 0,
-          "label": "Very – I express it when I feel it"
+          "label": "Very – I say it when I feel it"
         },
         {
           "value": 1,
@@ -260,7 +256,7 @@
         },
         {
           "value": 2,
-          "label": "Prefer to wait for them to express it first"
+          "label": "Prefer to wait for them to say it first"
         },
         {
           "value": 3,
@@ -271,8 +267,7 @@
     {
       "id": "comm_008",
       "category": "Communication",
-      "text": "Your texting style with people you're close to is best described as:",
-      "multiSelect": false,
+      "text": "Your texting style in a relationship is best described as:",
       "options": [
         {
           "value": 0,
@@ -296,7 +291,6 @@
       "id": "comm_009",
       "category": "Communication",
       "text": "How do you feel about double texting?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -319,8 +313,7 @@
     {
       "id": "comm_010",
       "category": "Communication",
-      "text": "If you see someone interesting reading a book in public, would you approach them?",
-      "multiSelect": false,
+      "text": "If you see someone attractive reading a book in public, would you approach them?",
       "options": [
         {
           "value": 0,
@@ -344,7 +337,6 @@
       "id": "comm_011",
       "category": "Communication",
       "text": "Should burning the American flag be illegal?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -368,7 +360,6 @@
       "id": "comm_012",
       "category": "Communication",
       "text": "How do you feel about voice memos?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -392,7 +383,6 @@
       "id": "comm_013",
       "category": "Communication",
       "text": "Someone uses 'literally' when they mean 'figuratively.' You:",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -416,7 +406,6 @@
       "id": "comm_014",
       "category": "Communication",
       "text": "What does 'good communication' mean to you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -439,12 +428,11 @@
     {
       "id": "comm_015",
       "category": "Communication",
-      "text": "You're having dinner with someone and their phone buzzes constantly. They don't check it. You:",
-      "multiSelect": false,
+      "text": "Your date's phone buzzes constantly during dinner. They don't check it. You:",
       "options": [
         {
           "value": 0,
-          "label": "Appreciate their focus on our conversation"
+          "label": "Appreciate their focus on our date"
         },
         {
           "value": 1,
@@ -464,7 +452,6 @@
       "id": "comm_016",
       "category": "Communication",
       "text": "How important is intellectual compatibility?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -487,24 +474,23 @@
     {
       "id": "comm_017",
       "category": "Communication",
-      "text": "When staying over at someone's place for the first time, what's your lighting preference?",
-      "multiSelect": false,
+      "text": "You're about to sleep with someone for the first time. Do you leave the lights on?",
       "options": [
         {
           "value": 0,
-          "label": "Lights on – I like to see my surroundings"
+          "label": "All the way on"
         },
         {
           "value": 1,
-          "label": "Dimmed or soft lighting"
+          "label": "Dimmed or candles"
         },
         {
           "value": 2,
-          "label": "Complete darkness"
+          "label": "Off completely"
         },
         {
           "value": 3,
-          "label": "Whatever makes them comfortable"
+          "label": "Whatever they prefer"
         }
       ]
     },
@@ -512,7 +498,6 @@
       "id": "comm_018",
       "category": "Communication",
       "text": "How long should the ideal hug last?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -535,8 +520,7 @@
     {
       "id": "comm_019",
       "category": "Communication",
-      "text": "Would you go through someone's phone if they left it unlocked?",
-      "multiSelect": false,
+      "text": "Would you go through your partner's phone if they left it unlocked?",
       "options": [
         {
           "value": 0,
@@ -559,8 +543,7 @@
     {
       "id": "intim_000",
       "category": "Intimacy",
-      "text": "How important is feeling an immediate connection when meeting someone new?",
-      "multiSelect": false,
+      "text": "How important is physical chemistry on a first date?",
       "options": [
         {
           "value": 0,
@@ -576,63 +559,60 @@
         },
         {
           "value": 3,
-          "label": "Not very – I need to know them better first"
+          "label": "Not very – I need emotional connection first"
         }
       ]
     },
     {
       "id": "intim_001",
       "category": "Intimacy",
-      "text": "When do you typically feel ready to open up emotionally to someone?",
-      "multiSelect": false,
+      "text": "When do you typically feel ready for physical intimacy?",
       "options": [
         {
           "value": 0,
-          "label": "Right away if there's good chemistry"
+          "label": "When there's strong mutual attraction"
         },
         {
           "value": 1,
-          "label": "After a few good conversations"
+          "label": "After a few great dates and conversations"
         },
         {
           "value": 2,
-          "label": "Once I feel a solid connection"
+          "label": "Once emotional connection is established"
         },
         {
           "value": 3,
-          "label": "Only with people I fully trust over time"
+          "label": "Within a committed, exclusive relationship"
         }
       ]
     },
     {
       "id": "intim_002",
       "category": "Intimacy",
-      "text": "How quickly do you become comfortable spending extended time with new people?",
-      "multiSelect": false,
+      "text": "How do you feel about sleeping over on the first date?",
       "options": [
         {
           "value": 0,
-          "label": "Very quickly – I love spontaneous hangouts"
+          "label": "If the vibe is right, why not?"
         },
         {
           "value": 1,
-          "label": "Fairly quickly if we're clicking"
+          "label": "Open to it but no expectations"
         },
         {
           "value": 2,
-          "label": "I prefer to ease into it"
+          "label": "Prefer to wait a bit"
         },
         {
           "value": 3,
-          "label": "I need significant time to feel comfortable"
+          "label": "Definitely not – too soon"
         }
       ]
     },
     {
       "id": "intim_003",
       "category": "Intimacy",
-      "text": "How do you feel about showing affection in public (hugs, linking arms, etc.)?",
-      "multiSelect": false,
+      "text": "How do you feel about public displays of affection?",
       "options": [
         {
           "value": 0,
@@ -640,7 +620,7 @@
         },
         {
           "value": 1,
-          "label": "Enjoy it in moderation"
+          "label": "Enjoy it in moderation (hand-holding, light kisses)"
         },
         {
           "value": 2,
@@ -648,43 +628,41 @@
         },
         {
           "value": 3,
-          "label": "Prefer to save affection for private settings"
+          "label": "Uncomfortable with PDA, prefer private affection"
         }
       ]
     },
     {
       "id": "intim_004",
       "category": "Intimacy",
-      "text": "When watching a movie with someone, what's your comfort level?",
-      "multiSelect": false,
+      "text": "Do you prefer to be the big spoon or little spoon?",
       "options": [
         {
           "value": 0,
-          "label": "Love to cuddle up or lean on each other"
+          "label": "Big spoon"
         },
         {
           "value": 1,
-          "label": "Sit close but not necessarily touching"
+          "label": "Little spoon"
         },
         {
           "value": 2,
-          "label": "Nearby but with personal space"
+          "label": "Switch it up"
         },
         {
           "value": 3,
-          "label": "I prefer my own separate seat"
+          "label": "I need my space when I sleep"
         }
       ]
     },
     {
       "id": "intim_005",
       "category": "Intimacy",
-      "text": "What makes you feel most connected to someone?",
-      "multiSelect": false,
+      "text": "What makes you feel most connected to a partner?",
       "options": [
         {
           "value": 0,
-          "label": "Physical closeness like hugs or sitting together"
+          "label": "Physical closeness and intimacy"
         },
         {
           "value": 1,
@@ -703,8 +681,7 @@
     {
       "id": "intim_007",
       "category": "Intimacy",
-      "text": "What's your approach to celebrating milestones (anniversaries, achievements)?",
-      "multiSelect": false,
+      "text": "What's your approach to celebrating relationship milestones?",
       "options": [
         {
           "value": 0,
@@ -727,12 +704,11 @@
     {
       "id": "intim_008",
       "category": "Intimacy",
-      "text": "How do you feel about seeing people in their 'natural state' (no makeup, messy hair, etc.)?",
-      "multiSelect": false,
+      "text": "How do you feel about morning breath kisses?",
       "options": [
         {
           "value": 0,
-          "label": "Totally fine – that's real connection"
+          "label": "Totally fine, comes with the territory"
         },
         {
           "value": 1,
@@ -740,27 +716,26 @@
         },
         {
           "value": 2,
-          "label": "I prefer to look put-together around others"
+          "label": "Please brush your teeth first"
         },
         {
           "value": 3,
-          "label": "I keep some level of presentation up"
+          "label": "Absolutely not"
         }
       ]
     },
     {
       "id": "intim_009",
       "category": "Intimacy",
-      "text": "Your ideal level of social time vs. alone time is:",
-      "multiSelect": false,
+      "text": "Your ideal level of couple time vs. alone time is:",
       "options": [
         {
           "value": 0,
-          "label": "With people most of the time – I thrive on connection"
+          "label": "Together most of the time – I love being with my partner"
         },
         {
           "value": 1,
-          "label": "Frequent social time with some solo activities"
+          "label": "Significant couple time with some solo activities"
         },
         {
           "value": 2,
@@ -775,80 +750,76 @@
     {
       "id": "intim_010",
       "category": "Intimacy",
-      "text": "How do you feel about people who spread their time across many social circles?",
-      "multiSelect": false,
+      "text": "Would you date someone who was in a committed non-monogamous relationship?",
       "options": [
         {
           "value": 0,
-          "label": "Totally fine – I'm similar"
+          "label": "Yes, I'm open to that"
         },
         {
           "value": 1,
-          "label": "Understandable, as long as we still connect"
+          "label": "Maybe, depending on the situation"
         },
         {
           "value": 2,
-          "label": "Prefer people who prioritize our connection"
+          "label": "Probably not, but I'm not judging"
         },
         {
           "value": 3,
-          "label": "I value having a close, consistent inner circle"
+          "label": "No, I need monogamy"
         }
       ]
     },
     {
       "id": "intim_011",
       "category": "Intimacy",
-      "text": "Do you prefer having one very close person or several close connections?",
-      "multiSelect": false,
+      "text": "Should your partner be your best friend?",
       "options": [
         {
           "value": 0,
-          "label": "One person I share everything with"
+          "label": "Absolutely yes"
         },
         {
           "value": 1,
-          "label": "A small group of very close people"
+          "label": "Ideally, but not required"
         },
         {
           "value": 2,
-          "label": "Multiple friend groups for different interests"
+          "label": "No, I keep friendship and romance separate"
         },
         {
           "value": 3,
-          "label": "I don't like ranking connections"
+          "label": "I'm not sure"
         }
       ]
     },
     {
       "id": "intim_012",
       "category": "Intimacy",
-      "text": "How do you feel about sharing living space with others (roommates, etc.)?",
-      "multiSelect": false,
+      "text": "How would you feel if your partner wanted to shower together regularly?",
       "options": [
         {
           "value": 0,
-          "label": "Love it – more quality time together"
+          "label": "Love it, sounds intimate"
         },
         {
           "value": 1,
-          "label": "Works well with the right person"
+          "label": "Sure, occasionally"
         },
         {
           "value": 2,
-          "label": "I value having my own space"
+          "label": "I need my shower time alone"
         },
         {
           "value": 3,
-          "label": "I prefer living alone"
+          "label": "Logistically impractical"
         }
       ]
     },
     {
       "id": "intim_013",
       "category": "Intimacy",
-      "text": "You're hanging out late and they want to call it a night but you want to keep talking. You:",
-      "multiSelect": false,
+      "text": "Your partner wants to go to sleep but you want to keep talking. You:",
       "options": [
         {
           "value": 0,
@@ -860,27 +831,26 @@
         },
         {
           "value": 2,
-          "label": "Let them go, we'll talk tomorrow"
+          "label": "Let them sleep, we'll talk tomorrow"
         },
         {
           "value": 3,
-          "label": "Head out too, I value rest"
+          "label": "Go to sleep too, I value rest"
         }
       ]
     },
     {
       "id": "intim_014",
       "category": "Intimacy",
-      "text": "How important is it that people you're close to have similar communication styles?",
-      "multiSelect": false,
+      "text": "How important is it that you and your partner have similar sex drives?",
       "options": [
         {
           "value": 0,
-          "label": "Extremely important – it affects the connection"
+          "label": "Extremely important – dealbreaker level"
         },
         {
           "value": 1,
-          "label": "Very important but we can adapt"
+          "label": "Very important but we can compromise"
         },
         {
           "value": 2,
@@ -896,19 +866,18 @@
       "id": "intim_015",
       "category": "Intimacy",
       "text": "Would you rather:",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
-          "label": "Have many casual connections with exciting new people"
+          "label": "Have amazing sex with someone you barely know"
         },
         {
           "value": 1,
-          "label": "Have a few deep, long-term connections"
+          "label": "Have okay sex with someone you deeply love"
         },
         {
           "value": 2,
-          "label": "A mix of both"
+          "label": "These aren't mutually exclusive"
         },
         {
           "value": 3,
@@ -919,56 +888,53 @@
     {
       "id": "intim_016",
       "category": "Intimacy",
-      "text": "Someone expresses that they consider you their closest connection, but you're not quite there yet. You:",
-      "multiSelect": false,
+      "text": "You're getting intimate and your partner says 'I love you' for the first time. You don't feel the same yet. You:",
       "options": [
         {
           "value": 0,
-          "label": "Reciprocate to make them feel good"
+          "label": "Say it back to make them feel good"
         },
         {
           "value": 1,
-          "label": "Say something like 'that means so much to me'"
+          "label": "Say something like 'that means so much'"
         },
         {
           "value": 2,
-          "label": "Be honest about where I'm at"
+          "label": "Be honest that I'm not there yet"
         },
         {
           "value": 3,
-          "label": "This scenario makes me uncomfortable"
+          "label": "This scenario is my nightmare"
         }
       ]
     },
     {
       "id": "intim_017",
       "category": "Intimacy",
-      "text": "How do you feel about being completely yourself (quirks and all) around people you're close to?",
-      "multiSelect": false,
+      "text": "How do you feel about farting in front of your partner?",
       "options": [
         {
           "value": 0,
-          "label": "Totally natural – that's what closeness is"
+          "label": "Natural and funny, no big deal"
         },
         {
           "value": 1,
-          "label": "Eventually, once we're close enough"
+          "label": "Eventually it happens"
         },
         {
           "value": 2,
-          "label": "I keep some things private"
+          "label": "I'd be mortified"
         },
         {
           "value": 3,
-          "label": "I maintain a certain image"
+          "label": "Never. Some mystery is good."
         }
       ]
     },
     {
       "id": "intim_018",
       "category": "Intimacy",
-      "text": "Your ideal hangout involves:",
-      "multiSelect": false,
+      "text": "Your ideal date night involves:",
       "options": [
         {
           "value": 0,
@@ -976,11 +942,11 @@
         },
         {
           "value": 1,
-          "label": "Great food and deep conversation"
+          "label": "Romantic dinner and intimate conversation"
         },
         {
           "value": 2,
-          "label": "Cozy night in with movies or games"
+          "label": "Cozy night in with movies or cooking"
         },
         {
           "value": 3,
@@ -991,8 +957,7 @@
     {
       "id": "intim_019",
       "category": "Intimacy",
-      "text": "What does closeness mean to you?",
-      "multiSelect": false,
+      "text": "What does intimacy mean to you beyond physical connection?",
       "options": [
         {
           "value": 0,
@@ -1015,32 +980,31 @@
     {
       "id": "intim_020",
       "category": "Intimacy",
-      "text": "How quickly do you become comfortable with casual physical contact (high fives, shoulder touches)?",
-      "multiSelect": false,
+      "text": "Would you ask for a brief back massage on your second date (shirt on)?",
       "options": [
         {
           "value": 0,
-          "label": "Right away – physical touch builds connection"
+          "label": "Yes, absolutely – physical touch builds connection"
         },
         {
           "value": 1,
-          "label": "Pretty quickly if the vibe feels right"
+          "label": "Maybe, if the vibe feels right"
         },
         {
           "value": 2,
-          "label": "Takes a few hangouts to feel comfortable"
+          "label": "Probably not – too forward for a second date"
         },
         {
           "value": 3,
-          "label": "I prefer minimal physical contact until we're close"
+          "label": "No – I'd wait until we're more comfortable"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_000",
       "category": "Values",
-      "text": "How important is it that people you're close to share your religious/spiritual beliefs?",
-      "multiSelect": false,
+      "text": "How important is it that a partner shares your religious/spiritual beliefs?",
       "options": [
         {
           "value": 0,
@@ -1063,8 +1027,7 @@
     {
       "id": "vals_001",
       "category": "Values",
-      "text": "How do you feel about discussing politics with people you're close to?",
-      "multiSelect": false,
+      "text": "How do you feel about discussing politics with a partner?",
       "options": [
         {
           "value": 0,
@@ -1087,16 +1050,15 @@
     {
       "id": "vals_002",
       "category": "Values",
-      "text": "What's your current life stage regarding family?",
-      "multiSelect": false,
+      "text": "What's your stance on wanting children?",
       "options": [
         {
           "value": 0,
-          "label": "Want or planning to have children"
+          "label": "Definitely want children"
         },
         {
           "value": 1,
-          "label": "Open to it in the future"
+          "label": "Open to it with the right partner"
         },
         {
           "value": 2,
@@ -1104,107 +1066,104 @@
         },
         {
           "value": 3,
-          "label": "Have kid(s) already"
+          "label": "Have kid(s) already but don't want more"
         },
         {
           "value": 4,
-          "label": "Not planning to have children"
+          "label": "Definitely don't want children"
         }
       ]
     },
     {
       "id": "vals_003",
       "category": "Values",
-      "text": "How do you feel about spending time with people who have kids?",
-      "multiSelect": false,
+      "text": "Would you date someone who has a kid?",
       "options": [
         {
           "value": 0,
-          "label": "Love it – kids add to the fun"
+          "label": "Yes, no problem"
         },
         {
           "value": 1,
-          "label": "Happy to, depending on the situation"
+          "label": "Depends on the situation"
         },
         {
           "value": 2,
-          "label": "Prefer adult-only hangouts"
+          "label": "Probably not"
         },
         {
           "value": 3,
-          "label": "I'd rather connect when they're kid-free"
+          "label": "Definitely not"
         }
       ]
     },
     {
       "id": "vals_004",
       "category": "Values",
-      "text": "How important is accessibility and inclusivity in your social circles?",
-      "multiSelect": false,
+      "text": "Are you willing to date someone with a disability?",
       "options": [
         {
           "value": 0,
-          "label": "Very important – I actively consider it"
+          "label": "Yes, absolutely"
         },
         {
           "value": 1,
-          "label": "Important – I'm mindful of different needs"
+          "label": "Yes, it depends on the disability and our compatibility"
         },
         {
           "value": 2,
-          "label": "Somewhat important"
+          "label": "I'm not sure / I'd have to think about it"
         },
         {
           "value": 3,
-          "label": "Haven't thought much about it"
+          "label": "Probably not"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_005",
       "category": "Values",
-      "text": "How do you approach splitting costs (trips, dinners, etc.)?",
-      "multiSelect": false,
+      "text": "How do you approach finances in a relationship?",
       "options": [
         {
           "value": 0,
-          "label": "Happy to cover others generously"
+          "label": "Completely joint – what's mine is ours"
         },
         {
           "value": 1,
-          "label": "Take turns treating each other"
+          "label": "Mostly shared with some personal accounts"
         },
         {
           "value": 2,
-          "label": "Split everything fairly"
+          "label": "Split expenses but keep finances separate"
         },
         {
           "value": 3,
-          "label": "Keep finances completely separate"
+          "label": "Completely independent financial lives"
         }
       ]
     },
     {
       "id": "vals_006",
       "category": "Values",
-      "text": "When you invite someone to hang out, who should pay?",
-      "multiSelect": false,
+      "text": "Should the man always pay on dates?",
       "options": [
         {
           "value": 0,
-          "label": "The person who invites should offer to pay"
+          "label": "Yes, traditionally"
         },
         {
           "value": 1,
-          "label": "Split it unless someone offers to treat"
+          "label": "On the first date, then split"
         },
         {
           "value": 2,
-          "label": "Always split everything equally"
+          "label": "Split everything equally"
         },
         {
           "value": 3,
-          "label": "Take turns treating each other"
+          "label": "Whoever asks should pay, regardless of gender"
         }
       ]
     },
@@ -1212,11 +1171,10 @@
       "id": "vals_007",
       "category": "Values",
       "text": "Your ideal work-life balance involves:",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
-          "label": "Work to live – prioritize personal life and connections"
+          "label": "Work to live – prioritize personal life and relationships"
         },
         {
           "value": 1,
@@ -1235,12 +1193,11 @@
     {
       "id": "vals_008",
       "category": "Values",
-      "text": "Would you consider relocating to be closer to important people in your life?",
-      "multiSelect": false,
+      "text": "Would you consider relocating for a partner's job?",
       "options": [
         {
           "value": 0,
-          "label": "Absolutely, relationships are worth it"
+          "label": "Absolutely, if we're serious"
         },
         {
           "value": 1,
@@ -1248,7 +1205,7 @@
         },
         {
           "value": 2,
-          "label": "Maybe for the right situation"
+          "label": "Maybe if we're married or engaged"
         },
         {
           "value": 3,
@@ -1259,8 +1216,7 @@
     {
       "id": "vals_009",
       "category": "Values",
-      "text": "What role does travel play in your ideal connections?",
-      "multiSelect": false,
+      "text": "What role does travel play in your ideal relationship?",
       "options": [
         {
           "value": 0,
@@ -1283,24 +1239,23 @@
     {
       "id": "vals_010",
       "category": "Values",
-      "text": "How do you feel about having roommates or living with others?",
-      "multiSelect": false,
+      "text": "How do you feel about living together before marriage?",
       "options": [
         {
           "value": 0,
-          "label": "Love it – great way to connect"
+          "label": "Absolutely necessary to test compatibility"
         },
         {
           "value": 1,
-          "label": "Works well with the right people"
+          "label": "Prefer it but not required"
         },
         {
           "value": 2,
-          "label": "Prefer living alone but open to it"
+          "label": "Open to it but would rather wait"
         },
         {
           "value": 3,
-          "label": "I need my own space"
+          "label": "Prefer to wait until marriage"
         }
       ]
     },
@@ -1308,7 +1263,6 @@
       "id": "vals_011",
       "category": "Values",
       "text": "Do you believe in the concept of a 'soulmate'?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1331,12 +1285,11 @@
     {
       "id": "vals_012",
       "category": "Values",
-      "text": "How important is shared interest in physical fitness?",
-      "multiSelect": false,
+      "text": "How important is physical fitness to you in a partner?",
       "options": [
         {
           "value": 0,
-          "label": "Very important – I want workout buddies"
+          "label": "Very important – we should work out together"
         },
         {
           "value": 1,
@@ -1355,24 +1308,23 @@
     {
       "id": "vals_013",
       "category": "Values",
-      "text": "How do you feel about people who don't drink alcohol?",
-      "multiSelect": false,
+      "text": "Would you date someone who doesn't drink alcohol?",
       "options": [
         {
           "value": 0,
-          "label": "No issue at all"
+          "label": "Yes, no problem at all"
         },
         {
           "value": 1,
-          "label": "Fine, though I enjoy drinking socially"
+          "label": "Yes, though I enjoy drinking socially"
         },
         {
           "value": 2,
-          "label": "Might make some hangouts awkward"
+          "label": "It would be difficult"
         },
         {
           "value": 3,
-          "label": "I prefer people who share my drinking habits"
+          "label": "No, it's important we share that"
         }
       ]
     },
@@ -1380,7 +1332,6 @@
       "id": "vals_014",
       "category": "Values",
       "text": "How do you like the taste of beer?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1402,17 +1353,17 @@
           "value": 4,
           "label": "Hate it"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_015",
       "category": "Values",
       "text": "How do you feel about recreational marijuana use?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
-          "label": "I partake and prefer people who do too"
+          "label": "I partake and would want a partner who does too"
         },
         {
           "value": 1,
@@ -1420,11 +1371,11 @@
         },
         {
           "value": 2,
-          "label": "Not for me but okay if others do"
+          "label": "Not for me but okay if they do"
         },
         {
           "value": 3,
-          "label": "I prefer to avoid it in my social circle"
+          "label": "Deal breaker – I don't want it in my life"
         }
       ]
     },
@@ -1432,7 +1383,6 @@
       "id": "vals_016",
       "category": "Values",
       "text": "Do you smoke or chew tobacco?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1458,17 +1408,17 @@
           "value": 5,
           "label": "No, never"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_017",
       "category": "Values",
-      "text": "Is it important that people you're close to be ambitious/driven?",
-      "multiSelect": false,
+      "text": "Is it important that your partner be successful/ambitious?",
       "options": [
         {
           "value": 0,
-          "label": "Very – ambition is inspiring"
+          "label": "Very – ambition is attractive"
         },
         {
           "value": 1,
@@ -1480,43 +1430,41 @@
         },
         {
           "value": 3,
-          "label": "No – I value people for who they are"
+          "label": "No – too much ambition can be a problem"
         }
       ]
     },
     {
       "id": "vals_018",
       "category": "Values",
-      "text": "How do you feel about connecting with people in very different financial situations?",
-      "multiSelect": false,
+      "text": "Would you date someone significantly richer/poorer than you?",
       "options": [
         {
           "value": 0,
-          "label": "No issue – money doesn't affect connection"
+          "label": "Yes, money doesn't matter"
         },
         {
           "value": 1,
-          "label": "Fine, but it can affect what we do together"
+          "label": "Richer yes, poorer maybe"
         },
         {
           "value": 2,
-          "label": "Prefer people in a similar financial range"
+          "label": "As long as we're in the same general range"
         },
         {
           "value": 3,
-          "label": "It can be awkward if we're too different"
+          "label": "No, financial compatibility matters"
         }
       ]
     },
     {
       "id": "vals_019",
       "category": "Values",
-      "text": "How important is education level in the people you connect with?",
-      "multiSelect": false,
+      "text": "How important is education level in a partner?",
       "options": [
         {
           "value": 0,
-          "label": "Very – I prefer people with similar education"
+          "label": "Very – I prefer someone with a similar education"
         },
         {
           "value": 1,
@@ -1535,24 +1483,23 @@
     {
       "id": "vals_020",
       "category": "Values",
-      "text": "How do you feel about privacy in close connections?",
-      "multiSelect": false,
+      "text": "Should couples share all their passwords?",
       "options": [
         {
           "value": 0,
-          "label": "Share everything – total openness"
+          "label": "Yes, total transparency"
         },
         {
           "value": 1,
-          "label": "Share most things, keep some private"
+          "label": "Important ones (banking, etc.)"
         },
         {
           "value": 2,
-          "label": "Keep personal matters mostly private"
+          "label": "Only if necessary"
         },
         {
           "value": 3,
-          "label": "Everyone deserves privacy"
+          "label": "No, everyone deserves privacy"
         }
       ]
     },
@@ -1560,7 +1507,6 @@
       "id": "vals_021",
       "category": "Values",
       "text": "How important are similar food preferences?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1584,7 +1530,6 @@
       "id": "vals_022",
       "category": "Values",
       "text": "How important is saving money to you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1606,13 +1551,13 @@
           "value": 4,
           "label": "Very important – I have multiple investments"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_023",
       "category": "Values",
       "text": "Do you wear a mask in public indoor spaces to prevent the spread of illness?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1638,13 +1583,13 @@
           "value": 5,
           "label": "Never"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_024",
       "category": "Values",
       "text": "What matters most to you in life?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1668,7 +1613,6 @@
       "id": "vals_025",
       "category": "Values",
       "text": "How would you describe your political views?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1691,8 +1635,7 @@
     {
       "id": "vals_026",
       "category": "Values",
-      "text": "How important is it that people you're close to share your political views?",
-      "multiSelect": false,
+      "text": "How important is it that your partner shares your political views?",
       "options": [
         {
           "value": 0,
@@ -1716,7 +1659,6 @@
       "id": "vals_027",
       "category": "Values",
       "text": "Where do you stand on organized religion?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1739,24 +1681,23 @@
     {
       "id": "vals_028",
       "category": "Values",
-      "text": "How do you feel about people with significantly different religious beliefs?",
-      "multiSelect": false,
+      "text": "Would you date someone with significantly different religious beliefs?",
       "options": [
         {
           "value": 0,
-          "label": "Prefer people who share my beliefs"
+          "label": "No – shared faith is essential"
         },
         {
           "value": 1,
-          "label": "Fine if they're respectful and open-minded"
+          "label": "Maybe if they're respectful and open-minded"
         },
         {
           "value": 2,
-          "label": "No issue – beliefs don't affect connection"
+          "label": "Yes – beliefs don't need to match"
         },
         {
           "value": 3,
-          "label": "I enjoy different perspectives"
+          "label": "Yes – I prefer different perspectives"
         }
       ]
     },
@@ -1764,7 +1705,6 @@
       "id": "vals_029",
       "category": "Values",
       "text": "How do you feel about discussing controversial social issues?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1788,7 +1728,6 @@
       "id": "vals_030",
       "category": "Values",
       "text": "Which best describes your approach to social justice?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1812,7 +1751,6 @@
       "id": "vals_031",
       "category": "Values",
       "text": "How important is environmental sustainability to you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1830,13 +1768,13 @@
           "value": 3,
           "label": "Not a priority for me"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_032",
       "category": "Values",
-      "text": "What stance on climate change do you prefer in people you connect with?",
-      "multiSelect": false,
+      "text": "Your ideal partner's stance on climate change should be:",
       "options": [
         {
           "value": 0,
@@ -1860,7 +1798,6 @@
       "id": "vals_033",
       "category": "Values",
       "text": "How do you feel about wealth inequality?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1884,7 +1821,6 @@
       "id": "vals_034",
       "category": "Values",
       "text": "Which statement resonates most with you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1907,36 +1843,35 @@
     {
       "id": "vals_035",
       "category": "Values",
-      "text": "How quickly do you like to discuss life goals with new people?",
-      "multiSelect": false,
+      "text": "Opinion on asking about kids on the third date?",
       "options": [
         {
           "value": 0,
-          "label": "Early on – important to know if we're compatible"
+          "label": "Great idea – important to know early"
         },
         {
           "value": 1,
-          "label": "Within the first few hangouts"
+          "label": "Fine with me, practical conversation"
         },
         {
           "value": 2,
-          "label": "Once we're more comfortable"
+          "label": "A bit soon, but understandable"
         },
         {
           "value": 3,
-          "label": "Let things develop naturally first"
+          "label": "Too early – let things develop naturally first"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_036",
       "category": "Values",
-      "text": "Someone you're close to loudly chews ice. How do you handle it?",
-      "multiSelect": false,
+      "text": "Your partner loudly chews ice. How long do you last?",
       "options": [
         {
           "value": 0,
-          "label": "Doesn't bother me at all"
+          "label": "I actually find it kind of endearing"
         },
         {
           "value": 1,
@@ -1944,19 +1879,19 @@
         },
         {
           "value": 2,
-          "label": "I'd politely excuse myself"
+          "label": "I'd passive-aggressively leave the room"
         },
         {
           "value": 3,
-          "label": "Some sounds are just too much for me"
+          "label": "Instant dealbreaker – some sounds are unforgivable"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_000",
       "category": "Social",
       "text": "How would you describe your social energy?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -1979,44 +1914,42 @@
     {
       "id": "socl_001",
       "category": "Social",
-      "text": "How important is it that new people fit in with your existing social circle?",
-      "multiSelect": false,
+      "text": "How important is it that your partner gets along with your friends?",
       "options": [
         {
           "value": 0,
-          "label": "Very important – I want everyone to get along"
+          "label": "Crucial – my friends are like family"
         },
         {
           "value": 1,
-          "label": "Somewhat important but I can have separate groups"
+          "label": "Very important but can maintain separate friendships"
         },
         {
           "value": 2,
-          "label": "Nice but not necessary"
+          "label": "Somewhat important – occasional hangouts are fine"
         },
         {
           "value": 3,
-          "label": "I'm comfortable with separate social circles"
+          "label": "Not very – we can have separate social circles"
         }
       ]
     },
     {
       "id": "socl_002",
       "category": "Social",
-      "text": "Your ideal weekend involves:",
-      "multiSelect": false,
+      "text": "Your ideal weekend social life involves:",
       "options": [
         {
           "value": 0,
-          "label": "Going out or attending events"
+          "label": "Going out with friends or attending events"
         },
         {
           "value": 1,
-          "label": "Mix of social activities and one-on-one time"
+          "label": "Mix of social activities and couple time"
         },
         {
           "value": 2,
-          "label": "Quiet time with just one or two close people"
+          "label": "Quiet time with just my partner"
         },
         {
           "value": 3,
@@ -2028,7 +1961,6 @@
       "id": "socl_003",
       "category": "Social",
       "text": "You're at a party. Where would someone find you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2051,48 +1983,46 @@
     {
       "id": "socl_004",
       "category": "Social",
-      "text": "How diverse are your connections in terms of backgrounds and perspectives?",
-      "multiSelect": false,
+      "text": "How do you feel about your partner having close friends of the opposite sex?",
       "options": [
         {
           "value": 0,
-          "label": "Very diverse – I seek out different perspectives"
+          "label": "Totally fine – trust is everything"
         },
         {
           "value": 1,
-          "label": "Fairly diverse – naturally meet different people"
+          "label": "Okay with it but appreciate transparency"
         },
         {
           "value": 2,
-          "label": "Somewhat similar – tend to connect with like-minded people"
+          "label": "Somewhat uncomfortable but willing to work through it"
         },
         {
           "value": 3,
-          "label": "Prefer people with similar backgrounds"
+          "label": "Prefer clear boundaries in this area"
         }
       ]
     },
     {
       "id": "socl_005",
       "category": "Social",
-      "text": "How do you feel when someone you're close to makes new connections?",
-      "multiSelect": false,
+      "text": "How do you handle jealousy in relationships?",
       "options": [
         {
           "value": 0,
-          "label": "Happy for them – the more the merrier"
+          "label": "I don't really get jealous – I trust easily"
         },
         {
           "value": 1,
-          "label": "Positive but hope we stay close too"
+          "label": "Occasional jealousy but I communicate about it"
         },
         {
           "value": 2,
-          "label": "Sometimes feel a bit left out"
+          "label": "Sometimes struggle with it but work on it"
         },
         {
           "value": 3,
-          "label": "Value being their closest connection"
+          "label": "Tend to be protective of relationships"
         }
       ]
     },
@@ -2100,7 +2030,6 @@
       "id": "socl_007",
       "category": "Social",
       "text": "How spontaneous vs. planned are you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2124,7 +2053,6 @@
       "id": "socl_008",
       "category": "Social",
       "text": "What's your sense of humor like?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2148,7 +2076,6 @@
       "id": "socl_009",
       "category": "Social",
       "text": "You see your ex at a party. You:",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2172,7 +2099,6 @@
       "id": "socl_010",
       "category": "Social",
       "text": "How do you handle stress?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2196,7 +2122,6 @@
       "id": "socl_011",
       "category": "Social",
       "text": "Would you go skydiving if someone offered to take you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2219,12 +2144,11 @@
     {
       "id": "socl_012",
       "category": "Social",
-      "text": "What role does social media play in your connections?",
-      "multiSelect": false,
+      "text": "What role does social media play in your relationships?",
       "options": [
         {
           "value": 0,
-          "label": "Very active – I share moments publicly"
+          "label": "Very active – I share relationship moments publicly"
         },
         {
           "value": 1,
@@ -2232,7 +2156,7 @@
         },
         {
           "value": 2,
-          "label": "Minimal – prefer to keep things private"
+          "label": "Minimal – prefer to keep relationships private"
         },
         {
           "value": 3,
@@ -2244,7 +2168,6 @@
       "id": "socl_013",
       "category": "Social",
       "text": "How important is it that you make each other laugh?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2267,12 +2190,11 @@
     {
       "id": "socl_015",
       "category": "Social",
-      "text": "How do you feel about big social events (weddings, parties, etc.)?",
-      "multiSelect": false,
+      "text": "How do you feel about attending weddings?",
       "options": [
         {
           "value": 0,
-          "label": "Love them! Great excuse to celebrate"
+          "label": "Love them! So romantic"
         },
         {
           "value": 1,
@@ -2291,16 +2213,15 @@
     {
       "id": "socl_016",
       "category": "Social",
-      "text": "Your social group plans a trip but doesn't invite you. You:",
-      "multiSelect": false,
+      "text": "Your partner's friends are going on a trip and invite only them, not you. You:",
       "options": [
         {
           "value": 0,
-          "label": "Assume it's for a good reason and wish them well"
+          "label": "Encourage them to go and have fun"
         },
         {
           "value": 1,
-          "label": "Feel a little hurt but let it go"
+          "label": "Say it's fine but feel a little hurt"
         },
         {
           "value": 2,
@@ -2315,60 +2236,58 @@
     {
       "id": "socl_017",
       "category": "Social",
-      "text": "How do you feel about people who aren't into pets?",
-      "multiSelect": false,
+      "text": "Would you date someone who doesn't like dogs?",
       "options": [
         {
           "value": 0,
-          "label": "Might be hard to connect – pets are life"
+          "label": "Absolutely not – dogs are life"
         },
         {
           "value": 1,
-          "label": "Fine as long as they tolerate mine"
+          "label": "It would be tough"
         },
         {
           "value": 2,
-          "label": "Totally fine – we all have preferences"
+          "label": "Yes, but they'd have to tolerate mine"
         },
         {
           "value": 3,
-          "label": "I'm not into pets either / Don't care"
+          "label": "Yes, I'm not a dog person either / Don't care"
         }
       ]
     },
     {
       "id": "socl_018",
       "category": "Social",
-      "text": "What's your relationship with pets?",
-      "multiSelect": false,
+      "text": "Would you be happy living without pets long-term?",
       "options": [
         {
           "value": 0,
-          "label": "Don't have pets and prefer it that way"
+          "label": "Yes, and I do not currently have pets"
         },
         {
           "value": 1,
-          "label": "Don't have pets but might want them someday"
+          "label": "I do not currently have pets, but I might want them someday"
         },
         {
           "value": 2,
-          "label": "Have pets but flexible about future pets"
+          "label": "I currently have a pet/pets, but I would consider not getting any future pets if my partner did not want pets"
         },
         {
           "value": 3,
-          "label": "Pets are essential to my happiness"
+          "label": "I need a pet/pets to be happy"
         },
         {
           "value": 4,
-          "label": "I have a service or emotional support animal"
+          "label": "I need a service animal and/or emotional support animal for my health and safety"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_019",
       "category": "Social",
-      "text": "How comfortable are you with being silly in front of people you're close to?",
-      "multiSelect": false,
+      "text": "How comfortable are you with being silly in front of your partner?",
       "options": [
         {
           "value": 0,
@@ -2392,7 +2311,6 @@
       "id": "socl_020",
       "category": "Social",
       "text": "Do you believe people can really change?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2415,16 +2333,15 @@
     {
       "id": "comt_000",
       "category": "Commitment",
-      "text": "What are you ultimately looking for in connections?",
-      "multiSelect": false,
+      "text": "What are you ultimately looking for?",
       "options": [
         {
           "value": 0,
-          "label": "Deep, lifelong connections"
+          "label": "Life partner and eventual marriage"
         },
         {
           "value": 1,
-          "label": "Long-term meaningful connections"
+          "label": "Long-term committed relationship"
         },
         {
           "value": 2,
@@ -2432,79 +2349,76 @@
         },
         {
           "value": 3,
-          "label": "Casual connections and companionship"
+          "label": "Casual dating and companionship"
         }
       ]
     },
     {
       "id": "comt_001",
       "category": "Commitment",
-      "text": "How quickly do you consider someone close to you?",
-      "multiSelect": false,
+      "text": "How long do you typically date before becoming exclusive?",
       "options": [
         {
           "value": 0,
-          "label": "Very quickly if there's strong chemistry"
+          "label": "1-2 dates if there's strong chemistry"
         },
         {
           "value": 1,
-          "label": "A few weeks of regular hangouts"
+          "label": "A few weeks to a month"
         },
         {
           "value": 2,
-          "label": "2-3 months of consistent connection"
+          "label": "2-3 months of consistent dating"
         },
         {
           "value": 3,
-          "label": "Several months – I take my time building trust"
+          "label": "Several months – I take my time"
         },
         {
           "value": 4,
-          "label": "I prefer to keep connections casual"
+          "label": "I don't want to be in an exclusive relationship"
         }
       ]
     },
     {
       "id": "comt_002",
       "category": "Commitment",
-      "text": "How do you feel about long-term commitment in your connections?",
-      "multiSelect": false,
+      "text": "How do you feel about marriage?",
       "options": [
         {
           "value": 0,
-          "label": "Deeply committed to my close connections for life"
+          "label": "Definitely want to get married"
         },
         {
           "value": 1,
-          "label": "Value long-term friendships with the right people"
+          "label": "Open to it with the right person"
         },
         {
           "value": 2,
-          "label": "Friendships naturally evolve – some last, some don't"
+          "label": "Unsure – don't need marriage to commit"
         },
         {
           "value": 3,
-          "label": "I'm flexible – people come and go"
+          "label": "Don't believe in marriage"
         }
       ]
     },
     {
       "id": "comt_003",
       "category": "Commitment",
-      "text": "Would you maintain a connection if you grew apart?",
-      "multiSelect": false,
+      "text": "Would you stay in a relationship if you were no longer in love?",
       "options": [
         {
           "value": 0,
-          "label": "No – I need active connection"
+          "label": "Never – love is essential"
         },
         {
           "value": 1,
-          "label": "Maybe for history's sake"
+          "label": "Maybe if there were other factors (kids, etc.)"
         },
         {
           "value": 2,
-          "label": "Yes, some connections ebb and flow"
+          "label": "Yes, love changes over time"
         },
         {
           "value": 3,
@@ -2515,8 +2429,7 @@
     {
       "id": "comt_004",
       "category": "Commitment",
-      "text": "How important is it to maintain independence in your connections?",
-      "multiSelect": false,
+      "text": "How important is it to maintain independence in a relationship?",
       "options": [
         {
           "value": 0,
@@ -2539,8 +2452,7 @@
     {
       "id": "comt_005",
       "category": "Commitment",
-      "text": "Have you ever had a truly deep, meaningful connection?",
-      "multiSelect": false,
+      "text": "Have you ever been in love?",
       "options": [
         {
           "value": 0,
@@ -2556,15 +2468,14 @@
         },
         {
           "value": 3,
-          "label": "Not yet, but I'm open to it"
+          "label": "No, not yet"
         }
       ]
     },
     {
       "id": "comt_006",
       "category": "Commitment",
-      "text": "Would you reconnect with someone after a falling out?",
-      "multiSelect": false,
+      "text": "Would you take back an ex?",
       "options": [
         {
           "value": 0,
@@ -2572,11 +2483,11 @@
         },
         {
           "value": 1,
-          "label": "Depends on what happened"
+          "label": "Depends on why we broke up"
         },
         {
           "value": 2,
-          "label": "If we both grew, maybe"
+          "label": "If we both changed, maybe"
         },
         {
           "value": 3,
@@ -2587,8 +2498,7 @@
     {
       "id": "comt_007",
       "category": "Commitment",
-      "text": "How do you define a successful connection?",
-      "multiSelect": false,
+      "text": "How do you define a successful relationship?",
       "options": [
         {
           "value": 0,
@@ -2611,24 +2521,23 @@
     {
       "id": "comt_008",
       "category": "Commitment",
-      "text": "Do you believe in instant connection with people?",
-      "multiSelect": false,
+      "text": "Do you believe in love at first sight?",
       "options": [
         {
           "value": 0,
-          "label": "Yes, I've felt it – you just know"
+          "label": "Yes, it's happened to me"
         },
         {
           "value": 1,
-          "label": "Kind of – strong vibes happen"
+          "label": "Kind of – attraction at first sight for sure"
         },
         {
           "value": 2,
-          "label": "No, real connection takes time"
+          "label": "No, love takes time to develop"
         },
         {
           "value": 3,
-          "label": "Not really – first impressions can be deceiving"
+          "label": "Absolutely not, that's just lust"
         }
       ]
     },
@@ -2636,15 +2545,14 @@
       "id": "comt_009",
       "category": "Commitment",
       "text": "Where do you see yourself in 5 years?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
-          "label": "Surrounded by close, meaningful connections"
+          "label": "In a committed relationship or married"
         },
         {
           "value": 1,
-          "label": "Focused on career with connections as part of life"
+          "label": "Focused on career with relationship as part of life"
         },
         {
           "value": 2,
@@ -2659,24 +2567,23 @@
     {
       "id": "comt_010",
       "category": "Commitment",
-      "text": "How do you feel about befriending someone going through a major life transition?",
-      "multiSelect": false,
+      "text": "Would you date someone who was recently divorced?",
       "options": [
         {
           "value": 0,
-          "label": "Happy to be there for them"
+          "label": "Yes, doesn't matter"
         },
         {
           "value": 1,
-          "label": "Depends on the situation"
+          "label": "Depends how recently"
         },
         {
           "value": 2,
-          "label": "Might be emotionally heavy"
+          "label": "Probably not – too much baggage"
         },
         {
           "value": 3,
-          "label": "Prefer people in stable situations"
+          "label": "Definitely not"
         }
       ]
     },
@@ -2684,7 +2591,6 @@
       "id": "comt_011",
       "category": "Commitment",
       "text": "What would be a dealbreaker for you?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2707,32 +2613,30 @@
     {
       "id": "comt_012",
       "category": "Commitment",
-      "text": "How do you feel about setting clear expectations in your connections?",
-      "multiSelect": false,
+      "text": "How do you feel about prenups?",
       "options": [
         {
           "value": 0,
-          "label": "Smart and practical – avoids misunderstandings"
+          "label": "Smart and practical – everyone should have one"
         },
         {
           "value": 1,
-          "label": "Makes sense for close connections"
+          "label": "Makes sense if there's significant assets"
         },
         {
           "value": 2,
-          "label": "Can feel awkward but understandable"
+          "label": "Unromantic but understandable"
         },
         {
           "value": 3,
-          "label": "Prefer to let things flow naturally"
+          "label": "Insulting – shows lack of commitment"
         }
       ]
     },
     {
       "id": "comt_013",
       "category": "Commitment",
-      "text": "Could you forgive someone who betrayed your trust?",
-      "multiSelect": false,
+      "text": "Could you forgive infidelity?",
       "options": [
         {
           "value": 0,
@@ -2740,11 +2644,11 @@
         },
         {
           "value": 1,
-          "label": "Probably not, depends on circumstances"
+          "label": "Probably not but depends on circumstances"
         },
         {
           "value": 2,
-          "label": "Maybe with time and effort"
+          "label": "Maybe with couples therapy"
         },
         {
           "value": 3,
@@ -2755,40 +2659,38 @@
     {
       "id": "comt_014",
       "category": "Commitment",
-      "text": "How long have your closest friendships lasted?",
-      "multiSelect": false,
+      "text": "How long was your longest relationship?",
       "options": [
         {
           "value": 0,
-          "label": "Still building close connections"
+          "label": "Never been in a relationship"
         },
         {
           "value": 1,
-          "label": "Less than 2 years"
+          "label": "Less than 6 months"
         },
         {
           "value": 2,
-          "label": "2-5 years"
+          "label": "6 months to 2 years"
         },
         {
           "value": 3,
-          "label": "5-10 years"
+          "label": "2-5 years"
         },
         {
           "value": 4,
-          "label": "More than 10 years"
+          "label": "More than 5 years"
         }
       ]
     },
     {
       "id": "comt_015",
       "category": "Commitment",
-      "text": "How much do you want to know about someone's past?",
-      "multiSelect": false,
+      "text": "Would you want to know everything about your partner's past?",
       "options": [
         {
           "value": 0,
-          "label": "Everything – complete transparency"
+          "label": "Yes, complete transparency"
         },
         {
           "value": 1,
@@ -2800,19 +2702,18 @@
         },
         {
           "value": 3,
-          "label": "The past is the past"
+          "label": "No, the past is the past"
         }
       ]
     },
     {
       "id": "comt_016",
       "category": "Commitment",
-      "text": "How do you feel about possessiveness in close connections?",
-      "multiSelect": false,
+      "text": "Is jealousy healthy in a relationship?",
       "options": [
         {
           "value": 0,
-          "label": "A little shows you care"
+          "label": "A little bit shows you care"
         },
         {
           "value": 1,
@@ -2820,7 +2721,7 @@
         },
         {
           "value": 2,
-          "label": "Not healthy"
+          "label": "No, it's toxic"
         },
         {
           "value": 3,
@@ -2831,24 +2732,23 @@
     {
       "id": "comt_017",
       "category": "Commitment",
-      "text": "Someone you're very close to moves to another city. You:",
-      "multiSelect": false,
+      "text": "Your partner gets a job offer in another city. You:",
       "options": [
         {
           "value": 0,
-          "label": "Consider moving too if possible"
+          "label": "Move with them without hesitation"
         },
         {
           "value": 1,
-          "label": "Plan regular visits and stay close"
+          "label": "Seriously consider it and discuss together"
         },
         {
           "value": 2,
-          "label": "Stay in touch but expect things to change"
+          "label": "Try long distance"
         },
         {
           "value": 3,
-          "label": "Accept that we'll probably drift apart"
+          "label": "Probably break up"
         }
       ]
     },
@@ -2856,7 +2756,6 @@
       "id": "comt_018",
       "category": "Commitment",
       "text": "What's your biggest fear about commitment?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2879,8 +2778,7 @@
     {
       "id": "comt_019",
       "category": "Commitment",
-      "text": "Do you think you're good at maintaining close connections?",
-      "multiSelect": false,
+      "text": "Do you think you're a good catch?",
       "options": [
         {
           "value": 0,
@@ -2904,7 +2802,6 @@
       "id": "comt_020",
       "category": "Commitment",
       "text": "Would your friends trust you to plan and execute a night out?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2922,13 +2819,13 @@
           "value": 3,
           "label": "Probably not – I'm more of a follower"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_037",
       "category": "Values",
       "text": "If I moved something in your house, would you notice?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2946,13 +2843,13 @@
           "value": 3,
           "label": "Probably not – I'm not that observant"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_038",
       "category": "Values",
       "text": "Do you clean your baseboards?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2970,13 +2867,13 @@
           "value": 3,
           "label": "Never – I didn't know that was a thing"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "social_024",
       "category": "Social",
       "text": "How do you feel about celebrating your birthday?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -2994,17 +2891,17 @@
           "value": 3,
           "label": "Don't celebrate or prefer to ignore it"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "intm_023",
       "category": "Intimacy",
-      "text": "How important is physical connection (hugs, etc.) in your close connections?",
-      "multiSelect": false,
+      "text": "For you personally, is sex one of the most important parts of a relationship?",
       "options": [
         {
           "value": 0,
-          "label": "Essential for feeling connected"
+          "label": "Yes, it's essential for connection"
         },
         {
           "value": 1,
@@ -3018,13 +2915,13 @@
           "value": 3,
           "label": "Not very important"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_039",
       "category": "Values",
       "text": "What are your shopping habits?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -3042,13 +2939,13 @@
           "value": 3,
           "label": "Love to treat myself regularly"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_040",
       "category": "Values",
       "text": "What best describes your political views?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -3074,13 +2971,13 @@
           "value": 5,
           "label": "Other/Prefer not to say"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_041",
       "category": "Values",
       "text": "What best describes your diet?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -3114,13 +3011,13 @@
           "value": 7,
           "label": "Other specific diet"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "social_025",
       "category": "Social",
       "text": "Do you enjoy cooking meals at home?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -3138,37 +3035,37 @@
           "value": 3,
           "label": "Not really – I prefer eating out or takeout"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comt_025",
       "category": "Commitment",
-      "text": "How do you feel about long distance connections?",
-      "multiSelect": false,
+      "text": "How do you feel about long distance relationships?",
       "options": [
         {
           "value": 0,
-          "label": "Open to it – distance doesn't affect real connection"
+          "label": "Open to it – distance doesn't matter with the right person"
         },
         {
           "value": 1,
-          "label": "Can work with the right person"
+          "label": "Maybe for the right person, temporarily"
         },
         {
           "value": 2,
-          "label": "Prefer local connections but will try"
+          "label": "Prefer not to but would consider it"
         },
         {
           "value": 3,
-          "label": "Need regular in-person time"
+          "label": "Absolutely not – need physical proximity"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_042",
       "category": "Values",
       "text": "Do you still wear a mask to prevent the spread of Covid-19 in public indoor spaces?",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -3194,13 +3091,13 @@
           "value": 5,
           "label": "Never"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_043",
       "category": "Values",
       "text": "I believe in god(s), souls, and/or some kind of spiritual element.",
-      "multiSelect": false,
       "options": [
         {
           "value": 0,
@@ -3222,117 +3119,117 @@
           "value": 4,
           "label": "Strongly disagree"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "intm_025",
       "category": "Intimacy",
-      "text": "How important is it that people you're close to share similar views on personal boundaries?",
-      "multiSelect": false,
+      "text": "It would bother me if my partner consumed porn.",
       "options": [
         {
           "value": 0,
-          "label": "Very important – we need to be aligned"
+          "label": "Strongly agree – it would bother me a lot"
         },
         {
           "value": 1,
-          "label": "Important – but we can discuss differences"
+          "label": "Somewhat agree – I'd prefer they didn't"
         },
         {
           "value": 2,
-          "label": "Neutral – it depends on the topic"
+          "label": "Neutral – it depends on the context"
         },
         {
           "value": 3,
-          "label": "Not very important – we can have different views"
+          "label": "Somewhat disagree – doesn't bother me much"
         },
         {
           "value": 4,
-          "label": "Not important at all – individuality is key"
+          "label": "Strongly disagree – doesn't bother me at all"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comt_021",
       "category": "Commitment",
-      "text": "What social connection style fits you best?",
-      "multiSelect": false,
+      "text": "What relationship style are you most interested in?",
       "options": [
         {
           "value": 0,
-          "label": "Small, close-knit circle – deep bonds with few people"
+          "label": "Monogamy – exclusive with one person"
         },
         {
           "value": 1,
-          "label": "Core connections plus wider social network"
+          "label": "Open relationship – committed but sexually open"
         },
         {
           "value": 2,
-          "label": "Multiple overlapping friend groups"
+          "label": "Polyamory – multiple romantic relationships"
         },
         {
           "value": 3,
-          "label": "Fluid connections – no set structure"
+          "label": "Relationship anarchy – no hierarchies or rules"
         },
         {
           "value": 4,
           "label": "Exploring/Not sure yet"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comt_022",
       "category": "Commitment",
-      "text": "How do you feel about having a wide social network vs. exclusive connections?",
-      "multiSelect": false,
+      "text": "How do you feel about non-monogamy?",
       "options": [
         {
           "value": 0,
-          "label": "Prefer exclusive, close connections"
+          "label": "Not for me – I prefer exclusive relationships"
         },
         {
           "value": 1,
-          "label": "Mostly close connections, open to expanding"
+          "label": "Open to discussing with the right person"
         },
         {
           "value": 2,
-          "label": "Like having many different connections"
+          "label": "Interested but haven't explored it"
         },
         {
           "value": 3,
-          "label": "Thrive with a big, diverse social network"
+          "label": "Experienced and prefer ethical non-monogamy"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comt_023",
       "category": "Commitment",
-      "text": "How do you feel about people you're close to having many other close connections?",
-      "multiSelect": false,
+      "text": "Would you be comfortable with your partner having other romantic connections?",
       "options": [
         {
           "value": 0,
-          "label": "Prefer being one of their closest"
+          "label": "No – I need complete romantic exclusivity"
         },
         {
           "value": 1,
-          "label": "Fine as long as we have quality time"
+          "label": "Maybe sexual but not romantic connections"
         },
         {
           "value": 2,
-          "label": "Totally fine – more connections is great"
+          "label": "Yes, with clear communication and boundaries"
         },
         {
           "value": 3,
-          "label": "Encourage it – I value independence"
+          "label": "Yes, and I prefer relationship autonomy"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comt_024",
       "category": "Commitment",
-      "text": "How important is structure and defined boundaries in your connections?",
-      "multiSelect": false,
+      "text": "How important is relationship structure and defined boundaries to you?",
       "options": [
         {
           "value": 0,
@@ -3350,7 +3247,8 @@
           "value": 3,
           "label": "I prefer minimal structure and maximum freedom"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_022",
@@ -3374,12 +3272,13 @@
           "value": 3,
           "label": "At home"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comt_026",
       "category": "Commitment",
-      "text": "How important is loyalty in your connections?",
+      "text": "How important is loyalty in a relationship?",
       "multiSelect": false,
       "options": [
         {
@@ -3398,7 +3297,8 @@
           "value": 3,
           "label": "I have a flexible view on loyalty"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_044",
@@ -3422,12 +3322,13 @@
           "value": 3,
           "label": "No, I don't believe in ghosts"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comm_020",
       "category": "Communication",
-      "text": "How do you feel about playful teasing with people you're close to?",
+      "text": "How do you feel about playful teasing with your partner?",
       "multiSelect": false,
       "options": [
         {
@@ -3446,12 +3347,13 @@
           "value": 3,
           "label": "I don't like teasing at all – it can feel hurtful"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_023",
       "category": "Social",
-      "text": "How important is it that people you connect with have healthy family relationships?",
+      "text": "How important is it that your partner has healthy family relationships?",
       "multiSelect": false,
       "options": [
         {
@@ -3470,7 +3372,8 @@
           "value": 3,
           "label": "Not important – family relationships are personal"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_024",
@@ -3494,7 +3397,8 @@
           "value": 3,
           "label": "Definitely a night person"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_045",
@@ -3518,12 +3422,13 @@
           "value": 3,
           "label": "No, I don't know what that is"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_046",
       "category": "Values",
-      "text": "Would you be open to trying someone's cultural foods if you're from different cultures?",
+      "text": "Would you be open to trying your partner's cultural foods if you're from different cultures?",
       "multiSelect": false,
       "options": [
         {
@@ -3542,17 +3447,18 @@
           "value": 3,
           "label": "Probably not – I prefer what I know"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_025",
       "category": "Social",
-      "text": "How important is spending major holidays with people you're close to?",
+      "text": "How important is spending major holidays with your partner?",
       "multiSelect": false,
       "options": [
         {
           "value": 0,
-          "label": "Very important – close connections are family"
+          "label": "Very important – we're family to each other"
         },
         {
           "value": 1,
@@ -3566,12 +3472,13 @@
           "value": 3,
           "label": "Holidays are for actual family"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "comm_021",
       "category": "Communication",
-      "text": "How soon after connecting with someone would you suggest meeting up?",
+      "text": "How soon after matching with someone would you suggest meeting up?",
       "multiSelect": false,
       "options": [
         {
@@ -3590,7 +3497,8 @@
           "value": 3,
           "label": "When it feels natural, no specific timeline"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "vals_047",
@@ -3614,7 +3522,8 @@
           "value": 3,
           "label": "I'm comfortable with regular recreational use"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_026",
@@ -3638,7 +3547,8 @@
           "value": 3,
           "label": "Mix of relaxation and exploration"
         }
-      ]
+      ],
+      "userSubmitted": true
     },
     {
       "id": "socl_027",
@@ -3662,7 +3572,8 @@
           "value": 3,
           "label": "After 1:30 AM"
         }
-      ]
+      ],
+      "userSubmitted": true
     }
   ],
   "archetypes": [

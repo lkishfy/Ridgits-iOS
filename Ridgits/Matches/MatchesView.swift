@@ -481,7 +481,7 @@ struct MatchesView: View {
 
                 Text(premiumCloseMatchesTeaserMessage)
                     .font(RidgitsTypography.caption(13))
-                    .foregroundStyle(RidgitsColors.forestGreenDark.opacity(0.9))
+                    .foregroundStyle(RidgitsSubscriptionTier.premium.accentColorDark.opacity(0.9))
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -496,15 +496,15 @@ struct MatchesView: View {
             }
             .font(RidgitsTypography.caption(13))
             .fontWeight(.semibold)
-            .foregroundStyle(RidgitsColors.forestGreenDark)
+            .foregroundStyle(RidgitsSubscriptionTier.premium.accentColorDark)
             .buttonStyle(RidgitsHapticPlainButtonStyle())
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(RidgitsColors.forestGreenLight)
+        .background(RidgitsSubscriptionTier.premium.accentColorLight)
         .overlay(
             RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                .stroke(RidgitsColors.forestGreen.opacity(0.25), lineWidth: 1)
+                .stroke(RidgitsSubscriptionTier.premium.accentColor.opacity(0.25), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
     }

@@ -36,7 +36,10 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                RidgitsLogoView.onLight(size: 22)
+                RidgitsNavLogoView(
+                    membershipTier: ridgitsStore.membershipTier,
+                    isMembershipActive: ridgitsStore.isMembershipActive
+                )
             }
         }
         .task { await loadProfile() }

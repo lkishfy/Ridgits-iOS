@@ -51,6 +51,33 @@ extension RidgitsSubscriptionTier {
         }
     }
 
+    var accentColor: Color {
+        switch self {
+        case .free: return RidgitsColors.textMuted
+        case .plus: return Color(hex: 0x737373)
+        case .premium: return RidgitsColors.primaryBlue
+        case .ultra: return Color(hex: 0xC09F6D)
+        }
+    }
+
+    var accentColorDark: Color {
+        switch self {
+        case .free: return RidgitsColors.textSecondary
+        case .plus: return Color(hex: 0x525252)
+        case .premium: return Color(hex: 0x0052CC)
+        case .ultra: return Color(hex: 0x8A7349)
+        }
+    }
+
+    var accentColorLight: Color {
+        switch self {
+        case .free: return RidgitsColors.hoverSurface
+        case .plus: return Color(hex: 0xF5F5F5)
+        case .premium: return Color(hex: 0xE6F0FF)
+        case .ultra: return Color(hex: 0xF5EFE4)
+        }
+    }
+
     static func verifiedTier(from stored: String?) -> RidgitsSubscriptionTier? {
         let tier = from(stored: stored)
         return tier.showsVerifiedBadge ? tier : nil
