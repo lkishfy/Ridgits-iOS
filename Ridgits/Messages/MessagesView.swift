@@ -390,7 +390,7 @@ struct MessagesView: View {
             }
         } message: {
             if let match = pokeConfirmMatch {
-                Text(matchesViewModel.pokeConfirmationMessage(for: match.name))
+                Text(matchesViewModel.pokeConfirmationMessage(for: match.displayFirstName))
             }
         }
         .alert("Delete poke?", isPresented: Binding(
@@ -411,7 +411,7 @@ struct MessagesView: View {
             }
         } message: {
             if let match = unpokeConfirmMatch {
-                Text("Delete your poke to \(match.name)?")
+                Text("Delete your poke to \(match.displayFirstName)?")
             }
         }
         .onChange(of: viewModel.showPaywallPrompt) { _, showPaywall in

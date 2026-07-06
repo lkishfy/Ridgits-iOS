@@ -40,7 +40,7 @@ struct MatchProfileView: View {
             .ridgitsFloatingTabBarPadding()
         }
         .background(RidgitsColors.feedBackground)
-        .navigationTitle(match.name)
+        .navigationTitle(match.displayFirstName)
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await loadProfile()
@@ -48,7 +48,8 @@ struct MatchProfileView: View {
     }
 
     private var displayAbout: String {
-        profile?.about ?? match.about ?? ""
+        let raw = profile?.about ?? match.about ?? ""
+        return RidgitsDisplaySanitize.sanitizeBio(raw)
     }
 
     private var displayInterests: [String] {
@@ -77,7 +78,7 @@ struct MatchProfileView: View {
             )
 
             HStack(spacing: 8) {
-                Text(match.name)
+                Text(match.displayFirstName)
                     .font(RidgitsTypography.headline(22))
                     .foregroundStyle(RidgitsColors.textHeadline)
                     .lineLimit(2)

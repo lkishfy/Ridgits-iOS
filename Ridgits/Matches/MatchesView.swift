@@ -180,7 +180,7 @@ struct MatchesView: View {
             }
         } message: {
             if let match = pokeConfirmMatch {
-                Text(viewModel.pokeConfirmationMessage(for: match.name))
+                Text(viewModel.pokeConfirmationMessage(for: match.displayFirstName))
             }
         }
         .alert("Delete poke?", isPresented: Binding(
@@ -201,7 +201,7 @@ struct MatchesView: View {
             }
         } message: {
             if let match = unpokeConfirmMatch {
-                Text("Delete your poke to \(match.name)?")
+                Text("Delete your poke to \(match.displayFirstName)?")
             }
         }
     }
@@ -834,7 +834,7 @@ struct MatchesView: View {
 
             VStack(spacing: 6) {
                 HStack(spacing: 6) {
-                    Text("Message \(match.name)")
+                    Text("Message \(match.displayFirstName)")
                         .font(RidgitsTypography.headline(22))
                         .foregroundStyle(RidgitsColors.textHeadline)
                         .lineLimit(1)
@@ -966,7 +966,7 @@ private struct MatchCard: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 6) {
-                            Text(locked ? "Someone nearby" : match.name)
+                            Text(locked ? "Someone nearby" : match.displayFirstName)
                                 .font(RidgitsTypography.headline(16))
                             if !locked {
                                 RidgitsProfileTrustBadges(
@@ -983,7 +983,7 @@ private struct MatchCard: View {
                                 .font(RidgitsTypography.caption())
                                 .foregroundStyle(RidgitsColors.textSecondary)
                         }
-                        if let about = match.about, !locked {
+                        if let about = match.sanitizedAbout, !locked {
                             Text(about)
                                 .font(RidgitsTypography.body(13))
                                 .foregroundStyle(RidgitsColors.textSecondary)

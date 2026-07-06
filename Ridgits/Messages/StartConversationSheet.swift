@@ -35,7 +35,7 @@ struct StartConversationSheet: View {
 
                         VStack(spacing: 6) {
                             HStack(spacing: 6) {
-                                Text("Message \(match.name)")
+                                Text("Message \(match.displayFirstName)")
                                     .font(RidgitsTypography.headline(22))
                                     .foregroundStyle(RidgitsColors.textHeadline)
                                     .lineLimit(1)

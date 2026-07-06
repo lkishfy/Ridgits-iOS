@@ -414,7 +414,7 @@ final class MatchesViewModel: ObservableObject {
                 .filter(\.sameMetro)
                 .prefix(5)
                 .map { match in
-                    RidgitsCloseMatchPreview(userId: match.userId, name: match.name, image: match.image)
+                    RidgitsCloseMatchPreview(userId: match.userId, name: match.displayFirstName, image: match.image)
                 }
             persistCloseMatchPreviews(access: access)
             return
