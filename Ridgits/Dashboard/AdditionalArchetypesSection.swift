@@ -291,22 +291,46 @@ struct CommunitySection: View {
     }
 
     private var quizStatsBlock: some View {
-        VStack(spacing: 6) {
-            Text("Quizzes completed this week")
+        VStack(spacing: 0) {
+            if statsViewModel.stats.completedThisWeek > 0 {
+                weeklyActivityBadge
+                    .padding(.bottom, 16)
+            }
+
+            Text("Ridgits Quizzes Completed")
                 .font(RidgitsTypography.caption(13))
                 .foregroundStyle(RidgitsColors.textSecondary)
+                .padding(.bottom, 8)
 
-            Text(statsViewModel.stats.completedThisWeek.formatted())
-                .font(.system(size: 44, weight: .semibold))
+            Text(statsViewModel.stats.totalCompleted.formatted())
+                .font(.system(size: 48, weight: .semibold))
                 .foregroundStyle(RidgitsColors.textHeadline)
                 .monospacedDigit()
-
-            Text("\(statsViewModel.stats.totalCompleted.formatted()) total all time")
-                .font(RidgitsTypography.caption(11))
-                .foregroundStyle(RidgitsColors.textMuted)
-                .padding(.top, 2)
+                .tracking(-0.5)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var weeklyActivityBadge: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(Color(hex: 0x059669))
+                .frame(width: 8, height: 8)
+
+            Text(weeklyActivityBadgeText)
+                .font(RidgitsTypography.label(11))
+                .foregroundStyle(Color(hex: 0x065F46))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color(hex: 0xD1FAE5))
+        .clipShape(Capsule())
+    }
+
+    private var weeklyActivityBadgeText: String {
+        let count = statsViewModel.stats.completedThisWeek
+        let noun = count == 1 ? "quiz" : "quizzes"
+        return "\(count.formatted()) \(noun) completed this week"
     }
 
     private var popularQuestionsBlock: some View {
