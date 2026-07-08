@@ -109,7 +109,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     }
 }
 
-struct RidgitQuestion: Identifiable, Equatable {
+struct RidgitQuestion: Identifiable, Equatable, Codable {
     var id: String { question }
     var question: String
     var options: [String]
@@ -142,7 +142,7 @@ struct RidgitQuestion: Identifiable, Equatable {
     }
 }
 
-struct RidgitChallenge: Identifiable, Equatable {
+struct RidgitChallenge: Identifiable, Equatable, Codable {
     let id: String
     var title: String
     var userId: String
@@ -325,7 +325,7 @@ enum ConversationStatus: String, Codable {
     case declined
 }
 
-struct RidgitsConversation: Identifiable, Equatable, Codable {
+struct RidgitsConversation: Identifiable, Equatable, Codable, Hashable {
     let id: String
     let participantIds: [String]
     let status: ConversationStatus
@@ -343,17 +343,79 @@ struct RidgitsConversation: Identifiable, Equatable, Codable {
     let isIncomingPending: Bool
     let isOutgoingPending: Bool
     let isOutgoingDeclined: Bool
+    var isArchived: Bool = false
 
     var isExpired: Bool {
         status == .expired || (expiresAt.map { $0 <= Date() } ?? false)
     }
 
     var messagesRemaining: Int {
-        max(0, maxMessages - messageCount)
+        max(0, effectiveMaxMessages - messageCount)
+    }
+
+    var effectiveMaxMessages: Int {
+        RidgitsMessagingLimits.maxMessages
     }
 
     var canSendMessage: Bool {
-        status == .active && !isExpired && messageCount < maxMessages
+        status == .active && !isExpired && messageCount < effectiveMaxMessages
+    }
+
+    var isMessagingClosed: Bool {
+        status == .expired || (status == .active && !canSendMessage)
+    }
+
+    var hitMessageLimit: Bool {
+        messageCount >= effectiveMaxMessages
+    }
+
+    var isConversationExpired: Bool {
+        status == .expired || isExpired
+    }
+
+    var closedStatusLabel: String {
+        "Expired"
+    }
+
+    var inboxSubtitle: String {
+        isMessagingClosed ? "Expired conversation" : (lastMessage ?? "No messages yet")
+    }
+
+    var messagingClosedUserMessage: String {
+        if isConversationExpired {
+            return "You can't message them — this conversation has already expired."
+        }
+        if hitMessageLimit {
+            return "You can't message them — you've already hit the \(RidgitsMessagingLimits.maxMessages)-message limit for this conversation."
+        }
+        return "You can't message them — this conversation has already expired."
+    }
+
+    var messagingClosedThreadMessage: String {
+        "Expired conversation"
+    }
+
+    func withArchived(_ archived: Bool) -> RidgitsConversation {
+        RidgitsConversation(
+            id: id,
+            participantIds: participantIds,
+            status: status,
+            expiresAt: expiresAt,
+            messageCount: messageCount,
+            maxMessages: maxMessages,
+            lastMessage: lastMessage,
+            lastMessageAt: lastMessageAt,
+            otherUserId: otherUserId,
+            otherUserName: otherUserName,
+            otherUserImage: otherUserImage,
+            otherUserSubscriptionTier: otherUserSubscriptionTier,
+            otherUserProfilePhotoVerified: otherUserProfilePhotoVerified,
+            unreadCount: unreadCount,
+            isIncomingPending: isIncomingPending,
+            isOutgoingPending: isOutgoingPending,
+            isOutgoingDeclined: isOutgoingDeclined,
+            isArchived: archived
+        )
     }
 }
 
@@ -503,7 +565,10 @@ extension RidgitsConversation {
         let participants = data["participants"] as? [String: [String: Any]] ?? [:]
         let other = participants[otherUserId] ?? [:]
         let statusRaw = data["status"] as? String ?? "pending"
-        let status = ConversationStatus(rawValue: statusRaw) ?? .pending
+        var status = ConversationStatus(rawValue: statusRaw) ?? .pending
+        if (data["isExpired"] as? Bool) == true, status == .active {
+            status = .expired
+        }
         let approvals = data["approvals"] as? [String: Bool] ?? [:]
         let approvedByMe = approvals[currentUserId] == true
         let approvedByOther = approvals[otherUserId] == true
@@ -513,6 +578,7 @@ extension RidgitsConversation {
         let otherUserImage = participantString(other, keys: ["imageUrl", "image", "photoUrl", "photoURL", "avatarUrl", "avatar"]) ?? ""
         let otherUserSubscriptionTier = other["subscriptionTier"] as? String
         let otherUserProfilePhotoVerified = other["profilePhotoVerified"] as? Bool ?? false
+        let archivedBy = data["archivedBy"] as? [String] ?? []
 
         return RidgitsConversation(
             id: id,
@@ -532,7 +598,8 @@ extension RidgitsConversation {
             unreadCount: (data["unreadCounts"] as? [String: Int])?[currentUserId] ?? 0,
             isIncomingPending: status == .pending && initiatorId != currentUserId && !approvedByMe,
             isOutgoingPending: status == .pending && initiatorId == currentUserId && !approvedByOther,
-            isOutgoingDeclined: status == .declined && initiatorId == currentUserId
+            isOutgoingDeclined: status == .declined && initiatorId == currentUserId,
+            isArchived: archivedBy.contains(currentUserId)
         )
     }
 
@@ -559,7 +626,8 @@ extension RidgitsConversation {
             unreadCount: unreadCount,
             isIncomingPending: isIncomingPending,
             isOutgoingPending: isOutgoingPending,
-            isOutgoingDeclined: isOutgoingDeclined
+            isOutgoingDeclined: isOutgoingDeclined,
+            isArchived: isArchived
         )
     }
 

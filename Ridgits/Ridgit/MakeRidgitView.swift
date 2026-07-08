@@ -75,7 +75,7 @@ struct MakeRidgitView: View {
                         canCreateNew: canCreateMoreRidgits,
                         onLimitReached: handleRidgitLimitReached,
                         onCancel: cancelEditor,
-                        onSaved: { await reload() }
+                        onSaved: { await reload(forceRefresh: true) }
                     )
                 }
 
@@ -104,12 +104,15 @@ struct MakeRidgitView: View {
         .coordinateSpace(name: "ridgitsTabScroll")
         .background(RidgitsColors.feedBackground)
         .navigationBarTitleDisplayMode(.inline)
-        .task { await reload() }
+        .task {
+            applyCachedIfAvailable()
+            await reload(forceRefresh: false)
+        }
         .onChange(of: ridgitsStore.membershipTier) { _, _ in
-            Task { await reload() }
+            Task { await reload(forceRefresh: false) }
         }
         .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
-            Task { await reload() }
+            Task { await reload(forceRefresh: false) }
         }
         .fullScreenCover(item: $nearbySharePayload) { payload in
             RidgitNearbyShareSenderSheet(payload: payload) { _ in
@@ -301,12 +304,23 @@ struct MakeRidgitView: View {
         editingRidgit = nil
     }
 
-    @MainActor
-    private func reload() async {
+    private func applyCachedIfAvailable() {
         guard let uid = authManager.currentUser?.uid else { return }
-        profile = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)) ?? .empty(uid: uid)
-        ridgits = await RidgitsFirebaseClient.shared.fetchRidgits(userId: uid)
-        var ids = await RidgitsFirebaseClient.shared.fetchActiveRidgitIds(uid: uid)
+        if let cachedProfile = RidgitsProfileCache.shared.profile(for: uid) {
+            profile = cachedProfile
+        }
+        guard let cached = RidgitsRidgitListCache.shared.record(for: uid) else { return }
+        ridgits = cached.ridgits
+        activeRidgitIds = cached.activeRidgitIds
+    }
+
+    @MainActor
+    private func reload(forceRefresh: Bool) async {
+        guard let uid = authManager.currentUser?.uid else { return }
+        let policy: RidgitsFirebaseClient.ProfileFetchPolicy = forceRefresh ? .networkOnly : .cacheFirst
+        profile = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid, policy: policy)) ?? .empty(uid: uid)
+        ridgits = await RidgitsFirebaseClient.shared.fetchRidgits(userId: uid, policy: policy)
+        var ids = await RidgitsFirebaseClient.shared.fetchActiveRidgitIds(uid: uid, policy: policy)
         showEditor = false
         editingRidgit = nil
 
@@ -356,7 +370,7 @@ struct MakeRidgitView: View {
         do {
             try await RidgitsFirebaseClient.shared.deleteRidgit(id: id, userId: uid)
             deleteConfirmId = nil
-            await reload()
+            await reload(forceRefresh: true)
         } catch {
             errorMessage = error.localizedDescription
         }

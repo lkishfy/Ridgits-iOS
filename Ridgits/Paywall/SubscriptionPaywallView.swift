@@ -326,9 +326,6 @@ struct SubscriptionPaywallView: View {
                         }
                     }
                     .disabled(ridgitsStore.isPurchasing)
-                } else {
-                    RidgitsSquareButton(title: "Included in your plan", style: .ghost) {}
-                        .disabled(true)
                 }
             }
             .padding(16)

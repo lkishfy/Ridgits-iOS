@@ -40,9 +40,9 @@
 		</dict>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Ridgits uses Bluetooth to detect nearby members and share Ridgit quizzes when you bring phones together.</string>
+	<string>Ridgits uses Bluetooth in the background to detect nearby members and vibrate your phone when someone is close, even when the screen is locked.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Ridgits uses Bluetooth and the local network to discover nearby members and share Ridgit quizzes in person.</string>
+	<string>Ridgits uses Bluetooth and the local network to discover nearby members and alert you when someone is close.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ridgits-nearby._tcp</string>
@@ -58,6 +58,11 @@
 	<string>Ridgits uses your photo library so you can set profile photos.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -76,31 +76,6 @@
       ]
     },
     {
-      "id": "ll_intim_010",
-      "category": "Intimacy",
-      "text": "Would you date someone who was in a committed non-monogamous relationship?",
-      "multiSelect": false,
-      "isSpicy": true,
-      "options": [
-        {
-          "value": 0,
-          "label": "Yes, I'm open to that"
-        },
-        {
-          "value": 1,
-          "label": "Maybe, depending on the situation"
-        },
-        {
-          "value": 2,
-          "label": "Probably not, but I'm not judging"
-        },
-        {
-          "value": 3,
-          "label": "No, I need monogamy"
-        }
-      ]
-    },
-    {
       "id": "ll_intim_012",
       "category": "Intimacy",
       "text": "How would you feel if your partner wanted to shower together regularly?",

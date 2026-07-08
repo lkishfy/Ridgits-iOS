@@ -4,6 +4,7 @@ import FirebaseAuth
 struct MatchProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var pokeInbox: RidgitsPokeInbox
+    @EnvironmentObject private var messagingViewModel: MessagingViewModel
 
     let match: RidgitsMatch
     let onMessage: () -> Void
@@ -44,6 +45,7 @@ struct MatchProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await loadProfile()
+            await messagingViewModel.prefetchConversationStatus(for: [match.userId])
         }
     }
 
@@ -158,34 +160,49 @@ struct MatchProfileView: View {
 
     private var actionButtons: some View {
         HStack(spacing: 10) {
-            RidgitsPrimaryButton(title: "Message") {
-                onMessage()
-                dismiss()
-            }
-            if sentPoke {
-                Button("Poked") {
-                    onUnpoke()
-                }
-                .font(RidgitsTypography.label(14))
-                .foregroundStyle(RidgitsColors.textMuted)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .overlay(
-                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                        .stroke(RidgitsColors.border, lineWidth: 1)
-                )
+            if let closedLabel = messagingViewModel.messagingClosedLabel(for: match) {
+                Text(closedLabel)
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+                    .accessibilityLabel("Conversation \(closedLabel.lowercased())")
             } else {
-                Button("Poke") {
-                    onPoke()
+                RidgitsPrimaryButton(title: "Message") {
+                    onMessage()
+                    dismiss()
                 }
-                .font(RidgitsTypography.label(14))
-                .foregroundStyle(RidgitsColors.textHeadline)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .overlay(
-                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                        .stroke(RidgitsColors.border, lineWidth: 1)
-                )
+            }
+            if !messagingViewModel.messagingIsExpired(for: match) {
+                if sentPoke {
+                    Button("Poked") {
+                        onUnpoke()
+                    }
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textMuted)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+                } else {
+                    Button("Poke") {
+                        onPoke()
+                    }
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                            .stroke(RidgitsColors.border, lineWidth: 1)
+                    )
+                }
             }
         }
         .padding(.top, 4)

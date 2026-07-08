@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var sessionReady = false
     @State private var needsBirthYear = false
     @State private var needsReferralWelcome = false
+    @State private var showQuizIntro = true
+    @State private var hasExistingQuizProgress = false
 
     var body: some View {
         Group {
@@ -35,8 +37,14 @@ struct ContentView: View {
                     needsBirthYear = false
                 }
             } else if !quizCompleted {
-                QuizView(mode: .onboarding) {
-                    quizCompleted = true
+                if showQuizIntro {
+                    QuizIntroView {
+                        showQuizIntro = false
+                    }
+                } else {
+                    QuizView(mode: .onboarding) {
+                        quizCompleted = true
+                    }
                 }
             } else if !profileComplete {
                 ProfileSetupView {
@@ -54,6 +62,8 @@ struct ContentView: View {
                 profileComplete = false
                 sessionReady = false
                 needsReferralWelcome = false
+                showQuizIntro = true
+                hasExistingQuizProgress = false
                 ridgitsStore.reset()
                 referralStore.reset()
             }
@@ -115,6 +125,8 @@ struct ContentView: View {
 
         let progress = try? await RidgitsFirebaseClient.shared.fetchQuizProgress(uid: uid)
         let answeredCount = progress.map { QuizCatalog.personalityAnsweredCount(in: $0.answers) } ?? 0
+        hasExistingQuizProgress = answeredCount > 0
+        showQuizIntro = !hasExistingQuizProgress
         let answeredEnough = answeredCount >= QuizCatalog.onboardingSkipThreshold
         let quizDoneFromServer = (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) ?? false
         let quizDoneFromProgress = progress?.completed == true

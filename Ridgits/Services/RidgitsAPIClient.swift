@@ -249,6 +249,22 @@ final class RidgitsAPIClient {
         )
     }
 
+    func archiveConversation(conversationId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/messaging/archive",
+            method: "POST",
+            body: ["conversationId": conversationId]
+        )
+    }
+
+    func unarchiveConversation(conversationId: String) async throws {
+        _ = try await authorizedRequest(
+            path: "/api/messaging/unarchive",
+            method: "POST",
+            body: ["conversationId": conversationId]
+        )
+    }
+
     func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {
         let data = try await authorizedRequest(path: "/api/messaging/quota", method: "GET", body: nil)
         let quota = data["quota"] as? [String: Any] ?? [:]
@@ -445,6 +461,7 @@ final class RidgitsAPIClient {
         let json = (try? JSONSerialization.jsonObject(with: responseData) as? [String: Any]) ?? [:]
         guard (200...299).contains(http.statusCode) else {
             let message = json["error"] as? String ?? "Request failed (\(http.statusCode))"
+            RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(message, context: "\(method) \(path)")
             if let code = json["code"] as? String {
                 throw RidgitsError.serverCoded(message: message, code: code)
             }

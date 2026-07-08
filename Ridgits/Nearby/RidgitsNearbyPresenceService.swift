@@ -1,5 +1,6 @@
 import Foundation
 import MultipeerConnectivity
+import UIKit
 import UserNotifications
 
 /// Discovers other Ridgits users nearby via Bluetooth/Wi‑Fi (MultipeerConnectivity),
@@ -39,10 +40,26 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
 
     private var displayName = "Ridgits User"
     private var profileCode: String?
+    private var isAppActive = true
+    private var backgroundKeepAliveTask: UIBackgroundTaskIdentifier = .invalid
 
     override init() {
         alertsEnabled = UserDefaults.standard.object(forKey: Self.alertsKey) as? Bool ?? true
         super.init()
+        registerNotificationCategoryIfNeeded()
+    }
+
+    func handleAppBecameActive() {
+        isAppActive = true
+        endBackgroundKeepAliveTaskIfNeeded()
+        refreshDiscoverySession()
+        requestNotificationPermissionIfNeeded()
+    }
+
+    func handleAppEnteredBackground() {
+        isAppActive = false
+        refreshDiscoverySession()
+        beginBackgroundKeepAliveTaskIfNeeded()
     }
 
     // MARK: - Public API (matches presence)
@@ -148,6 +165,47 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
         }
     }
 
+    private func registerNotificationCategoryIfNeeded() {
+        let category = UNNotificationCategory(
+            identifier: "RIDGITS_NEARBY",
+            actions: [],
+            intentIdentifiers: [],
+            options: []
+        )
+        UNUserNotificationCenter.current().getNotificationCategories { existing in
+            guard !existing.contains(where: { $0.identifier == category.identifier }) else { return }
+            var categories = existing
+            categories.insert(category)
+            UNUserNotificationCenter.current().setNotificationCategories(categories)
+        }
+    }
+
+    private func refreshDiscoverySession() {
+        #if targetEnvironment(simulator)
+        return
+        #endif
+        guard isActive, advertiser != nil, browser != nil else { return }
+        advertiser?.stopAdvertisingPeer()
+        browser?.stopBrowsingForPeers()
+        advertiser?.startAdvertisingPeer()
+        browser?.startBrowsingForPeers()
+    }
+
+    private func beginBackgroundKeepAliveTaskIfNeeded() {
+        guard backgroundKeepAliveTask == .invalid else { return }
+        backgroundKeepAliveTask = UIApplication.shared.beginBackgroundTask(withName: "ridgits.nearby.discovery") { [weak self] in
+            Task { @MainActor in
+                self?.endBackgroundKeepAliveTaskIfNeeded()
+            }
+        }
+    }
+
+    private func endBackgroundKeepAliveTaskIfNeeded() {
+        guard backgroundKeepAliveTask != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundKeepAliveTask)
+        backgroundKeepAliveTask = .invalid
+    }
+
     // MARK: - Session lifecycle
 
     private func syncSessionLifecycle() {
@@ -237,6 +295,9 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
         }
 
         guard isNew, wantsMatchingAlerts, alertsEnabled else { return }
+        if isAppActive {
+            RidgitsHaptics.play(.warning)
+        }
         notifyNearbyPerson(named: peerID.displayName, key: key)
     }
 
@@ -270,13 +331,27 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
         content.title = "Ridgits person nearby"
         content.body = "\(name) is close by. Open Matches to see who's around."
         content.sound = .default
+        content.categoryIdentifier = "RIDGITS_NEARBY"
+        content.userInfo = [
+            "route": "matches",
+            "type": "nearby_bluetooth",
+        ]
+        if #available(iOS 15.0, *) {
+            content.interruptionLevel = .timeSensitive
+        }
 
         let request = UNNotificationRequest(
             identifier: "ridgits.nearby.\(key)",
             content: content,
             trigger: nil
         )
-        UNUserNotificationCenter.current().add(request)
+
+        let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "ridgits.nearby.alert")
+        UNUserNotificationCenter.current().add(request) { _ in
+            if backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+            }
+        }
     }
 
     private func clearPendingInvitation() {

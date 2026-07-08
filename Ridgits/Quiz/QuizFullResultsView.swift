@@ -80,20 +80,23 @@ struct QuizFullResultsView: View {
 
     private var resultsContent: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 0) {
                 if showsArchetypeChangeBanner {
                     archetypeChangeBanner
                 }
-                archetypeSection
-                if hasProfileContent {
-                    profileSection
+
+                VStack(alignment: .leading, spacing: 24) {
+                    archetypeSection
+                    if hasProfileContent {
+                        profileSection
+                    }
+                    dimensionsSection
+                    if !insights.isEmpty {
+                        aboutYouSection
+                    }
                 }
-                dimensionsSection
-                if !insights.isEmpty {
-                    aboutYouSection
-                }
+                .padding(16)
             }
-            .padding(16)
         }
         .background(RidgitsColors.feedBackground)
     }
@@ -104,7 +107,7 @@ struct QuizFullResultsView: View {
     }
 
     private var archetypeChangeBanner: some View {
-        RidgitsDashboardCard {
+        RidgitsDashboardCard(edgeToEdge: true) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Archetype updated")
                     .font(RidgitsTypography.label(13))
@@ -114,7 +117,9 @@ struct QuizFullResultsView: View {
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .lineSpacing(3)
             }
-            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
         }
     }
 

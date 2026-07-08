@@ -37,17 +37,14 @@ struct DashboardView: View {
     @StateObject private var matchesViewModel = MatchesViewModel()
     @StateObject private var tabBarScroll = RidgitsTabBarScrollState()
 
-    private var unreadCount: Int {
-        messagingViewModel.conversations.reduce(0) { $0 + $1.unreadCount }
-    }
-
     private var messagesTabBadge: Int {
-        unreadCount + pokeInbox.unseenCount
+        messagingViewModel.inactiveRequestCount
     }
 
     var body: some View {
         tabContent
             .environmentObject(tabBarScroll)
+            .environmentObject(messagingViewModel)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .overlay(alignment: .bottom) {
                 RidgitsGlassTabBar(
@@ -190,7 +187,11 @@ struct DashboardView: View {
             NavigationStack {
                 MatchesView(
                     viewModel: matchesViewModel,
-                    incomingPokeProfile: $incomingPokeProfile
+                    incomingPokeProfile: $incomingPokeProfile,
+                    onOpenConversation: { userId, conversationId in
+                        selectedTab = RidgitsTab.messages.rawValue
+                        messagingViewModel.requestOpenConversation(with: userId, conversationId: conversationId)
+                    }
                 )
             }
         case .ridgit:

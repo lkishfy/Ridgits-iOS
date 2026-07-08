@@ -9,6 +9,7 @@ final class RidgitsFirebaseClient {
     private let db = Firestore.firestore()
     private let api = RidgitsAPIClient.shared
     private var profileRefreshTasks: [String: Task<Void, Never>] = [:]
+    private var ridgitListRefreshTasks: [String: Task<Void, Never>] = [:]
 
     private init() {}
 
@@ -646,41 +647,75 @@ final class RidgitsFirebaseClient {
         }
     }
 
-    func fetchRidgits(userId: String) async -> [RidgitChallenge] {
-        guard let snapshot = try? await db.collection("ridgits")
-            .whereField("userId", isEqualTo: userId)
-            .getDocuments() else { return [] }
-        return snapshot.documents.compactMap { RidgitChallenge.from(id: $0.documentID, data: $0.data()) }
-            .sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+    func fetchRidgits(userId: String, policy: ProfileFetchPolicy = .cacheFirst) async -> [RidgitChallenge] {
+        switch policy {
+        case .cacheFirst:
+            if let cached = RidgitsRidgitListCache.shared.ridgits(for: userId) {
+                if RidgitsRidgitListCache.shared.isStale(uid: userId) {
+                    scheduleRidgitListRefresh(uid: userId)
+                }
+                return cached
+            }
+            return await fetchRidgits(userId: userId, policy: .networkOnly)
+        case .networkOnly:
+            let ridgits = await fetchRidgitsFromFirestore(userId: userId)
+            let activeIds = await fetchActiveRidgitIdsFromFirestore(uid: userId)
+            RidgitsRidgitListCache.shared.save(
+                ridgits: ridgits,
+                activeRidgitIds: activeIds,
+                uid: userId
+            )
+            return ridgits
+        }
     }
 
     func fetchRidgit(id: String) async -> RidgitChallenge? {
+        if let cached = RidgitsRidgitListCache.shared.ridgits(for: Auth.auth().currentUser?.uid ?? "")?
+            .first(where: { $0.id == id }) {
+            return cached
+        }
         guard let doc = try? await db.collection("ridgits").document(id).getDocument(),
               doc.exists,
               let data = doc.data() else { return nil }
         return RidgitChallenge.from(id: doc.documentID, data: data)
     }
 
-    func fetchActiveRidgitIds(uid: String) async -> [String] {
-        guard let doc = try? await db.collection("users").document(uid).getDocument(),
-              let data = doc.data(),
-              let ids = data["activeRidgitIds"] as? [String] else { return [] }
-        return ids
+    func fetchActiveRidgitIds(uid: String, policy: ProfileFetchPolicy = .cacheFirst) async -> [String] {
+        switch policy {
+        case .cacheFirst:
+            if let cached = RidgitsRidgitListCache.shared.activeRidgitIds(for: uid) {
+                if RidgitsRidgitListCache.shared.isStale(uid: uid) {
+                    scheduleRidgitListRefresh(uid: uid)
+                }
+                return cached
+            }
+            return await fetchActiveRidgitIds(uid: uid, policy: .networkOnly)
+        case .networkOnly:
+            let ridgits = await fetchRidgitsFromFirestore(userId: uid)
+            let activeIds = await fetchActiveRidgitIdsFromFirestore(uid: uid)
+            RidgitsRidgitListCache.shared.save(
+                ridgits: ridgits,
+                activeRidgitIds: activeIds,
+                uid: uid
+            )
+            return activeIds
+        }
     }
 
     func saveActiveRidgitIds(uid: String, ids: [String]) async throws {
         try await db.collection("users").document(uid).setData(["activeRidgitIds": ids], merge: true)
+        RidgitsRidgitListCache.shared.updateActiveRidgitIds(ids, uid: uid)
     }
 
     func addActiveRidgitId(uid: String, ridgitId: String, limit: Int) async throws {
-        var ids = await fetchActiveRidgitIds(uid: uid)
+        var ids = await fetchActiveRidgitIdsFromFirestore(uid: uid)
         guard !ids.contains(ridgitId), ids.count < limit else { return }
         ids.append(ridgitId)
         try await saveActiveRidgitIds(uid: uid, ids: ids)
     }
 
     func removeActiveRidgitId(uid: String, ridgitId: String) async throws {
-        var ids = await fetchActiveRidgitIds(uid: uid)
+        var ids = await fetchActiveRidgitIdsFromFirestore(uid: uid)
         ids.removeAll { $0 == ridgitId }
         try await saveActiveRidgitIds(uid: uid, ids: ids)
     }
@@ -708,7 +743,8 @@ final class RidgitsFirebaseClient {
         if isNew, let activeSlotLimit {
             try await addActiveRidgitId(uid: userId, ridgitId: docRef.documentID, limit: activeSlotLimit)
         }
-        guard let saved = await fetchRidgit(id: docRef.documentID) else {
+        let ridgits = await fetchRidgits(userId: userId, policy: .networkOnly)
+        guard let saved = ridgits.first(where: { $0.id == docRef.documentID }) else {
             throw RidgitsError.server("Could not save ridgit.")
         }
         return saved
@@ -717,6 +753,30 @@ final class RidgitsFirebaseClient {
     func deleteRidgit(id: String, userId: String) async throws {
         try await db.collection("ridgits").document(id).delete()
         try await removeActiveRidgitId(uid: userId, ridgitId: id)
+        _ = await fetchRidgits(userId: userId, policy: .networkOnly)
+    }
+
+    private func fetchRidgitsFromFirestore(userId: String) async -> [RidgitChallenge] {
+        guard let snapshot = try? await db.collection("ridgits")
+            .whereField("userId", isEqualTo: userId)
+            .getDocuments() else { return [] }
+        return snapshot.documents.compactMap { RidgitChallenge.from(id: $0.documentID, data: $0.data()) }
+            .sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+    }
+
+    private func fetchActiveRidgitIdsFromFirestore(uid: String) async -> [String] {
+        guard let doc = try? await db.collection("users").document(uid).getDocument(),
+              let data = doc.data(),
+              let ids = data["activeRidgitIds"] as? [String] else { return [] }
+        return ids
+    }
+
+    private func scheduleRidgitListRefresh(uid: String) {
+        guard ridgitListRefreshTasks[uid] == nil else { return }
+        ridgitListRefreshTasks[uid] = Task {
+            _ = await fetchRidgits(userId: uid, policy: .networkOnly)
+            ridgitListRefreshTasks[uid] = nil
+        }
     }
 
     /// Reads the private `birthYear` field off `users/{uid}` (not part of `publicProfiles`).
@@ -869,8 +929,21 @@ final class RidgitsFirebaseClient {
         return matches
     }
 
+    nonisolated static func conversationId(for userId: String, and otherUserId: String) -> String {
+        [userId, otherUserId].sorted().joined(separator: "_")
+    }
+
     func startConversation(toUserId: String, message: String) async throws -> String {
         try await api.startConversation(toUserId: toUserId, message: message)
+    }
+
+    func fetchConversation(conversationId: String, userId: String) async throws -> RidgitsConversation? {
+        let doc = try await db.collection("conversations").document(conversationId).getDocument()
+        guard doc.exists, let data = doc.data() else { return nil }
+        guard let conversation = RidgitsConversation.from(id: doc.documentID, data: data, currentUserId: userId) else {
+            return nil
+        }
+        return await enrichConversations([conversation], forceRefreshProfiles: true).first
     }
 
     func approveConversation(conversationId: String) async throws {
@@ -895,6 +968,14 @@ final class RidgitsFirebaseClient {
 
     func flagConversation(conversationId: String, reason: String) async throws {
         try await api.flagConversation(conversationId: conversationId, reason: reason)
+    }
+
+    func archiveConversation(conversationId: String) async throws {
+        try await api.archiveConversation(conversationId: conversationId)
+    }
+
+    func unarchiveConversation(conversationId: String) async throws {
+        try await api.unarchiveConversation(conversationId: conversationId)
     }
 
     func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {
@@ -928,18 +1009,28 @@ final class RidgitsFirebaseClient {
             }
 
             guard let profile else {
-                if !conversation.otherUserName.isEmpty {
+                let fallbackName = conversation.otherUserName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !fallbackName.isEmpty {
                     enriched.append(conversation)
+                } else {
+                    enriched.append(
+                        conversation.updatingOtherUser(
+                            name: "Ridgits member",
+                            image: conversation.otherUserImage
+                        )
+                    )
                 }
                 continue
             }
 
             let name = conversation.otherUserName.isEmpty ? profile.name : conversation.otherUserName
             let image = conversation.otherUserImage.isEmpty ? profile.image : conversation.otherUserImage
-            guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            let resolvedName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? "Ridgits member"
+                : name
 
             enriched.append(conversation.updatingOtherUser(
-                name: name,
+                name: resolvedName,
                 image: image,
                 subscriptionTier: profile.subscriptionTier == "free" ? conversation.otherUserSubscriptionTier : profile.subscriptionTier,
                 profilePhotoVerified: profile.profilePhotoVerified
@@ -949,43 +1040,121 @@ final class RidgitsFirebaseClient {
         return enriched
     }
 
-    func fetchConversations(userId: String, forceRefreshProfiles: Bool = false) async throws -> [RidgitsConversation] {
-        let snapshot = try await db.collection("conversations")
-            .whereField("participantIds", arrayContains: userId)
-            .order(by: "updatedAt", descending: true)
-            .limit(to: 50)
-            .getDocuments()
-
-        let conversations = snapshot.documents.compactMap { doc -> RidgitsConversation? in
+    private func parseConversationDocuments(_ documents: [QueryDocumentSnapshot], userId: String) -> [RidgitsConversation] {
+        documents.compactMap { doc -> RidgitsConversation? in
             let data = doc.data()
             let deletedBy = data["deletedBy"] as? [String] ?? []
-            guard !deletedBy.contains(userId) else { return nil }
-            return RidgitsConversation.from(id: doc.documentID, data: data, currentUserId: userId)
+            guard let conversation = RidgitsConversation.from(id: doc.documentID, data: data, currentUserId: userId) else {
+                return nil
+            }
+            if deletedBy.contains(userId),
+               !conversation.isMessagingClosed,
+               conversation.status != .expired {
+                return nil
+            }
+            return conversation
+        }
+    }
+
+    private func sortConversationsByRecency(_ conversations: [RidgitsConversation]) -> [RidgitsConversation] {
+        conversations.sorted {
+            ($0.lastMessageAt ?? .distantPast) > ($1.lastMessageAt ?? .distantPast)
+        }
+    }
+
+    private func fetchConversationDocuments(userId: String, ordered: Bool) async throws -> [QueryDocumentSnapshot] {
+        var query: Query = db.collection("conversations")
+            .whereField("participantIds", arrayContains: userId)
+        if ordered {
+            query = query.order(by: "updatedAt", descending: true)
+        }
+        let snapshot = try await query.limit(to: 50).getDocuments()
+        return snapshot.documents
+    }
+
+    func fetchConversations(userId: String, forceRefreshProfiles: Bool = false) async throws -> [RidgitsConversation] {
+        let documents: [QueryDocumentSnapshot]
+        do {
+            documents = try await fetchConversationDocuments(userId: userId, ordered: true)
+        } catch {
+            RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(error, context: "fetchConversations")
+            documents = try await fetchConversationDocuments(userId: userId, ordered: false)
         }
 
+        let conversations = sortConversationsByRecency(parseConversationDocuments(documents, userId: userId))
         return await enrichConversations(conversations, forceRefreshProfiles: forceRefreshProfiles)
     }
 
     func listenConversations(userId: String, onChange: @escaping ([RidgitsConversation]) -> Void) -> ListenerRegistration {
-        db.collection("conversations")
+        let orderedQuery = db.collection("conversations")
             .whereField("participantIds", arrayContains: userId)
             .order(by: "updatedAt", descending: true)
             .limit(to: 50)
-            .addSnapshotListener { snapshot, _ in
-                let conversations = snapshot?.documents.compactMap { doc -> RidgitsConversation? in
-                    let data = doc.data()
-                    let deletedBy = data["deletedBy"] as? [String] ?? []
-                    guard !deletedBy.contains(userId) else { return nil }
-                    return RidgitsConversation.from(id: doc.documentID, data: data, currentUserId: userId)
-                } ?? []
 
-                Task {
-                    let enriched = await self.enrichConversations(conversations)
-                    await MainActor.run {
-                        onChange(enriched)
-                    }
+        let fallbackQuery = db.collection("conversations")
+            .whereField("participantIds", arrayContains: userId)
+            .limit(to: 50)
+
+        var usingFallback = false
+        var registration: ListenerRegistration?
+
+        func deliver(_ snapshot: QuerySnapshot?) {
+            let conversations = sortConversationsByRecency(
+                parseConversationDocuments(snapshot?.documents ?? [], userId: userId)
+            )
+            Task {
+                let enriched = await self.enrichConversations(conversations)
+                await MainActor.run {
+                    onChange(enriched)
                 }
             }
+        }
+
+        func attachFallbackListener() {
+            guard !usingFallback else { return }
+            usingFallback = true
+            registration?.remove()
+            registration = fallbackQuery.addSnapshotListener { snapshot, error in
+                if let error {
+                    RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(error, context: "listenConversations(fallback)")
+                    Task {
+                        let convos = (try? await self.fetchConversations(userId: userId)) ?? []
+                        await MainActor.run { onChange(convos) }
+                    }
+                    return
+                }
+                deliver(snapshot)
+            }
+        }
+
+        registration = orderedQuery.addSnapshotListener { snapshot, error in
+            if let error {
+                RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(error, context: "listenConversations")
+                attachFallbackListener()
+                Task {
+                    let convos = (try? await self.fetchConversations(userId: userId)) ?? []
+                    await MainActor.run { onChange(convos) }
+                }
+                return
+            }
+            deliver(snapshot)
+        }
+
+        return CompositeListenerRegistration {
+            registration?.remove()
+        }
+    }
+
+    private final class CompositeListenerRegistration: NSObject, ListenerRegistration {
+        private let onRemove: () -> Void
+
+        init(onRemove: @escaping () -> Void) {
+            self.onRemove = onRemove
+        }
+
+        func remove() {
+            onRemove()
+        }
     }
 
     func listenMessages(conversationId: String, onChange: @escaping ([RidgitsMessage]) -> Void) -> ListenerRegistration {
@@ -994,7 +1163,11 @@ final class RidgitsFirebaseClient {
             .collection("messages")
             .order(by: "createdAt", descending: false)
             .limit(to: 100)
-            .addSnapshotListener { snapshot, _ in
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(error, context: "listenMessages(\(conversationId))")
+                    return
+                }
                 let messages = snapshot?.documents.compactMap { doc in
                     RidgitsMessage.from(id: doc.documentID, data: doc.data())
                 } ?? []

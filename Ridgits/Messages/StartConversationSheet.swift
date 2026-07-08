@@ -47,7 +47,7 @@ struct StartConversationSheet: View {
                                 )
                             }
 
-                            Text("Once they accept, you have 24 hours and 16 messages total.")
+                            Text("Once they accept, you have 24 hours and \(RidgitsMessagingLimits.maxMessages) messages total.")
                                 .font(RidgitsTypography.body(14))
                                 .foregroundStyle(RidgitsColors.textSecondary)
                                 .multilineTextAlignment(.center)
@@ -69,7 +69,8 @@ struct StartConversationSheet: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 28)
+                .padding(.bottom, 20)
+                .safeAreaPadding(.bottom, 16)
             }
         }
         .background(RidgitsColors.feedBackground)

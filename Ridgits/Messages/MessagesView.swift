@@ -19,11 +19,15 @@ final class MessagingViewModel: ObservableObject {
     @Published var showProfilePhotoMatchPrompt = false
     @Published var isFlagging = false
     @Published var flagSuccessMessage: String?
+    @Published var showEarlyPhoneNumberPrompt = false
 
     private var conversationsListener: ListenerRegistration?
     private var messagesListener: ListenerRegistration?
     private var conversationListener: ListenerRegistration?
     private var countdownTimer: Timer?
+    private(set) var pendingOpenOtherUserId: String?
+    @Published private(set) var matchConversationLookup: [String: RidgitsConversation] = [:]
+    private var prefetchingUserIds: Set<String> = []
 
     var pendingIncoming: [RidgitsConversation] {
         sortedByRecency(conversations.filter(\.isIncomingPending))
@@ -36,16 +40,60 @@ final class MessagingViewModel: ObservableObject {
     var activeConversations: [RidgitsConversation] {
         sortedByRecency(
             conversations.filter { conversation in
-                !conversation.isIncomingPending
+                !conversation.isArchived
+                    && !conversation.isIncomingPending
                     && !conversation.isOutgoingPending
                     && !conversation.isOutgoingDeclined
-                    && (conversation.status == .active || conversation.status == .pending)
+                    && conversation.status == .active
+                    && !conversation.isMessagingClosed
             }
         )
     }
 
+    var closedConversations: [RidgitsConversation] {
+        sortedByRecency(
+            conversations.filter { conversation in
+                !conversation.isArchived
+                    && !conversation.isIncomingPending
+                    && !conversation.isOutgoingPending
+                    && !conversation.isOutgoingDeclined
+                    && conversation.isMessagingClosed
+            }
+        )
+    }
+
+    var archivedConversations: [RidgitsConversation] {
+        sortedByRecency(conversations.filter(\.isArchived))
+    }
+
+    func messagingClosedMessage(for match: RidgitsMatch) -> String? {
+        guard let conversation = resolvedConversation(with: match.userId) else { return nil }
+        if conversation.status == .expired || conversation.isMessagingClosed {
+            return conversation.messagingClosedUserMessage
+        }
+        return nil
+    }
+
+    func messagingClosedLabel(for match: RidgitsMatch) -> String? {
+        guard let conversation = resolvedConversation(with: match.userId) else { return nil }
+        if conversation.status == .expired || conversation.isMessagingClosed {
+            return conversation.closedStatusLabel
+        }
+        return nil
+    }
+
+    func messagingIsExpired(for match: RidgitsMatch) -> Bool {
+        guard let conversation = resolvedConversation(with: match.userId) else { return false }
+        return conversation.isConversationExpired
+    }
+
     var incomingRequestCount: Int {
         pendingIncoming.count
+    }
+
+    /// Pending incoming + outgoing message requests awaiting action.
+    var inactiveRequestCount: Int {
+        pendingIncoming.count + awaitingApproval.count
     }
 
     var canSendMonthlyMessage: Bool { true }
@@ -57,14 +105,153 @@ final class MessagingViewModel: ObservableObject {
             conversations = cached
         }
 
-        guard conversationsListener == nil else { return }
-
+        conversationsListener?.remove()
         conversationsListener = RidgitsFirebaseClient.shared.listenConversations(userId: uid) { [weak self] convos in
             Task { @MainActor in
-                self?.conversations = convos
-                RidgitsConversationsCache.shared.save(convos, uid: uid)
+                self?.applyConversations(convos, uid: uid)
             }
         }
+    }
+
+    func conversation(with otherUserId: String) -> RidgitsConversation? {
+        conversations.first { $0.otherUserId == otherUserId }
+    }
+
+    func resolvedConversation(with otherUserId: String) -> RidgitsConversation? {
+        conversation(with: otherUserId) ?? matchConversationLookup[otherUserId]
+    }
+
+    func prefetchConversationStatus(for userIds: [String]) async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let targets = userIds.filter { userId in
+            !userId.isEmpty
+                && resolvedConversation(with: userId) == nil
+                && !prefetchingUserIds.contains(userId)
+        }
+        guard !targets.isEmpty else { return }
+
+        prefetchingUserIds.formUnion(targets)
+        defer { prefetchingUserIds.subtract(targets) }
+
+        await withTaskGroup(of: (String, RidgitsConversation?).self) { group in
+            for userId in targets.prefix(30) {
+                group.addTask {
+                    let conversationId = RidgitsFirebaseClient.conversationId(for: uid, and: userId)
+                    do {
+                        let conversation = try await RidgitsFirebaseClient.shared.fetchConversation(
+                            conversationId: conversationId,
+                            userId: uid
+                        )
+                        return (userId, conversation)
+                    } catch {
+                        return (userId, nil)
+                    }
+                }
+            }
+
+            var updates: [String: RidgitsConversation] = [:]
+            for await (userId, conversation) in group {
+                if let conversation {
+                    updates[userId] = conversation
+                }
+            }
+
+            guard !updates.isEmpty else { return }
+
+            for (userId, conversation) in updates {
+                matchConversationLookup[userId] = conversation
+                if conversation.isMessagingClosed || conversation.status == .expired {
+                    upsertConversation(conversation, uid: uid)
+                }
+            }
+        }
+    }
+
+    func closeConversation() {
+        messagesListener?.remove()
+        conversationListener?.remove()
+        messagesListener = nil
+        conversationListener = nil
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        messages = []
+        timeRemaining = nil
+        messageText = ""
+        pendingOpenOtherUserId = nil
+        selectedConversation = nil
+    }
+
+    func requestOpenConversation(with otherUserId: String, conversationId: String? = nil) {
+        if let existing = conversation(with: otherUserId) {
+            selectConversation(existing)
+            pendingOpenOtherUserId = nil
+            return
+        }
+        pendingOpenOtherUserId = otherUserId
+        Task { await loadAndOpenConversation(otherUserId: otherUserId, conversationId: conversationId) }
+    }
+
+    private func loadAndOpenConversation(otherUserId: String, conversationId: String?) async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let resolvedId = conversationId ?? RidgitsFirebaseClient.conversationId(for: uid, and: otherUserId)
+
+        for attempt in 0..<6 {
+            do {
+                if let conversation = try await RidgitsFirebaseClient.shared.fetchConversation(
+                    conversationId: resolvedId,
+                    userId: uid
+                ) {
+                    upsertConversation(conversation, uid: uid)
+                    resolvePendingOpenIfNeeded()
+                    return
+                }
+            } catch {
+                reportError(error, context: "MessagingViewModel.loadAndOpenConversation")
+            }
+
+            if attempt < 5 {
+                try? await Task.sleep(nanoseconds: UInt64(250_000_000 * UInt64(attempt + 1)))
+            }
+        }
+
+        await refresh()
+        resolvePendingOpenIfNeeded()
+    }
+
+    private func upsertConversation(_ conversation: RidgitsConversation, uid: String) {
+        if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
+            conversations[index] = conversation
+        } else {
+            conversations.append(conversation)
+        }
+        conversations = sortedByRecency(conversations)
+        RidgitsConversationsCache.shared.save(conversations, uid: uid)
+    }
+
+    private func applyConversations(_ convos: [RidgitsConversation], uid: String) {
+        var merged = convos
+        let incomingIds = Set(convos.map(\.id))
+
+        for existing in conversations where !incomingIds.contains(existing.id) {
+            if existing.id == selectedConversation?.id
+                || existing.otherUserId == pendingOpenOtherUserId
+                || existing.isMessagingClosed
+                || existing.status == .expired {
+                merged.append(existing)
+            }
+        }
+
+        conversations = sortedByRecency(merged)
+        RidgitsConversationsCache.shared.save(conversations, uid: uid)
+        resolvePendingOpenIfNeeded()
+    }
+
+    private func resolvePendingOpenIfNeeded() {
+        guard let userId = pendingOpenOtherUserId else { return }
+        guard let conversation = conversation(with: userId) else { return }
+        selectConversation(conversation)
+        pendingOpenOtherUserId = nil
     }
 
     func refresh() async {
@@ -74,11 +261,15 @@ final class MessagingViewModel: ObservableObject {
                 userId: uid,
                 forceRefreshProfiles: true
             )
-            conversations = convos
-            RidgitsConversationsCache.shared.save(convos, uid: uid)
+            applyConversations(convos, uid: uid)
         } catch {
-            errorMessage = error.localizedDescription
+            reportError(error, context: "MessagingViewModel.refresh")
         }
+    }
+
+    private func reportError(_ error: Error, context: String) {
+        RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(error, context: context)
+        errorMessage = error.localizedDescription
     }
 
     private func handleMessagingError(_ ridgitsError: RidgitsError) {
@@ -97,6 +288,9 @@ final class MessagingViewModel: ObservableObject {
             showProfilePhotoMatchPrompt = true
             return
         }
+        if let message = ridgitsError.errorDescription {
+            RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(message, context: "MessagingViewModel")
+        }
         errorMessage = ridgitsError.localizedDescription
     }
 
@@ -105,17 +299,22 @@ final class MessagingViewModel: ObservableObject {
         messagesListener?.remove()
         conversationListener?.remove()
         messages = []
-        messagesListener = RidgitsFirebaseClient.shared.listenMessages(conversationId: conversation.id) { [weak self] msgs in
-            Task { @MainActor in self?.messages = msgs }
-        }
-        conversationListener = RidgitsFirebaseClient.shared.listenConversation(conversationId: conversation.id) { [weak self] convo in
+        let conversationId = conversation.id
+        messagesListener = RidgitsFirebaseClient.shared.listenMessages(conversationId: conversationId) { [weak self] msgs in
             Task { @MainActor in
+                guard let self, self.selectedConversation?.id == conversationId else { return }
+                self.messages = msgs
+            }
+        }
+        conversationListener = RidgitsFirebaseClient.shared.listenConversation(conversationId: conversationId) { [weak self] convo in
+            Task { @MainActor in
+                guard let self, self.selectedConversation?.id == conversationId else { return }
                 guard let convo else {
-                    self?.selectedConversation = nil
+                    self.closeConversation()
                     return
                 }
-                self?.selectedConversation = convo
-                self?.updateCountdown()
+                self.selectedConversation = convo
+                self.updateCountdown()
             }
         }
         Task {
@@ -138,7 +337,7 @@ final class MessagingViewModel: ObservableObject {
         do {
             try await RidgitsFirebaseClient.shared.declineConversation(conversationId: conversation.id)
             if selectedConversation?.id == conversation.id {
-                selectedConversation = nil
+                closeConversation()
             }
         } catch let ridgitsError as RidgitsError {
             handleMessagingError(ridgitsError)
@@ -151,7 +350,7 @@ final class MessagingViewModel: ObservableObject {
         do {
             try await RidgitsFirebaseClient.shared.withdrawConversation(conversationId: conversation.id)
             if selectedConversation?.id == conversation.id {
-                selectedConversation = nil
+                closeConversation()
             }
         } catch let ridgitsError as RidgitsError {
             handleMessagingError(ridgitsError)
@@ -164,13 +363,24 @@ final class MessagingViewModel: ObservableObject {
         guard let conversation = selectedConversation else { return }
         let trimmed = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, conversation.canSendMessage, canSendMonthlyMessage else { return }
+        if RidgitsMessagingValidation.blocksEarlyPhoneNumber(
+            text: trimmed,
+            messageCount: conversation.messageCount
+        ) {
+            showEarlyPhoneNumberPrompt = true
+            return
+        }
         isSending = true
         defer { isSending = false }
         do {
             try await RidgitsFirebaseClient.shared.sendMessage(conversationId: conversation.id, message: trimmed)
             messageText = ""
         } catch let ridgitsError as RidgitsError {
-            handleMessagingError(ridgitsError)
+            if ridgitsError.code == "EARLY_PHONE_NUMBER" {
+                showEarlyPhoneNumberPrompt = true
+            } else {
+                handleMessagingError(ridgitsError)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -189,6 +399,42 @@ final class MessagingViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    func archive(_ conversation: RidgitsConversation) async {
+        do {
+            try await RidgitsFirebaseClient.shared.archiveConversation(conversationId: conversation.id)
+            updateConversationLocally(conversation.id) { $0.withArchived(true) }
+            if selectedConversation?.id == conversation.id {
+                closeConversation()
+            }
+        } catch let ridgitsError as RidgitsError {
+            errorMessage = ridgitsError.localizedDescription
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func unarchive(_ conversation: RidgitsConversation) async {
+        do {
+            try await RidgitsFirebaseClient.shared.unarchiveConversation(conversationId: conversation.id)
+            updateConversationLocally(conversation.id) { $0.withArchived(false) }
+        } catch let ridgitsError as RidgitsError {
+            errorMessage = ridgitsError.localizedDescription
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func updateConversationLocally(
+        _ conversationId: String,
+        transform: (RidgitsConversation) -> RidgitsConversation
+    ) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else { return }
+        conversations[index] = transform(conversations[index])
+        conversations = sortedByRecency(conversations)
+        RidgitsConversationsCache.shared.save(conversations, uid: uid)
     }
 
     func stopListening() {
@@ -256,7 +502,11 @@ struct MessagesView: View {
         NavigationStack {
             Group {
                 if let selected = viewModel.selectedConversation {
-                    ConversationDetailView(viewModel: viewModel, conversation: selected)
+                    ConversationDetailView(
+                        viewModel: viewModel,
+                        conversation: selected,
+                        onBack: { viewModel.closeConversation() }
+                    )
                 } else {
                     VStack(spacing: 0) {
                         inboxHeader
@@ -275,7 +525,7 @@ struct MessagesView: View {
                             showSubscriptionPaywall = true
                             return
                         }
-                        composeMatch = match
+                        guard beginCompose(to: match) else { return }
                         pokeProfileMatch = nil
                     },
                     onPoke: {
@@ -287,18 +537,7 @@ struct MessagesView: View {
                 )
             }
             .toolbar {
-                if viewModel.selectedConversation != nil {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            viewModel.selectedConversation = nil
-                            viewModel.messagesListenerCleanup()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                        }
-                    }
-                } else {
+                if viewModel.selectedConversation == nil {
                     ToolbarItem(placement: .principal) { EmptyView() }
                 }
             }
@@ -443,6 +682,10 @@ struct MessagesView: View {
         .task(id: incomingPokeProfile?.id) {
             await openIncomingPokeIfNeeded()
         }
+        .task {
+            viewModel.startListening()
+            await viewModel.refresh()
+        }
         .alert("Couldn't send message", isPresented: Binding(
             get: {
                 viewModel.errorMessage != nil
@@ -457,10 +700,27 @@ struct MessagesView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .alert(
+            "It's a bit too early for a phone number, no?",
+            isPresented: $viewModel.showEarlyPhoneNumberPrompt
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Let's get to know each other a bit more!")
+        }
     }
 
-    private var pendingRequestCount: Int {
-        viewModel.incomingRequestCount + pokeInbox.unseenCount
+    private var inactiveRequestCount: Int {
+        viewModel.inactiveRequestCount
+    }
+
+    private var inboxIsEmpty: Bool {
+        viewModel.activeConversations.isEmpty
+            && viewModel.closedConversations.isEmpty
+            && viewModel.pendingIncoming.isEmpty
+            && viewModel.awaitingApproval.isEmpty
+            && pokeInbox.receivedPokesSorted.isEmpty
+            && pokeInbox.sentPokesSorted.isEmpty
     }
 
     private var inboxHeader: some View {
@@ -476,16 +736,16 @@ struct MessagesView: View {
                     showRequests = true
                 } label: {
                     ZStack(alignment: .topTrailing) {
-                        Image(systemName: "tray.full")
+                        Image(systemName: "tray")
                             .font(.system(size: 21, weight: .regular))
                             .foregroundStyle(RidgitsColors.textHeadline)
                             .frame(width: 32, height: 32)
 
-                        if pendingRequestCount > 0 {
-                            Text(pendingRequestCount > 99 ? "99+" : "\(pendingRequestCount)")
+                        if inactiveRequestCount > 0 {
+                            Text(inactiveRequestCount > 99 ? "99+" : "\(inactiveRequestCount)")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(.white)
-                                .padding(.horizontal, pendingRequestCount > 9 ? 4 : 0)
+                                .padding(.horizontal, inactiveRequestCount > 9 ? 4 : 0)
                                 .frame(minWidth: 16, minHeight: 16)
                                 .background(RidgitsColors.destructive)
                                 .clipShape(Capsule())
@@ -496,9 +756,9 @@ struct MessagesView: View {
                 .buttonStyle(RidgitsHapticPlainButtonStyle())
                 .accessibilityLabel("Requests")
                 .accessibilityValue(
-                    pendingRequestCount > 0
-                        ? "\(pendingRequestCount) pending"
-                        : "No pending requests"
+                    inactiveRequestCount > 0
+                        ? "\(inactiveRequestCount) inactive requests"
+                        : "No inactive requests"
                 )
             }
             .padding(.horizontal, 16)
@@ -560,19 +820,28 @@ struct MessagesView: View {
                 }
             }
 
-            if viewModel.activeConversations.isEmpty
-                && pokeInbox.receivedPokesSorted.isEmpty
-                && pokeInbox.sentPokesSorted.isEmpty {
+            if !viewModel.pendingIncoming.isEmpty {
                 Section {
-                    emptyInbox
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                }
-            } else if !viewModel.activeConversations.isEmpty {
-                Section {
-                    ForEach(viewModel.activeConversations) { convo in
-                        DMConversationRow(conversation: convo) {
+                    ForEach(viewModel.pendingIncoming) { convo in
+                        DMConversationRow(
+                            conversation: convo,
+                            subtitleOverride: convo.lastMessage ?? "Sent you a message",
+                            showsApprove: true,
+                            onApprove: {
+                                guard gateMessagingAccess(
+                                    subscriptionPaywall: {
+                                        subscriptionPaywallForMessaging = true
+                                        showSubscriptionPaywall = true
+                                    },
+                                    identityVerification: { showIdentityVerification = true }
+                                ) else { return }
+                                Task { await viewModel.approve(convo) }
+                            },
+                            showsDecline: true,
+                            onDecline: {
+                                Task { await viewModel.decline(convo) }
+                            }
+                        ) {
                             viewModel.selectConversation(convo)
                         }
                         .listRowInsets(EdgeInsets())
@@ -580,8 +849,88 @@ struct MessagesView: View {
                         .listRowBackground(Color.white)
                     }
                 } header: {
-                    if !pokeInbox.receivedPokesSorted.isEmpty || !pokeInbox.sentPokesSorted.isEmpty {
-                        pokeSectionHeader("Chats")
+                    pokeSectionHeader("Message requests")
+                }
+            }
+
+            if !viewModel.awaitingApproval.isEmpty {
+                Section {
+                    ForEach(viewModel.awaitingApproval) { convo in
+                        DMConversationRow(
+                            conversation: convo,
+                            subtitleOverride: convo.lastMessage ?? "Waiting for them to approve",
+                            statusLabel: convo.isOutgoingDeclined ? "Declined" : "Pending",
+                            showsWithdraw: true,
+                            onWithdraw: {
+                                Task { await viewModel.withdraw(convo) }
+                            }
+                        ) {
+                            viewModel.selectConversation(convo)
+                        }
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.white)
+                    }
+                } header: {
+                    pokeSectionHeader("Sent requests")
+                }
+            }
+
+            if inboxIsEmpty {
+                Section {
+                    emptyInbox
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+            } else {
+                if !viewModel.activeConversations.isEmpty {
+                    Section {
+                        ForEach(viewModel.activeConversations) { convo in
+                            DMConversationRow(
+                                conversation: convo,
+                                subtitleOverride: convo.inboxSubtitle
+                            ) {
+                                viewModel.selectConversation(convo)
+                            }
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.white)
+                        }
+                    } header: {
+                        if !viewModel.pendingIncoming.isEmpty
+                            || !viewModel.awaitingApproval.isEmpty
+                            || !viewModel.closedConversations.isEmpty
+                            || !pokeInbox.receivedPokesSorted.isEmpty
+                            || !pokeInbox.sentPokesSorted.isEmpty {
+                            pokeSectionHeader("Chats")
+                        }
+                    }
+                }
+
+                if !viewModel.closedConversations.isEmpty {
+                    Section {
+                        ForEach(viewModel.closedConversations) { convo in
+                            DMConversationRow(
+                                conversation: convo,
+                                subtitleOverride: convo.inboxSubtitle
+                            ) {
+                                viewModel.selectConversation(convo)
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button {
+                                    Task { await viewModel.archive(convo) }
+                                } label: {
+                                    Text("Archive")
+                                }
+                                .tint(RidgitsColors.textSecondary)
+                            }
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.white)
+                        }
+                    } header: {
+                        pokeSectionHeader("Expired")
                     }
                 }
             }
@@ -705,48 +1054,96 @@ struct MessagesView: View {
             showIdentityVerification = true
             return
         }
-        let text = composeMessage
+        let text = composeMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+        if RidgitsMessagingValidation.blocksEarlyPhoneNumber(text: text, messageCount: 0) {
+            viewModel.showEarlyPhoneNumberPrompt = true
+            return
+        }
         do {
-            _ = try await RidgitsFirebaseClient.shared.startConversation(
+            let conversationId = try await RidgitsFirebaseClient.shared.startConversation(
                 toUserId: match.userId,
                 message: text
             )
             composeMessage = ""
             composeMatch = nil
+            viewModel.requestOpenConversation(with: match.userId, conversationId: conversationId)
         } catch let ridgitsError as RidgitsError {
             composeMatch = nil
-            if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
+            if ridgitsError.code == "EARLY_PHONE_NUMBER" {
+                viewModel.showEarlyPhoneNumberPrompt = true
+            } else if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
                 subscriptionPaywallForMessaging = true
                 showSubscriptionPaywall = true
             } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
                 showBirthYearPrompt = true
+            } else if handleExistingConversationError(ridgitsError, match: match) {
+                return
             } else {
                 viewModel.errorMessage = ridgitsError.localizedDescription
             }
         } catch {
             composeMatch = nil
+            if handleExistingConversationError(error, match: match) { return }
             viewModel.errorMessage = error.localizedDescription
         }
     }
 
-    private var emptyInbox: some View {
-        VStack(spacing: 8) {
-            Text("No messages yet")
-                .font(RidgitsTypography.headline(17))
-                .foregroundStyle(RidgitsColors.textHeadline)
-            Text("Send a message to a match to start chatting")
-                .font(RidgitsTypography.body(15))
-                .foregroundStyle(RidgitsColors.textSecondary)
-                .multilineTextAlignment(.center)
-            Text("When someone pokes you, they'll show up under Received — swipe left or tap the trash icon to delete. Sent pokes can be removed the same way.")
-                .font(RidgitsTypography.caption(13))
-                .foregroundStyle(RidgitsColors.textMuted)
-                .multilineTextAlignment(.center)
-                .padding(.top, 4)
+    private func gateMessagingAccess(
+        subscriptionPaywall: () -> Void,
+        identityVerification: () -> Void
+    ) -> Bool {
+        guard ridgitsStore.hasPlusMembership else {
+            subscriptionPaywall()
+            return false
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 32)
-        .padding(.top, 80)
+        guard ridgitsStore.isVerifiedForMessaging else {
+            identityVerification()
+            return false
+        }
+        return true
+    }
+
+    @discardableResult
+    private func beginCompose(to match: RidgitsMatch) -> Bool {
+        if let closedMessage = viewModel.messagingClosedMessage(for: match) {
+            viewModel.errorMessage = closedMessage
+            return false
+        }
+        composeMatch = match
+        return true
+    }
+
+    private func handleExistingConversationError(_ error: Error, match: RidgitsMatch) -> Bool {
+        let message = (error as? RidgitsError)?.localizedDescription ?? error.localizedDescription
+        let normalized = message.lowercased()
+        composeMatch = nil
+
+        if normalized.contains("message limit reached")
+            || normalized.contains("\(RidgitsMessagingLimits.maxMessages)-message") {
+            viewModel.errorMessage =
+                "You can't message them — you've already hit the \(RidgitsMessagingLimits.maxMessages)-message limit for this conversation."
+            return true
+        }
+        if normalized.contains("expired") {
+            viewModel.errorMessage = "You can't message them — this conversation has already expired."
+            return true
+        }
+        guard normalized.contains("conversation already exists")
+            || normalized.contains("awaiting approval") else {
+            return false
+        }
+        viewModel.requestOpenConversation(with: match.userId)
+        return true
+    }
+
+    private var emptyInbox: some View {
+        Text("No messages or pokes yet")
+            .font(RidgitsTypography.headline(17))
+            .foregroundStyle(RidgitsColors.textHeadline)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 32)
+            .padding(.top, 80)
     }
 }
 
@@ -1131,7 +1528,7 @@ private struct SentPokeInboxRow: View {
     }
 }
 
-private struct DMConversationRow: View {
+struct DMConversationRow: View {
     let conversation: RidgitsConversation
     var subtitleOverride: String?
     var statusLabel: String?
@@ -1275,6 +1672,7 @@ struct ConversationDetailView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
     @ObservedObject var viewModel: MessagingViewModel
     let conversation: RidgitsConversation
+    let onBack: () -> Void
     @State private var showFlagSheet = false
     @State private var showSubscriptionPaywall = false
     @State private var showIdentityVerification = false
@@ -1346,10 +1744,11 @@ struct ConversationDetailView: View {
                 }
                 .padding(12)
                 .background(RidgitsColors.surface)
-            } else if conversation.status == .active {
-                Text("This conversation has expired or reached the 16-message limit.")
+            } else if conversation.isMessagingClosed {
+                Text(conversation.messagingClosedThreadMessage)
                     .font(RidgitsTypography.body(13))
                     .foregroundStyle(RidgitsColors.textSecondary)
+                    .multilineTextAlignment(.center)
                     .padding()
             } else if conversation.isIncomingPending {
                 VStack(spacing: 12) {
@@ -1387,6 +1786,15 @@ struct ConversationDetailView: View {
         .padding(.bottom, 98)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                }
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
+                .accessibilityLabel("Back")
+            }
             ToolbarItem(placement: .principal) {
                 HStack(spacing: 8) {
                     ChatAvatar(
@@ -1409,6 +1817,16 @@ struct ConversationDetailView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    if conversation.isMessagingClosed {
+                        Button {
+                            Task {
+                                await viewModel.archive(conversation)
+                                onBack()
+                            }
+                        } label: {
+                            Label("Archive", systemImage: "archivebox")
+                        }
+                    }
                     Button(role: .destructive) {
                         showFlagSheet = true
                     } label: {
@@ -1442,55 +1860,62 @@ struct ConversationDetailView: View {
             .environmentObject(ridgitsStore)
         }
         .sheet(isPresented: $showFlagSheet) {
-            NavigationStack {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("What happens when you report")
-                        .font(RidgitsTypography.headline(17))
-                        .foregroundStyle(RidgitsColors.textHeadline)
+            VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Report conversation")
+                            .font(RidgitsTypography.headline(20))
+                            .foregroundStyle(RidgitsColors.textHeadline)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom, 4)
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        reportInfoRow("Your report is sent to our moderation team with high priority.")
-                        reportInfoRow("We review the conversation and the reported member's account signals.")
-                        reportInfoRow("If two or more members report the same person within 7 days, their messaging is paused while we investigate.")
-                    }
+                        Text("What happens when you report")
+                            .font(RidgitsTypography.headline(17))
+                            .foregroundStyle(RidgitsColors.textHeadline)
 
-                    Text("Tell us why you're reporting this conversation.")
-                        .font(RidgitsTypography.body(14))
-                        .foregroundStyle(RidgitsColors.textSecondary)
+                        VStack(alignment: .leading, spacing: 8) {
+                            reportInfoRow("Your report is sent to our moderation team with high priority.")
+                            reportInfoRow("We review the conversation and the reported member's account signals.")
+                            reportInfoRow("If two or more members report the same person within 7 days, their messaging is paused while we investigate.")
+                        }
 
-                    TextField("Reason for report", text: $flagReason, axis: .vertical)
-                        .lineLimit(3...6)
-                        .padding(12)
-                        .background(RidgitsColors.inputSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+                        Text("Tell us why you're reporting this conversation.")
+                            .font(RidgitsTypography.body(14))
+                            .foregroundStyle(RidgitsColors.textSecondary)
 
-                    RidgitsPrimaryButton(title: viewModel.isFlagging ? "Submitting…" : "Submit report") {
-                        Task {
-                            await viewModel.flagConversation(conversation, reason: flagReason)
-                            if viewModel.flagSuccessMessage != nil {
-                                showFlagSheet = false
-                                flagReason = ""
+                        TextField("Reason for report", text: $flagReason, axis: .vertical)
+                            .lineLimit(3...6)
+                            .padding(12)
+                            .background(RidgitsColors.surface)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                                    .stroke(RidgitsColors.inputBorder, lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+
+                        RidgitsPrimaryButton(title: viewModel.isFlagging ? "Submitting…" : "Submit report") {
+                            Task {
+                                await viewModel.flagConversation(conversation, reason: flagReason)
+                                if viewModel.flagSuccessMessage != nil {
+                                    showFlagSheet = false
+                                    flagReason = ""
+                                }
                             }
                         }
+                        .disabled(flagReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isFlagging)
                     }
-                    .disabled(flagReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isFlagging)
-
-                    Spacer()
-                }
-                .padding(20)
-                .navigationTitle("Report conversation")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Cancel") {
-                            showFlagSheet = false
-                            flagReason = ""
-                        }
-                    }
+                    .padding(20)
+                    .padding(.bottom, 8)
                 }
             }
+            .background(RidgitsColors.feedBackground.ignoresSafeArea())
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
+            .onChange(of: showFlagSheet) { _, isPresented in
+                if !isPresented {
+                    flagReason = ""
+                }
+            }
         }
         .alert("Report submitted", isPresented: Binding(
             get: { viewModel.flagSuccessMessage != nil },
@@ -1619,15 +2044,5 @@ private struct MessageBubble: View {
 
             if !isMine { Spacer(minLength: 24) }
         }
-    }
-}
-
-extension MessagingViewModel {
-    fileprivate func messagesListenerCleanup() {
-        messagesListener?.remove()
-        conversationListener?.remove()
-        countdownTimer?.invalidate()
-        messages = []
-        timeRemaining = nil
     }
 }

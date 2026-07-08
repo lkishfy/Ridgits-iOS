@@ -190,7 +190,10 @@ struct RidgitsGlassTabBar: View {
                 }
 
                 tabIcon(tab, isSelected: isSelected)
-                    .ridgitsTabBadge(badgeCount(for: tab))
+                    .ridgitsTabBadge(
+                        badgeCount(for: tab),
+                        style: tab == .messages ? .numbered : .dot
+                    )
             }
             .frame(maxWidth: .infinity)
             .frame(height: tabRowHeight)
@@ -247,15 +250,33 @@ struct RidgitsGlassTabBar: View {
     }
 }
 
+private enum RidgitsTabBadgeStyle {
+    case dot
+    case numbered
+}
+
 private extension View {
-    func ridgitsTabBadge(_ count: Int) -> some View {
+    func ridgitsTabBadge(_ count: Int, style: RidgitsTabBadgeStyle = .dot) -> some View {
         overlay(alignment: .topTrailing) {
             if count > 0 {
-                Circle()
-                    .fill(Color(hex: 0xFF3040))
-                    .frame(width: 6, height: 6)
-                    .overlay(Circle().stroke(Color.white, lineWidth: 1.25))
-                    .offset(x: 6, y: -6)
+                switch style {
+                case .dot:
+                    Circle()
+                        .fill(Color(hex: 0xFF3040))
+                        .frame(width: 6, height: 6)
+                        .overlay(Circle().stroke(Color.white, lineWidth: 1.25))
+                        .offset(x: 6, y: -6)
+                case .numbered:
+                    Text(count > 99 ? "99+" : "\(count)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, count > 9 ? 3 : 0)
+                        .frame(minWidth: 14, minHeight: 14)
+                        .background(Color(hex: 0xFF3040))
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(Color.white, lineWidth: 1))
+                        .offset(x: 8, y: -7)
+                }
             }
         }
     }

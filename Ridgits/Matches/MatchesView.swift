@@ -6,8 +6,10 @@ struct MatchesView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
     @EnvironmentObject private var nearbyPresence: RidgitsNearbyPresenceService
     @EnvironmentObject private var pokeInbox: RidgitsPokeInbox
+    @EnvironmentObject private var messagingViewModel: MessagingViewModel
     @ObservedObject var viewModel: MatchesViewModel
     @Binding var incomingPokeProfile: IncomingPokeProfile?
+    var onOpenConversation: ((String, String?) -> Void)? = nil
     @State private var showSubscriptionPaywall = false
     @State private var subscriptionPaywallHighlight: RidgitsSubscriptionTier = .plus
     @State private var paywallHeadline: String?
@@ -20,12 +22,17 @@ struct MatchesView: View {
     @State private var showCompatibilityFilter = false
     @State private var pokeConfirmMatch: RidgitsMatch?
     @State private var unpokeConfirmMatch: RidgitsMatch?
+    @State private var messagingBlockedMessage: String?
 
     private var nearbyAccess: RidgitsNearbySearchAccess {
         RidgitsNearbySearchAccess.from(store: ridgitsStore)
     }
 
     var body: some View {
+        applyMatchesAlerts(to: applyMatchesPresentation(to: matchesCore))
+    }
+
+    private var matchesCore: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 if nearbyPresence.isActive, nearbyPresence.nearbyPeerCount > 0 {
@@ -104,106 +111,155 @@ struct MatchesView: View {
                 }
             )
         }
-        .sheet(isPresented: $showSubscriptionPaywall) {
-            SubscriptionPaywallView(
-                preferredBilling: .yearly,
-                highlightTier: subscriptionPaywallHighlight,
-                headline: paywallHeadline,
-                subheadline: paywallSubheadline
-            )
-            .onDisappear {
-                paywallHeadline = nil
-                paywallSubheadline = nil
+    }
+
+    @ViewBuilder
+    private func applyMatchesPresentation<Content: View>(to content: Content) -> some View {
+        content
+            .task(id: visibleMatchUserIds) {
+                await messagingViewModel.prefetchConversationStatus(for: visibleMatchUserIds)
             }
-        }
-        .onChange(of: ridgitsStore.membershipTier) { _, _ in
-            viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
-                viewModel.maxDistance,
-                access: nearbyAccess
-            )
-            Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
-            guard showSubscriptionPaywall else { return }
-            if !shouldPresentSubscriptionPaywall(requiredTier: subscriptionPaywallHighlight) {
-                showSubscriptionPaywall = false
+            .sheet(isPresented: $showSubscriptionPaywall) {
+                SubscriptionPaywallView(
+                    preferredBilling: .yearly,
+                    highlightTier: subscriptionPaywallHighlight,
+                    headline: paywallHeadline,
+                    subheadline: paywallSubheadline
+                )
+                .onDisappear {
+                    paywallHeadline = nil
+                    paywallSubheadline = nil
+                }
             }
-        }
-        .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
-            viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
-                viewModel.maxDistance,
-                access: nearbyAccess
-            )
-            Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
-        }
-        .sheet(isPresented: $showPokePackPaywall) {
-            PokePackPaywallView {
-                Task { await viewModel.refreshPokeCredits() }
+            .onChange(of: ridgitsStore.membershipTier) { _, _ in
+                viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
+                    viewModel.maxDistance,
+                    access: nearbyAccess
+                )
+                Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
+                guard showSubscriptionPaywall else { return }
+                if !shouldPresentSubscriptionPaywall(requiredTier: subscriptionPaywallHighlight) {
+                    showSubscriptionPaywall = false
+                }
             }
-        }
-        .fullScreenCover(isPresented: $showBirthYearPrompt) {
-            BirthYearPromptView {
-                showBirthYearPrompt = false
+            .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
+                viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
+                    viewModel.maxDistance,
+                    access: nearbyAccess
+                )
+                Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
             }
-            .environmentObject(authManager)
-        }
-        .sheet(item: $composeMatch) { match in
-            composeSheet(for: match)
-        }
-        .onChange(of: viewModel.showPokePackPaywall) { _, showPaywall in
-            guard showPaywall else { return }
-            viewModel.showPokePackPaywall = false
-            showPokePackPaywall = true
-        }
-        .onChange(of: viewModel.showBirthYearPrompt) { _, showPrompt in
-            guard showPrompt else { return }
-            viewModel.showBirthYearPrompt = false
-            showBirthYearPrompt = true
-        }
-        .alert("Something went wrong", isPresented: Binding(
-            get: { viewModel.errorMessage != nil && !viewModel.showPokePackPaywall && !viewModel.showBirthYearPrompt },
+            .sheet(isPresented: $showPokePackPaywall) {
+                PokePackPaywallView {
+                    Task { await viewModel.refreshPokeCredits() }
+                }
+            }
+            .fullScreenCover(isPresented: $showBirthYearPrompt) {
+                BirthYearPromptView {
+                    showBirthYearPrompt = false
+                }
+                .environmentObject(authManager)
+            }
+            .sheet(item: $composeMatch) { match in
+                composeSheet(for: match)
+            }
+            .onChange(of: viewModel.showPokePackPaywall) { _, showPaywall in
+                guard showPaywall else { return }
+                viewModel.showPokePackPaywall = false
+                showPokePackPaywall = true
+            }
+            .onChange(of: viewModel.showBirthYearPrompt) { _, showPrompt in
+                guard showPrompt else { return }
+                viewModel.showBirthYearPrompt = false
+                showBirthYearPrompt = true
+            }
+    }
+
+    private var showsGenericErrorAlert: Bool {
+        viewModel.errorMessage != nil && !viewModel.showPokePackPaywall && !viewModel.showBirthYearPrompt
+    }
+
+    @ViewBuilder
+    private func applyMatchesAlerts<Content: View>(to content: Content) -> some View {
+        content
+            .alert("Something went wrong", isPresented: genericErrorAlertPresented) {
+                Button("OK") { viewModel.errorMessage = nil }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
+            .alert("Can't send message", isPresented: messagingBlockedAlertPresented) {
+                Button("OK") { messagingBlockedMessage = nil }
+            } message: {
+                Text(messagingBlockedMessage ?? "")
+            }
+            .alert(
+                "It's a bit too early for a phone number, no?",
+                isPresented: $messagingViewModel.showEarlyPhoneNumberPrompt
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Let's get to know each other a bit more!")
+            }
+            .alert("Send poke?", isPresented: pokeConfirmAlertPresented) {
+                Button("Send poke") {
+                    guard let match = pokeConfirmMatch else { return }
+                    pokeConfirmMatch = nil
+                    Task { await viewModel.sendPoke(to: match) }
+                }
+                Button("Cancel", role: .cancel) {
+                    pokeConfirmMatch = nil
+                }
+            } message: {
+                if let match = pokeConfirmMatch {
+                    Text(viewModel.pokeConfirmationMessage(for: match.displayFirstName))
+                }
+            }
+            .alert("Delete poke?", isPresented: unpokeConfirmAlertPresented) {
+                Button("Delete", role: .destructive) {
+                    guard let match = unpokeConfirmMatch,
+                          let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] else {
+                        unpokeConfirmMatch = nil
+                        return
+                    }
+                    unpokeConfirmMatch = nil
+                    Task { await viewModel.unpoke(pokeId: pokeId) }
+                }
+                Button("Cancel", role: .cancel) {
+                    unpokeConfirmMatch = nil
+                }
+            } message: {
+                if let match = unpokeConfirmMatch {
+                    Text("Delete your poke to \(match.displayFirstName)?")
+                }
+            }
+    }
+
+    private var genericErrorAlertPresented: Binding<Bool> {
+        Binding(
+            get: { showsGenericErrorAlert },
             set: { if !$0 { viewModel.errorMessage = nil } }
-        )) {
-            Button("OK") { viewModel.errorMessage = nil }
-        } message: {
-            Text(viewModel.errorMessage ?? "")
-        }
-        .alert("Send poke?", isPresented: Binding(
+        )
+    }
+
+    private var messagingBlockedAlertPresented: Binding<Bool> {
+        Binding(
+            get: { messagingBlockedMessage != nil },
+            set: { if !$0 { messagingBlockedMessage = nil } }
+        )
+    }
+
+    private var pokeConfirmAlertPresented: Binding<Bool> {
+        Binding(
             get: { pokeConfirmMatch != nil },
             set: { if !$0 { pokeConfirmMatch = nil } }
-        )) {
-            Button("Send poke") {
-                guard let match = pokeConfirmMatch else { return }
-                pokeConfirmMatch = nil
-                Task { await viewModel.sendPoke(to: match) }
-            }
-            Button("Cancel", role: .cancel) {
-                pokeConfirmMatch = nil
-            }
-        } message: {
-            if let match = pokeConfirmMatch {
-                Text(viewModel.pokeConfirmationMessage(for: match.displayFirstName))
-            }
-        }
-        .alert("Delete poke?", isPresented: Binding(
+        )
+    }
+
+    private var unpokeConfirmAlertPresented: Binding<Bool> {
+        Binding(
             get: { unpokeConfirmMatch != nil },
             set: { if !$0 { unpokeConfirmMatch = nil } }
-        )) {
-            Button("Delete", role: .destructive) {
-                guard let match = unpokeConfirmMatch,
-                      let pokeId = pokeInbox.sentPokeIdsByUser[match.userId] else {
-                    unpokeConfirmMatch = nil
-                    return
-                }
-                unpokeConfirmMatch = nil
-                Task { await viewModel.unpoke(pokeId: pokeId) }
-            }
-            Button("Cancel", role: .cancel) {
-                unpokeConfirmMatch = nil
-            }
-        } message: {
-            if let match = unpokeConfirmMatch {
-                Text("Delete your poke to \(match.displayFirstName)?")
-            }
-        }
+        )
     }
 
     @MainActor
@@ -302,7 +358,22 @@ struct MatchesView: View {
             )
             return
         }
-        composeMatch = match
+        if let closedMessage = messagingViewModel.messagingClosedMessage(for: match) {
+            messagingBlockedMessage = closedMessage
+            return
+        }
+        Task {
+            await messagingViewModel.prefetchConversationStatus(for: [match.userId])
+            if let closedMessage = messagingViewModel.messagingClosedMessage(for: match) {
+                messagingBlockedMessage = closedMessage
+            } else {
+                composeMatch = match
+            }
+        }
+    }
+
+    private var visibleMatchUserIds: [String] {
+        (viewModel.visibleNearbyMatches + viewModel.visibleNationwideMatches).map(\.userId)
     }
 
     @MainActor
@@ -352,7 +423,7 @@ struct MatchesView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(nearbyPresence.nearbyPeerCount) Ridgits \(nearbyPresence.nearbyPeerCount == 1 ? "person" : "people") nearby")
                         .font(RidgitsTypography.label(14))
-                    Text("Detected via Bluetooth while the app is open")
+                    Text("Detected nearby via Bluetooth — alerts work in the background")
                         .font(RidgitsTypography.caption(11))
                         .foregroundStyle(RidgitsColors.textSecondary)
                 }
@@ -719,6 +790,8 @@ struct MatchesView: View {
                         match: match,
                         locked: locked,
                         sentPoke: pokeInbox.sentPokeIdsByUser[match.userId] != nil,
+                        messageClosedLabel: messagingViewModel.messagingClosedLabel(for: match),
+                        hidePoke: messagingViewModel.messagingIsExpired(for: match),
                         onOpenProfile: {
                             guard allowInteraction, !locked else { return }
                             selectedMatch = match
@@ -779,31 +852,45 @@ struct MatchesView: View {
                             return
                         }
                         Task {
+                            let trimmed = composeMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if RidgitsMessagingValidation.blocksEarlyPhoneNumber(text: trimmed, messageCount: 0) {
+                                messagingViewModel.showEarlyPhoneNumberPrompt = true
+                                return
+                            }
                             do {
-                                _ = try await RidgitsFirebaseClient.shared.startConversation(
+                                let conversationId = try await RidgitsFirebaseClient.shared.startConversation(
                                     toUserId: match.userId,
-                                    message: composeMessage
+                                    message: trimmed
                                 )
                                 composeMessage = ""
                                 composeMatch = nil
+                                onOpenConversation?(match.userId, conversationId)
                             } catch let ridgitsError as RidgitsError {
                                 composeMatch = nil
-                                if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
+                                if ridgitsError.code == "EARLY_PHONE_NUMBER" {
+                                    messagingViewModel.showEarlyPhoneNumberPrompt = true
+                                } else if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
                                     showSubscriptionPaywall = true
                                 } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
                                     showBirthYearPrompt = true
+                                } else if handleExistingConversationError(ridgitsError, match: match) {
+                                    return
                                 } else {
                                     viewModel.errorMessage = ridgitsError.localizedDescription
                                 }
                             } catch {
                                 composeMatch = nil
+                                if handleExistingConversationError(error, match: match) {
+                                    return
+                                }
                                 viewModel.errorMessage = error.localizedDescription
                             }
                         }
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 28)
+                .padding(.bottom, 20)
+                .safeAreaPadding(.bottom, 16)
             }
         }
         .background(RidgitsColors.feedBackground)
@@ -857,7 +944,7 @@ struct MatchesView: View {
                         .lineLimit(1)
                 }
 
-                Text("Once they accept, you have 24 hours and 16 messages total.")
+                Text("Once they accept, you have 24 hours and \(RidgitsMessagingLimits.maxMessages) messages total.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -872,6 +959,28 @@ struct MatchesView: View {
             text: $composeMessage,
             placeholder: "Say something to start the conversation…"
         )
+    }
+
+    private func handleExistingConversationError(_ error: Error, match: RidgitsMatch) -> Bool {
+        let message = (error as? RidgitsError)?.localizedDescription ?? error.localizedDescription
+        let normalized = message.lowercased()
+
+        if normalized.contains("message limit reached")
+            || normalized.contains("\(RidgitsMessagingLimits.maxMessages)-message") {
+            messagingBlockedMessage =
+                "You can't message them — you've already hit the \(RidgitsMessagingLimits.maxMessages)-message limit for this conversation."
+            return true
+        }
+        if normalized.contains("expired") {
+            messagingBlockedMessage = "You can't message them — this conversation has already expired."
+            return true
+        }
+        guard normalized.contains("conversation already exists")
+            || normalized.contains("awaiting approval") else {
+            return false
+        }
+        onOpenConversation?(match.userId, nil)
+        return true
     }
 }
 
@@ -944,6 +1053,8 @@ private struct MatchCard: View {
     let match: RidgitsMatch
     let locked: Bool
     let sentPoke: Bool
+    var messageClosedLabel: String? = nil
+    var hidePoke = false
     let onOpenProfile: () -> Void
     let onMessage: () -> Void
     let onPoke: () -> Void
@@ -1002,19 +1113,31 @@ private struct MatchCard: View {
                 }
 
                 HStack(spacing: 8) {
-                    Button("Message", action: onMessage)
-                        .font(RidgitsTypography.label(13))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(RidgitsColors.ctaBlack)
-                        .clipShape(Capsule())
-                    Button(sentPoke ? "Poked" : "Poke", action: sentPoke ? onUnpoke : onPoke)
-                        .font(RidgitsTypography.label(13))
-                        .foregroundStyle(sentPoke ? RidgitsColors.textMuted : RidgitsColors.textHeadline)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .overlay(Capsule().stroke(RidgitsColors.border, lineWidth: 1))
+                    if let messageClosedLabel {
+                        Text(messageClosedLabel)
+                            .font(RidgitsTypography.label(13))
+                            .foregroundStyle(RidgitsColors.textMuted)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .overlay(Capsule().stroke(RidgitsColors.border, lineWidth: 1))
+                            .accessibilityLabel("Conversation \(messageClosedLabel.lowercased())")
+                    } else {
+                        Button("Message", action: onMessage)
+                            .font(RidgitsTypography.label(13))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(RidgitsColors.ctaBlack)
+                            .clipShape(Capsule())
+                    }
+                    if !hidePoke {
+                        Button(sentPoke ? "Poked" : "Poke", action: sentPoke ? onUnpoke : onPoke)
+                            .font(RidgitsTypography.label(13))
+                            .foregroundStyle(sentPoke ? RidgitsColors.textMuted : RidgitsColors.textHeadline)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .overlay(Capsule().stroke(RidgitsColors.border, lineWidth: 1))
+                    }
                 }
                 .padding(.top, 10)
                 .blur(radius: locked ? 6 : 0)

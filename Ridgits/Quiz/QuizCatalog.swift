@@ -55,13 +55,41 @@ enum QuizCatalog {
 
     /// Question IDs contributed by the Ridgits community (mirrors web `quizData.js` userSubmitted flags).
     static let communityQuestionIDs: Set<String> = [
-        "intim_020", "vals_004", "vals_014", "vals_016", "vals_022", "vals_023",
-        "vals_031", "vals_035", "vals_036", "socl_018", "comt_020", "vals_037",
-        "vals_038", "social_024", "intm_023", "vals_039", "vals_040", "vals_041",
-        "social_025", "comt_025", "vals_042", "vals_043", "intm_025", "comt_021",
-        "comt_022", "comt_023", "comt_024", "socl_022", "comt_026", "vals_044",
-        "comm_020", "socl_023", "socl_024", "vals_045", "vals_046", "socl_025",
-        "comm_021", "vals_047", "socl_026", "socl_027",
+        "intim_020",
+        "vals_004",
+        "vals_014",
+        "vals_016",
+        "vals_022",
+        "vals_023",
+        "vals_031",
+        "vals_035",
+        "vals_036",
+        "socl_018",
+        "comt_020",
+        "vals_037",
+        "vals_038",
+        "social_024",
+        "intm_023",
+        "vals_039",
+        "vals_041",
+        "social_025",
+        "comt_025",
+        "vals_043",
+        "intm_025",
+        "comt_021",
+        "comt_022",
+        "comt_024",
+        "socl_022",
+        "comt_026",
+        "vals_044",
+        "comm_020",
+        "socl_023",
+        "socl_024",
+        "vals_045",
+        "vals_046",
+        "socl_025",
+        "comm_021",
+        "socl_026"
     ]
 
     static func isCommunityQuestion(id: String) -> Bool {
@@ -84,6 +112,10 @@ enum QuizCatalog {
 
     /// Enough personality answers to unlock results / matching (mirrors API threshold).
     static let onboardingSkipThreshold = minimumAnswersToComplete
+
+    static let onboardingQuestionsPerCategory = 10
+    static let onboardingPersonalityQuestionCount = onboardingQuestionsPerCategory * personalityCategories.count
+    static let onboardingTotalQuestionCount = demographicQuestionIDs.count + onboardingPersonalityQuestionCount
 
     static func personalityAnsweredCount(in answers: [String: QuizAnswerRecord]) -> Int {
         answers.filter { key, record in
@@ -140,11 +172,10 @@ enum QuizCatalog {
 
     /// Segment widths for the category progress bar.
     static func progressSegments(mode: QuizMode) -> [(category: String, count: Int)] {
-        if mode == .onboarding {
-            return personalityCategories.map { ($0, 10) }
-        }
-
-        return personalityCategories.map { category in
+        personalityCategories.map { category in
+            if mode == .onboarding {
+                return (category, onboardingQuestionsPerCategory)
+            }
             let total = questions.filter { $0.category == category }.count
             return (category, max(total, 1))
         }
@@ -161,10 +192,7 @@ enum QuizCatalog {
             var ordered: [Int] = []
             ordered.append(contentsOf: all.filter { questions[$0].category == "Demographics" })
             for category in personalityCategories {
-                ordered.append(contentsOf: all.filter { questions[$0].category == category }.prefix(5))
-            }
-            for category in personalityCategories {
-                ordered.append(contentsOf: all.filter { questions[$0].category == category }.dropFirst(5))
+                ordered.append(contentsOf: all.filter { questions[$0].category == category }.prefix(onboardingQuestionsPerCategory))
             }
             return ordered
         case .modify:
@@ -179,18 +207,34 @@ enum QuizCatalog {
         }
     }
 
-    static func categoryCounts(in answers: [String: QuizAnswerRecord]) -> [String: (answered: Int, total: Int)] {
+    static func categoryCounts(
+        in answers: [String: QuizAnswerRecord],
+        mode: QuizMode = .modify,
+        orderedIndices: [Int]? = nil
+    ) -> [String: (answered: Int, total: Int)] {
         var totals: [String: Int] = [:]
         var answered: [String: Int] = [:]
-        for question in questions where question.category != "Demographics" {
+
+        let scopedQuestions: [QuizQuestion]
+        if mode == .onboarding, let orderedIndices {
+            scopedQuestions = orderedIndices.map { questions[$0] }.filter { $0.category != "Demographics" }
+        } else {
+            scopedQuestions = questions.filter { $0.category != "Demographics" }
+        }
+
+        for question in scopedQuestions {
             totals[question.category, default: 0] += 1
             if answers[question.id]?.hasAnswer == true {
                 answered[question.category, default: 0] += 1
             }
         }
+
         var result: [String: (answered: Int, total: Int)] = [:]
         for category in personalityCategories {
-            result[category] = (answered[category] ?? 0, totals[category] ?? 0)
+            let total = mode == .onboarding
+                ? onboardingQuestionsPerCategory
+                : (totals[category] ?? 0)
+            result[category] = (answered[category] ?? 0, total)
         }
         return result
     }

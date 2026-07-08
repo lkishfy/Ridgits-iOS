@@ -66,8 +66,11 @@ enum RidgitsProductID {
 }
 
 enum RidgitsMessagingLimits {
-    static let maxMessages = 16
+    static let maxMessages = 20
+    static let earlyPhoneMessageThreshold = 4
     static let expirationHours = 24
+    static let earlyPhonePrompt =
+        "It's a bit too early for a phone number, no? Let's get to know each other a bit more!"
 }
 
 enum RidgitsError: LocalizedError {

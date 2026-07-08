@@ -38,6 +38,17 @@ struct QuizView: View {
                     cardMode
                 }
 
+                if mode == .onboarding,
+                   !viewModel.isLoading,
+                   viewModel.updatedResultsPresentation == nil,
+                   !preferencePanelExpanded {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        onboardingBottomBar
+                    }
+                    .ignoresSafeArea(edges: .bottom)
+                }
+
                 if preferencePanelExpanded {
                     preferenceFullScreenPanel
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -80,11 +91,7 @@ struct QuizView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .confirmationDialog(
-            "Sign out of Ridgits?",
-            isPresented: $showSignOutConfirmation,
-            titleVisibility: .visible
-        ) {
+        .alert("Sign out of Ridgits?", isPresented: $showSignOutConfirmation) {
             Button("Sign Out", role: .destructive) {
                 Task { await signOutFromQuiz() }
             }
@@ -179,23 +186,13 @@ struct QuizView: View {
             }
         } else {
             ToolbarItem(placement: .principal) {
-                if usesModernQuizLayout {
-                    VStack(spacing: 2) {
-                        Text("Personality Quiz")
-                            .font(RidgitsTypography.label(13))
-                        Text(onboardingProgressSubtitle)
-                            .font(RidgitsTypography.caption(10))
-                            .foregroundStyle(RidgitsColors.textMuted)
-                            .multilineTextAlignment(.center)
-                    }
-                } else {
-                    Text("Personality Quiz")
-                        .font(RidgitsTypography.label(13))
-                }
+                Text("Personality Quiz")
+                    .font(RidgitsTypography.label(13))
             }
             ToolbarItem(placement: .topBarTrailing) {
                 signOutButton
             }
+            .hideToolbarGlassBackgroundIfAvailable()
         }
     }
 
@@ -278,60 +275,75 @@ struct QuizView: View {
         .accessibilityLabel("Community question")
     }
 
-    private var usesModernQuizLayout: Bool {
-        showsPreferencePanel
+    private var showsPersonalityFeatures: Bool {
+        viewModel.currentQuestion.category != "Demographics"
     }
 
     private var cardMode: some View {
         VStack(spacing: 0) {
-            if usesModernQuizLayout {
-                quizProgressHeader
-            } else {
-                demographicsProgressHeader
-            }
+            quizProgressHeader
 
             ScrollView {
-                VStack(alignment: .leading, spacing: usesModernQuizLayout ? 16 : 20) {
+                VStack(alignment: .leading, spacing: 16) {
                     if viewModel.currentQuestion.userSubmitted {
                         quizCommunityBadge
                     }
-                    if usesModernQuizLayout {
-                        modifyQuestionBlock
-                        modifyFeatureChips
-                    } else {
-                        questionText
-                    }
+                    modifyQuestionBlock
+                    modifyFeatureChips
                     optionsList
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, usesModernQuizLayout ? 16 : 20)
+                .padding(.vertical, 16)
+                .padding(.bottom, onboardingBottomScrollPadding)
             }
 
-            if mode != .onboarding {
+            if mode == .modify {
                 quizBottomChrome
-            }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if mode == .onboarding && showsPreferencePanel && !preferencePanelExpanded {
-                onboardingPreferenceCollapsedBar
             }
         }
         .onAppear { syncPreferenceStateFromRecord() }
     }
 
+    private var onboardingBottomScrollPadding: CGFloat {
+        guard mode == .onboarding, !preferencePanelExpanded else { return 0 }
+        if showsMultiSelectContinueBar { return 88 }
+        if showsPreferencePanel { return 76 }
+        return 0
+    }
+
+    @ViewBuilder
+    private var onboardingBottomBar: some View {
+        VStack(spacing: 0) {
+            if showsMultiSelectContinueBar {
+                multiSelectContinueBar
+            } else if showsPreferencePanel {
+                onboardingPreferenceCollapsedBar
+            }
+        }
+    }
+
+    private var bottomHomeIndicatorPadding: CGFloat {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scene.windows.first(where: \.isKeyWindow) else {
+            return 0
+        }
+        return window.safeAreaInsets.bottom
+    }
+
     private var showsPrimaryFooter: Bool {
-        mode == .modify || !usesModernQuizLayout
+        mode == .modify
     }
 
     private var quizBottomChrome: some View {
         ZStack(alignment: .bottom) {
             if mode == .modify {
                 modifyUpdateFooter
-            } else if !usesModernQuizLayout {
-                footer
             }
 
-            if showsPreferencePanel && !preferencePanelExpanded {
+            if showsMultiSelectContinueBar && !preferencePanelExpanded {
+                multiSelectContinueBar
+                    .padding(.bottom, showsPrimaryFooter ? quizPrimaryFooterHeight : 0)
+            } else if showsPreferencePanel && !preferencePanelExpanded {
                 preferenceCollapsedBar
                     .padding(.bottom, showsPrimaryFooter ? quizPrimaryFooterHeight : 0)
             }
@@ -342,6 +354,12 @@ struct QuizView: View {
 
     private var showsPreferencePanel: Bool {
         viewModel.currentQuestion.category != "Demographics"
+    }
+
+    private var showsMultiSelectContinueBar: Bool {
+        guard viewModel.canAdvance else { return false }
+        let question = viewModel.currentQuestion
+        return viewModel.isMultiSelectActive(for: question) || question.multiSelect
     }
 
     private var modifyListMode: some View {
@@ -436,32 +454,13 @@ struct QuizView: View {
         modifyCompactProgress
     }
 
-    private var demographicsProgressHeader: some View {
-        VStack(spacing: 8) {
-            Text("Getting Started")
-                .font(RidgitsTypography.caption(11))
-                .foregroundStyle(RidgitsColors.textSecondary)
-                .tracking(1.1)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 20)
-        }
-        .padding(.vertical, 12)
-        .background(RidgitsColors.surface)
-        .overlay(Rectangle().frame(height: 1).foregroundStyle(RidgitsColors.border), alignment: .bottom)
-    }
-
     private var modifyCompactProgress: some View {
         VStack(spacing: 8) {
-            if mode == .onboarding,
-               viewModel.personalityAnsweredCount < viewModel.finishAnswerThreshold {
-                Text("Answer at least \(viewModel.finishAnswerThreshold) questions to unlock your personality results.")
-                    .font(RidgitsTypography.caption(11))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
+            if showsPersonalityFeatures {
+                categoryProgressHeader
+            } else {
+                demographicsProgressHeader
             }
-
-            categoryProgressHeader
 
             HStack(alignment: .center, spacing: 12) {
                 quizNavIconButton(
@@ -494,76 +493,120 @@ struct QuizView: View {
     }
 
     private var progressSegmentMode: QuizMode {
-        showsPreferencePanel ? .modify : mode
+        mode
+    }
+
+    private var demographicsProgressHeader: some View {
+        let total = max(viewModel.demographicsQuestionTotal, 1)
+        let answered = viewModel.demographicsAnsweredCount
+        let fillFraction = min(max(Double(answered) / Double(total), 0), 1)
+
+        return VStack(spacing: 8) {
+            Text("GETTING STARTED")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(RidgitsColors.textHeadline)
+                .tracking(0.35)
+                .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
+
+            GeometryReader { geo in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(QuizCategoryColors.track)
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(RidgitsColors.textHeadline)
+                            .frame(width: geo.size.width * fillFraction)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                    .animation(.easeInOut(duration: 0.3), value: fillFraction)
+            }
+            .frame(height: 5)
+
+            Text("\(answered)/\(total) ANSWERED")
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .foregroundStyle(RidgitsColors.textSecondary)
+                .tracking(0.8)
+                .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 20)
     }
 
     private var categoryProgressHeader: some View {
         let segments = QuizCatalog.progressSegments(mode: progressSegmentMode)
-        let segmentTotal = max(segments.reduce(0) { $0 + $1.count }, 1)
         let activeCategory = viewModel.currentQuestion.category
+        let activeIndex = segments.firstIndex(where: { $0.category == activeCategory }) ?? 0
 
-        return GeometryReader { geo in
-            VStack(spacing: 6) {
-                HStack(spacing: 3) {
-                    ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
-                        let stats = viewModel.categoryProgress[segment.category] ?? (0, 0)
-                        let fill = stats.total > 0 ? Double(stats.answered) / Double(stats.total) : 0
-                        let width = geo.size.width * CGFloat(segment.count) / CGFloat(segmentTotal)
-                        let isActive = segment.category == activeCategory
-                        let color = QuizCategoryColors.color(for: segment.category)
-
-                        let fillFraction = min(max(fill, 0), 1)
-                        let barHeight: CGFloat = isActive ? 8 : 6
-
-                        Capsule()
-                            .fill(QuizCategoryColors.track)
-                            .overlay(alignment: .leading) {
-                                if fillFraction > 0 {
-                                    color.frame(width: width * fillFraction)
-                                }
-                            }
-                            .frame(width: width, height: barHeight)
-                            .clipShape(Capsule())
-                            .overlay {
-                                if isActive {
-                                    Capsule()
-                                        .stroke(color, lineWidth: 2)
-                                }
-                            }
-                    }
+        return VStack(spacing: 8) {
+            HStack(spacing: 2) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
+                    Text(index == activeIndex ? segment.category.uppercased() : " ")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                        .tracking(0.35)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
                 }
+            }
 
-                HStack(spacing: 3) {
-                    ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
-                        let width = geo.size.width * CGFloat(segment.count) / CGFloat(segmentTotal)
-                        let isActive = segment.category == activeCategory
-                        let color = QuizCategoryColors.color(for: segment.category)
+            HStack(spacing: 2) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
+                    categorySegmentBar(
+                        category: segment.category,
+                        index: index,
+                        segmentCount: segments.count
+                    )
+                }
+            }
+            .frame(height: 5)
 
-                        Text(categoryBarLabel(segment.category))
-                            .font(RidgitsTypography.caption(isActive ? 9 : 8))
-                            .fontWeight(isActive ? .semibold : .regular)
-                            .foregroundStyle(isActive ? color : RidgitsColors.textMuted)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.65)
-                            .frame(width: width)
-                            .multilineTextAlignment(.center)
-                    }
+            HStack(spacing: 2) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
+                    let stats = viewModel.categoryProgress[segment.category] ?? (0, 0)
+                    Text(index == activeIndex ? "\(stats.answered)/\(stats.total) ANSWERED" : " ")
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                        .tracking(0.8)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
                 }
             }
         }
-        .frame(height: 28)
         .padding(.horizontal, 20)
     }
 
-    private func categoryBarLabel(_ category: String) -> String {
-        switch category {
-        case "Communication": return "Comm"
-        case "Intimacy": return "Intimacy"
-        case "Values": return "Values"
-        case "Social": return "Social"
-        case "Commitment": return "Commit"
-        default: return category
+    private func categorySegmentBar(category: String, index: Int, segmentCount: Int) -> some View {
+        let stats = viewModel.categoryProgress[category] ?? (0, 0)
+        let fillFraction = stats.total > 0
+            ? min(max(Double(stats.answered) / Double(stats.total), 0), 1)
+            : 0
+        let color = QuizCategoryColors.color(for: category)
+        let isFirst = index == 0
+        let isLast = index == segmentCount - 1
+        let cornerRadius: CGFloat = 2
+        let shape = UnevenRoundedRectangle(
+            topLeadingRadius: isFirst ? cornerRadius : 0,
+            bottomLeadingRadius: isFirst ? cornerRadius : 0,
+            bottomTrailingRadius: isLast ? cornerRadius : 0,
+            topTrailingRadius: isLast ? cornerRadius : 0
+        )
+
+        return GeometryReader { geo in
+            shape
+                .fill(QuizCategoryColors.track)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(color)
+                        .frame(width: geo.size.width * fillFraction)
+                }
+                .clipShape(shape)
+                .animation(.easeInOut(duration: 0.3), value: fillFraction)
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var modifyQuestionBlock: some View {
@@ -576,45 +619,49 @@ struct QuizView: View {
 
     private var modifyFeatureChips: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 8) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        let record = viewModel.answers[viewModel.currentQuestion.id]
+            if showsPersonalityFeatures {
+                HStack(alignment: .center, spacing: 8) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            let record = viewModel.answers[viewModel.currentQuestion.id]
 
-                        modifyFeatureChip(
-                            title: "Dealbreaker",
-                            icon: "exclamationmark.triangle.fill",
-                            active: record?.dealbreaker == true,
-                            enabled: true,
-                            activeColor: RidgitsColors.destructive
-                        ) {
-                            viewModel.toggleDealbreaker(for: viewModel.currentQuestion)
+                            modifyFeatureChip(
+                                title: "Dealbreaker",
+                                icon: "exclamationmark.triangle.fill",
+                                active: record?.dealbreaker == true,
+                                enabled: true,
+                                activeColor: RidgitsColors.destructive
+                            ) {
+                                viewModel.toggleDealbreaker(for: viewModel.currentQuestion)
+                            }
+
+                            modifyFeatureChip(
+                                title: multiSelectChipTitle,
+                                icon: "checklist",
+                                active: viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
+                                enabled: viewModel.canActivateMultiSelect(for: viewModel.currentQuestion) ||
+                                    viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
+                                activeColor: Color(hex: 0xC2410C)
+                            ) {
+                                viewModel.activateMultiSelect(for: viewModel.currentQuestion)
+                            }
                         }
+                    }
 
-                        modifyFeatureChip(
-                            title: multiSelectChipTitle,
-                            icon: "checklist",
-                            active: viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
-                            enabled: viewModel.canActivateMultiSelect(for: viewModel.currentQuestion) ||
-                                viewModel.isMultiSelectActive(for: viewModel.currentQuestion),
-                            activeColor: Color(hex: 0xC2410C)
+                    if mode == .modify {
+                        modifyIconFeatureChip(
+                            icon: "forward.end",
+                            accessibilityLabel: "Skip"
                         ) {
-                            viewModel.activateMultiSelect(for: viewModel.currentQuestion)
+                            viewModel.skipQuestion()
                         }
                     }
                 }
 
-                if mode != .modify {
-                    modifyIconFeatureChip(
-                        icon: "forward.end",
-                        accessibilityLabel: "Skip"
-                    ) {
-                        viewModel.skipQuestion()
-                    }
+                if viewModel.isMultiSelectActive(for: viewModel.currentQuestion) {
+                    modifyListTag("Tap multiple answers", tint: RidgitsColors.textSecondary)
                 }
-            }
-
-            if viewModel.isMultiSelectActive(for: viewModel.currentQuestion) {
+            } else if viewModel.currentQuestion.multiSelect {
                 modifyListTag("Tap multiple answers", tint: RidgitsColors.textSecondary)
             }
         }
@@ -702,27 +749,21 @@ struct QuizView: View {
         .presentationDetents([.medium, .large])
     }
 
-    private var questionText: some View {
-        Text(viewModel.currentQuestion.text)
-            .font(RidgitsTypography.headline(22))
-            .foregroundStyle(RidgitsColors.textHeadline)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private var onboardingProgressSubtitle: String {
-        let answered = viewModel.personalityAnsweredCount
-        let required = viewModel.finishAnswerThreshold
-        if answered >= required {
-            return "\(answered) answered · Results unlocked"
+    private var quizOptionCheckmark: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .frame(width: 20, height: 20)
+            Image(systemName: "checkmark")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(RidgitsColors.textSecondary)
         }
-        let remaining = required - answered
-        return "\(answered) of \(required) answered · \(remaining) more to see your results"
     }
 
     private var optionsList: some View {
         let canSelectAnswers = true
 
-        return VStack(spacing: usesModernQuizLayout ? 12 : 10) {
+        return VStack(spacing: 12) {
             ForEach(viewModel.currentQuestion.options) { option in
                 let selected = viewModel.isSelected(option.value, for: viewModel.currentQuestion)
                 Button {
@@ -733,21 +774,23 @@ struct QuizView: View {
                 } label: {
                     HStack {
                         Text(option.label)
-                            .font(usesModernQuizLayout ? RidgitsTypography.body(15) : RidgitsTypography.body())
-                            .foregroundStyle(selected ? .white : RidgitsColors.textHeadline)
+                            .font(RidgitsTypography.body(15))
+                            .foregroundStyle(selected ? RidgitsColors.quizOptionSelectedText : RidgitsColors.textHeadline)
                             .multilineTextAlignment(.leading)
                         Spacer()
                         if selected {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(selected ? .white : RidgitsColors.ctaBlack)
+                            quizOptionCheckmark
                         }
                     }
-                    .padding(.horizontal, usesModernQuizLayout ? 18 : 16)
-                    .padding(.vertical, usesModernQuizLayout ? 16 : 16)
-                    .background(selected ? RidgitsColors.ctaBlack : RidgitsColors.surface)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 16)
+                    .background(selected ? RidgitsColors.quizOptionSelected : RidgitsColors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                            .stroke(selected ? RidgitsColors.ctaBlack : RidgitsColors.optionBorder, lineWidth: selected ? 2 : 1)
+                            .stroke(
+                                selected ? RidgitsColors.quizOptionSelectedBorder : RidgitsColors.optionBorder,
+                                lineWidth: selected ? 2 : 1
+                            )
                     )
                     .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
                 }
@@ -851,37 +894,9 @@ struct QuizView: View {
         .background(RidgitsColors.surface)
     }
 
-    private var footer: some View {
-        HStack(spacing: 12) {
-            if viewModel.poolPosition > 0 {
-                RidgitsSecondaryButton(title: "Back") { viewModel.goBack() }
-            }
-            RidgitsSecondaryButton(title: "Skip") { viewModel.skipQuestion() }
-            RidgitsPrimaryButton(
-                title: primaryActionTitle,
-                isLoading: viewModel.isSaving,
-                isDisabled: !viewModel.canAdvance && mode != .modify
-            ) {
-                viewModel.goNext()
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, mode == .modify ? 12 : 20)
-        .background(RidgitsColors.surface)
-    }
-
-    private var primaryActionTitle: String {
-        if viewModel.isLastInPool {
-            return "Finish"
-        }
-        return "Next"
-    }
-
-    private var preferenceCollapsedBar: some View {
-        Button {
-            openPreferencePanel()
-        } label: {
-            HStack(spacing: 8) {
+    private var preferenceCollapsedBarLabel: some View {
+        HStack(alignment: .center, spacing: 8) {
+            VStack(spacing: 2) {
                 Text("Choose Their Ideal Answer")
                     .font(RidgitsTypography.label(12))
                     .foregroundStyle(RidgitsColors.textHeadline)
@@ -890,14 +905,23 @@ struct QuizView: View {
                     .font(RidgitsTypography.caption(10))
                     .foregroundStyle(RidgitsColors.textMuted)
                     .textCase(.uppercase)
-                Image(systemName: "chevron.up")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(RidgitsColors.textMuted)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 20)
-            .background(Color(hex: 0xF0F0F0))
+
+            Image(systemName: "chevron.up")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(RidgitsColors.textMuted)
+        }
+    }
+
+    private var preferenceCollapsedBar: some View {
+        Button {
+            openPreferencePanel()
+        } label: {
+            preferenceCollapsedBarLabel
+                .padding(.vertical, 14)
+                .padding(.horizontal, 20)
+                .background(Color(hex: 0xF0F0F0))
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
         .frame(maxWidth: .infinity)
@@ -919,28 +943,37 @@ struct QuizView: View {
         .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
     }
 
-    /// Onboarding-only bar pinned to the physical bottom edge (no gap below the home indicator).
+    private var multiSelectContinueBar: some View {
+        RidgitsPrimaryButton(
+            title: "Continue",
+            isLoading: viewModel.isSaving,
+            isDisabled: !viewModel.canAdvance
+        ) {
+            viewModel.goNext()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 16 + bottomHomeIndicatorPadding)
+        .frame(maxWidth: .infinity)
+        .background {
+            RidgitsColors.surface
+                .ignoresSafeArea(edges: .bottom)
+        }
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(RidgitsColors.border)
+                .frame(height: 1)
+        }
+    }
+
     private var onboardingPreferenceCollapsedBar: some View {
         Button {
             openPreferencePanel()
         } label: {
-            HStack(spacing: 8) {
-                Text("Choose Their Ideal Answer")
-                    .font(RidgitsTypography.label(12))
-                    .foregroundStyle(RidgitsColors.textHeadline)
-                    .textCase(.uppercase)
-                Text("Optional")
-                    .font(RidgitsTypography.caption(10))
-                    .foregroundStyle(RidgitsColors.textMuted)
-                    .textCase(.uppercase)
-                Image(systemName: "chevron.up")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(RidgitsColors.textMuted)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 16)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 18)
+            preferenceCollapsedBarLabel
+                .padding(.top, 16)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16 + bottomHomeIndicatorPadding)
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
         .frame(maxWidth: .infinity)
@@ -958,6 +991,7 @@ struct QuizView: View {
                 topTrailingRadius: RidgitsRadius.md
             )
             .stroke(Color(hex: 0x999999), lineWidth: 1)
+            .allowsHitTesting(false)
         }
         .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
     }
@@ -980,32 +1014,36 @@ struct QuizView: View {
     }
 
     private var preferenceFullScreenHeader: some View {
-        HStack(spacing: 12) {
-            Button {
-                closePreferencePanel()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(RidgitsColors.textSecondary)
-                    .frame(width: 36, height: 36)
-                    .background(RidgitsColors.hoverSurface)
-                    .clipShape(Circle())
+        ZStack {
+            HStack {
+                Button {
+                    closePreferencePanel()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                        .frame(width: 36, height: 36)
+                        .background(RidgitsColors.hoverSurface)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(RidgitsHapticPlainButtonStyle())
+                .accessibilityLabel("Dismiss")
+
+                Spacer(minLength: 0)
             }
-            .buttonStyle(RidgitsHapticPlainButtonStyle())
-            .accessibilityLabel("Dismiss")
 
             VStack(spacing: 2) {
                 Text("Choose Their Ideal Answer")
                     .font(RidgitsTypography.label(13))
                     .foregroundStyle(RidgitsColors.textHeadline)
                     .textCase(.uppercase)
+                    .multilineTextAlignment(.center)
                 Text("Optional")
                     .font(RidgitsTypography.caption(10))
                     .foregroundStyle(RidgitsColors.textMuted)
                     .textCase(.uppercase)
             }
-
-            Spacer(minLength: 36)
+            .frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -1067,12 +1105,13 @@ struct QuizView: View {
                         else { preferredSelection.insert(option.value) }
                         RidgitsHaptics.play(.selection)
                     } label: {
-                        HStack {
+                        ZStack(alignment: .trailing) {
                             Text(option.label)
                                 .font(RidgitsTypography.body(13))
                                 .foregroundStyle(RidgitsColors.textHeadline)
-                                .multilineTextAlignment(.leading)
-                            Spacer()
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
+
                             if selected {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 13, weight: .bold))
@@ -1157,5 +1196,16 @@ struct QuizView: View {
             question.options.first(where: { $0.value == value })?.label
         }
         return labels.joined(separator: ", ")
+    }
+}
+
+private extension ToolbarContent {
+    @ToolbarContentBuilder
+    func hideToolbarGlassBackgroundIfAvailable() -> some ToolbarContent {
+        if #available(iOS 26.0, *) {
+            self.sharedBackgroundVisibility(.hidden)
+        } else {
+            self
+        }
     }
 }

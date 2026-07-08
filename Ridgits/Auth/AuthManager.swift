@@ -177,6 +177,7 @@ final class AuthManager: ObservableObject {
             RidgitsProfileCache.shared.clear(uid: uid)
             RidgitsMatchesCache.shared.clear(uid: uid)
             RidgitsConversationsCache.shared.clear(uid: uid)
+            RidgitsRidgitListCache.shared.clear(uid: uid)
             RidgitsPublicProfileCache.shared.clear()
         }
     }

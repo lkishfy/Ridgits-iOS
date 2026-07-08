@@ -386,6 +386,7 @@ final class MatchesViewModel: ObservableObject {
 
     private func applyMatchingError(_ error: Error, uid: String) async {
         let message = error.localizedDescription
+        RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(error, context: "MatchesViewModel")
         if message.localizedCaseInsensitiveContains("complete the quiz"),
            (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) == true {
             errorMessage = nil

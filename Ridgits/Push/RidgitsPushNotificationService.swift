@@ -158,7 +158,12 @@ extension RidgitsPushNotificationService: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .sound, .badge]
+        if notification.request.content.categoryIdentifier == "RIDGITS_NEARBY" {
+            await MainActor.run {
+                RidgitsHaptics.play(.warning)
+            }
+        }
+        return [.banner, .sound, .badge]
     }
 
     nonisolated func userNotificationCenter(

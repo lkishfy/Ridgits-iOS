@@ -19,6 +19,10 @@ enum RidgitsColors {
     static let inputBorder = Color(hex: 0xE1E5E9)
     static let destructive = Color(hex: 0xF4212E)
     static let ctaBlack = Color.black
+    /// Selected quiz answer — light grey fill with dark text.
+    static let quizOptionSelected = Color(hex: 0xE8E8E8)
+    static let quizOptionSelectedText = Color(hex: 0x0A0A0A)
+    static let quizOptionSelectedBorder = Color(hex: 0x999999)
     static let primaryBlue = Color(hex: 0x0066FF)
     static let pendingYellow = Color(hex: 0xFFF9E6)
     static let pendingBorder = Color(hex: 0xF5E6A3)

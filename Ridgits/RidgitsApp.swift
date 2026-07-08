@@ -36,10 +36,17 @@ struct RidgitsApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                nearbyPresence.requestNotificationPermissionIfNeeded()
+            switch phase {
+            case .active:
+                nearbyPresence.handleAppBecameActive()
                 RidgitsPushNotificationService.shared.requestAuthorizationAndRegister()
                 Task { await RidgitsPushNotificationService.shared.syncTokenWithBackend() }
+            case .background:
+                nearbyPresence.handleAppEnteredBackground()
+            case .inactive:
+                break
+            @unknown default:
+                break
             }
         }
     }

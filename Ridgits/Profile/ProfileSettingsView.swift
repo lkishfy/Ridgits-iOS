@@ -27,16 +27,16 @@ struct ProfileSettingsView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 16) {
-                RidgitsDashboardCard {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Settings")
-                            .font(RidgitsTypography.headline(20))
-                            .foregroundStyle(RidgitsColors.textHeadline)
-                        Text("Legal information, privacy, and account actions.")
-                            .font(RidgitsTypography.body(13))
+                VStack(alignment: .leading, spacing: 12) {
+                    if let email = authManager.currentUser?.email {
+                        Text(email)
+                            .font(RidgitsTypography.body(14))
                             .foregroundStyle(RidgitsColors.textSecondary)
                     }
-                    .padding(16)
+
+                    RidgitsSquareButton(title: "Sign Out", style: .ghost) {
+                        showSignOutConfirm = true
+                    }
                 }
 
                 RidgitsDashboardCard {
@@ -65,7 +65,7 @@ struct ProfileSettingsView: View {
                             RidgitsSectionDivider()
 
                             Toggle(isOn: $nearbyPresence.alertsEnabled) {
-                                Text("Get a notification when another Ridgits member is close, and you're near them.")
+                                Text("Vibrate when another Ridgits member is close — works even when your phone is locked.")
                                     .font(RidgitsTypography.label(14))
                                     .foregroundStyle(RidgitsColors.textHeadline)
                             }
@@ -84,6 +84,18 @@ struct ProfileSettingsView: View {
 
                 RidgitsDashboardCard {
                     VStack(spacing: 0) {
+                        NavigationLink {
+                            ArchivedConversationsView()
+                        } label: {
+                            settingsLinkRow(
+                                title: "Archived Conversations",
+                                subtitle: "Expired conversations you've archived"
+                            )
+                        }
+                        .buttonStyle(RidgitsHapticPlainButtonStyle())
+
+                        RidgitsSectionDivider()
+
                         legalLinkRow(
                             title: "Terms & Conditions",
                             subtitle: "How you can use Ridgits",
@@ -108,26 +120,6 @@ struct ProfileSettingsView: View {
 
                 RidgitsDashboardCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("ACCOUNT")
-                            .font(RidgitsTypography.sectionLabel(11))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                            .tracking(0.8)
-
-                        if let email = authManager.currentUser?.email {
-                            Text(email)
-                                .font(RidgitsTypography.body(14))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                        }
-
-                        RidgitsSquareButton(title: "Sign Out", style: .ghost) {
-                            showSignOutConfirm = true
-                        }
-                    }
-                    .padding(16)
-                }
-
-                RidgitsDashboardCard {
-                    VStack(alignment: .leading, spacing: 12) {
                         Text("DANGER ZONE")
                             .font(RidgitsTypography.sectionLabel(11))
                             .foregroundStyle(RidgitsColors.destructive)
@@ -145,7 +137,8 @@ struct ProfileSettingsView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.top, 12)
+            .ridgitsFloatingTabBarPadding()
         }
         .background(RidgitsColors.feedBackground)
         .navigationTitle("Settings")
@@ -228,6 +221,25 @@ struct ProfileSettingsView: View {
             profile.visibleInCommunity = !savedValue
             privacyStatusMessage = error.localizedDescription
         }
+    }
+
+    private func settingsLinkRow(title: String, subtitle: String) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(RidgitsTypography.label(14))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                Text(subtitle)
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(RidgitsColors.textMuted)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
     }
 
     private func legalLinkRow(title: String, subtitle: String, url: URL) -> some View {

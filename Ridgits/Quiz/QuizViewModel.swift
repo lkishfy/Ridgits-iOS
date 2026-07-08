@@ -68,10 +68,15 @@ final class QuizViewModel: ObservableObject {
     }
 
     var totalPersonalityQuestions: Int {
-        if mode == .modify || orderedIndices.allSatisfy({ questions[$0].category != "Demographics" }) {
-            return orderedIndices.filter { questions[$0].category != "Demographics" }.count
-        }
-        return QuizCatalog.personalityQuestionCount
+        orderedIndices.filter { questions[$0].category != "Demographics" }.count
+    }
+
+    var onboardingPersonalityAnsweredCount: Int {
+        orderedIndices
+            .map { questions[$0] }
+            .filter { $0.category != "Demographics" }
+            .filter { answers[$0.id]?.hasAnswer == true }
+            .count
     }
 
     /// Position within the full modify quiz order (not the filtered pool).
@@ -86,14 +91,25 @@ final class QuizViewModel: ObservableObject {
             }
             return totalPersonalityQuestions
         }
-        return activePool.count
+        return orderedIndices.count
     }
 
     var displayedQuestionNumber: Int {
         if mode == .modify, !hideAnsweredQuestions, selectedCategory == nil {
             return globalQuestionNumber
         }
+        if mode == .onboarding {
+            return globalQuestionNumber
+        }
         return poolPosition + 1
+    }
+
+    var demographicsAnsweredCount: Int {
+        QuizCatalog.demographicQuestionIDs.filter { answers[$0]?.hasAnswer == true }.count
+    }
+
+    var demographicsQuestionTotal: Int {
+        orderedIndices.filter { questions[$0].category == "Demographics" }.count
     }
 
     var remainingCount: Int {
@@ -105,7 +121,7 @@ final class QuizViewModel: ObservableObject {
     }
 
     var categoryProgress: [String: (answered: Int, total: Int)] {
-        QuizCatalog.categoryCounts(in: answers)
+        QuizCatalog.categoryCounts(in: answers, mode: mode, orderedIndices: orderedIndices)
     }
 
     var progressFraction: Double {
@@ -118,16 +134,20 @@ final class QuizViewModel: ObservableObject {
     }
 
     var canFinish: Bool {
-        let required = mode == .onboarding
-            ? QuizCatalog.minimumAnswersToComplete
-            : QuizCatalog.onboardingSkipThreshold
-        return personalityAnsweredCount >= required
+        if mode == .onboarding {
+            return onboardingPersonalityAnsweredCount >= QuizCatalog.onboardingPersonalityQuestionCount
+        }
+        return personalityAnsweredCount >= QuizCatalog.onboardingSkipThreshold
     }
 
     var finishAnswerThreshold: Int {
         mode == .onboarding
-            ? QuizCatalog.minimumAnswersToComplete
+            ? QuizCatalog.onboardingPersonalityQuestionCount
             : QuizCatalog.onboardingSkipThreshold
+    }
+
+    var onboardingProgressAnsweredCount: Int {
+        mode == .onboarding ? onboardingPersonalityAnsweredCount : personalityAnsweredCount
     }
 
     func bootstrap() async {
@@ -253,6 +273,7 @@ final class QuizViewModel: ObservableObject {
     }
 
     func recordAnswer(optionValue: Int) {
+        RidgitsHaptics.play(.selection)
         let question = currentQuestion
         if isMultiSelectActive(for: question) || question.multiSelect {
             var record = answers[question.id] ?? QuizAnswerRecord(
@@ -369,6 +390,7 @@ final class QuizViewModel: ObservableObject {
     }
 
     func skipQuestion() {
+        guard mode == .modify else { return }
         autoAdvanceTask?.cancel()
         if isLastInPool {
             if mode == .modify || canFinish {

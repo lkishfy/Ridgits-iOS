@@ -135,24 +135,37 @@ private struct RidgitsMarqueeBanner: View {
     ]
 
     private let scrollDuration: TimeInterval = 40
+    private let leadingPadding: CGFloat = 12
 
     @State private var segmentWidth: CGFloat = 0
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 60)) { timeline in
-            let elapsed = timeline.date.timeIntervalSinceReferenceDate
-            let progress = elapsed.truncatingRemainder(dividingBy: scrollDuration) / scrollDuration
-            let shift = segmentWidth > 0 ? -segmentWidth * CGFloat(progress) : 0
+        GeometryReader { container in
+            let containerWidth = container.size.width
+            let copies = segmentCopies(for: containerWidth)
 
-            HStack(spacing: 0) {
-                marqueeSegment
-                marqueeSegment
+            TimelineView(.animation(minimumInterval: 1 / 60)) { timeline in
+                let elapsed = timeline.date.timeIntervalSinceReferenceDate
+                let progress = elapsed.truncatingRemainder(dividingBy: scrollDuration) / scrollDuration
+                let shift = segmentWidth > 0 ? -segmentWidth * CGFloat(progress) : 0
+
+                HStack(spacing: 0) {
+                    ForEach(0..<copies, id: \.self) { index in
+                        marqueeSegment(measure: index == 0)
+                    }
+                }
+                .offset(x: shift)
             }
-            .offset(x: shift)
+            .frame(width: containerWidth, height: container.size.height, alignment: .leading)
+            .clipped()
         }
-        .frame(maxWidth: .infinity)
-        .clipped()
+        .frame(height: 36)
         .background(RidgitsColors.surface)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(RidgitsColors.border)
+                .frame(height: 1)
+        }
         .onPreferenceChange(MarqueeSegmentWidthKey.self) { width in
             if width > 0 {
                 segmentWidth = width
@@ -160,22 +173,30 @@ private struct RidgitsMarqueeBanner: View {
         }
     }
 
-    private var marqueeSegment: some View {
+    private func segmentCopies(for containerWidth: CGFloat) -> Int {
+        guard segmentWidth > 0, containerWidth > 0 else { return 3 }
+        return max(3, Int(ceil((containerWidth * 2) / segmentWidth)) + 1)
+    }
+
+    private func marqueeSegment(measure: Bool) -> some View {
         HStack(spacing: 12) {
-            ForEach(items, id: \.self) { item in
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                 Text(item)
                     .font(RidgitsTypography.banner())
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .tracking(1.4)
+                    .padding(.leading, index == 0 ? leadingPadding : 0)
                 Text("•")
                     .font(RidgitsTypography.banner())
                     .foregroundStyle(RidgitsColors.border)
             }
         }
-        .fixedSize()
+        .fixedSize(horizontal: true, vertical: false)
         .background {
-            GeometryReader { proxy in
-                Color.clear.preference(key: MarqueeSegmentWidthKey.self, value: proxy.size.width)
+            if measure {
+                GeometryReader { proxy in
+                    Color.clear.preference(key: MarqueeSegmentWidthKey.self, value: proxy.size.width)
+                }
             }
         }
     }
