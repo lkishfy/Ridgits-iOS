@@ -12,6 +12,9 @@ struct ProfileView: View {
     @State private var isLoading = true
     @State private var statusMessage: String?
     @State private var nameValidationMessage: String?
+    @State private var attemptedLastNameEntry = false
+    @State private var showLastNameHeadsUp = false
+    @State private var pendingSaveAfterHeadsUp = false
     @State private var matchGender: [Int] = []
     @State private var matchInterestedIn: [Int] = []
     @State private var matchLookingFor: [Int] = []
@@ -49,6 +52,9 @@ struct ProfileView: View {
                   profile.id.isEmpty,
                   let cached = RidgitsProfileCache.shared.profile(for: uid) else { return }
             var cachedProfile = cached
+            if cachedProfile.name.contains(where: \.isWhitespace) {
+                attemptedLastNameEntry = true
+            }
             cachedProfile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(cachedProfile.name)
             profile = cachedProfile
             isLoading = false
@@ -69,6 +75,14 @@ struct ProfileView: View {
                 subheadline: "Identity Verification is included after you subscribe."
             )
             .environmentObject(ridgitsStore)
+        }
+        .sheet(isPresented: $showLastNameHeadsUp, onDismiss: {
+            guard pendingSaveAfterHeadsUp else { return }
+            pendingSaveAfterHeadsUp = false
+            attemptedLastNameEntry = false
+            Task { await performSaveProfile() }
+        }) {
+            ProfileFirstNameHeadsUpSheet()
         }
         .task {
             await ridgitsStore.refreshAccessInBackground()
@@ -515,6 +529,9 @@ struct ProfileView: View {
         defer { isLoading = false }
 
         if let loaded = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid) {
+            if loaded.name.contains(where: \.isWhitespace) {
+                attemptedLastNameEntry = true
+            }
             profile = loaded
             profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
             RidgitsMatchAgeRange.normalize(on: &profile)
@@ -549,6 +566,21 @@ struct ProfileView: View {
 
     @MainActor
     private func saveProfile() async {
+        profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+        guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
+            nameValidationMessage = "Enter a valid first name to continue."
+            return
+        }
+        if attemptedLastNameEntry {
+            pendingSaveAfterHeadsUp = true
+            showLastNameHeadsUp = true
+            return
+        }
+        await performSaveProfile()
+    }
+
+    @MainActor
+    private func performSaveProfile() async {
         isSaving = true
         statusMessage = nil
         nameValidationMessage = nil
@@ -593,6 +625,9 @@ struct ProfileView: View {
                 let result = RidgitsDisplaySanitize.profileFirstNameInputFeedback(for: newValue)
                 profile.name = result.sanitized
                 nameValidationMessage = result.validationMessage
+                if result.attemptedLastName {
+                    attemptedLastNameEntry = true
+                }
             }
         )
     }

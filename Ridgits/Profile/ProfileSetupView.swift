@@ -10,6 +10,9 @@ struct ProfileSetupView: View {
     @State private var profilePhotoMatchMessage: String?
     @State private var saveErrorMessage: String?
     @State private var nameValidationMessage: String?
+    @State private var attemptedLastNameEntry = false
+    @State private var showLastNameHeadsUp = false
+    @State private var pendingSaveAfterHeadsUp = false
 
     var onComplete: () -> Void
 
@@ -152,6 +155,14 @@ struct ProfileSetupView: View {
                 }
             }
             .task { await loadExisting() }
+            .sheet(isPresented: $showLastNameHeadsUp, onDismiss: {
+                guard pendingSaveAfterHeadsUp else { return }
+                pendingSaveAfterHeadsUp = false
+                attemptedLastNameEntry = false
+                Task { await performSave() }
+            }) {
+                ProfileFirstNameHeadsUpSheet()
+            }
         }
     }
 
@@ -166,6 +177,9 @@ struct ProfileSetupView: View {
                 let result = RidgitsDisplaySanitize.profileFirstNameInputFeedback(for: newValue)
                 profile.name = result.sanitized
                 nameValidationMessage = result.validationMessage
+                if result.attemptedLastName {
+                    attemptedLastNameEntry = true
+                }
             }
         )
     }
@@ -179,23 +193,35 @@ struct ProfileSetupView: View {
 
     private func loadExisting() async {
         guard let uid = authManager.currentUser?.uid else { return }
-        profile = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)) ?? profile
+        let loaded = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)) ?? profile
+        if loaded.name.contains(where: \.isWhitespace) {
+            attemptedLastNameEntry = true
+        }
+        profile = loaded
         if !profile.name.isEmpty {
             profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
         }
     }
 
     private func save() async {
+        profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+        guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
+            nameValidationMessage = "Enter a valid first name to continue."
+            return
+        }
+        if attemptedLastNameEntry {
+            pendingSaveAfterHeadsUp = true
+            showLastNameHeadsUp = true
+            return
+        }
+        await performSave()
+    }
+
+    private func performSave() async {
         isSaving = true
         saveErrorMessage = nil
         profilePhotoMatchMessage = nil
         nameValidationMessage = nil
-        profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
-        guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
-            isSaving = false
-            nameValidationMessage = "Enter a valid first name to continue."
-            return
-        }
         defer { isSaving = false }
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)

@@ -112,6 +112,14 @@ final class QuizViewModel: ObservableObject {
         orderedIndices.filter { questions[$0].category == "Demographics" }.count
     }
 
+    var hasCompletedDemographics: Bool {
+        demographicsAnsweredCount >= demographicsQuestionTotal
+    }
+
+    var isOnPersonalityQuestion: Bool {
+        currentQuestion.category != "Demographics"
+    }
+
     var remainingCount: Int {
         max(0, activePool.count - poolPosition - 1)
     }

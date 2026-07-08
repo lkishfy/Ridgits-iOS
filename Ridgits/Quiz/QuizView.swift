@@ -11,6 +11,7 @@ struct QuizView: View {
     @State private var updatedResultsProfile: RidgitsUserProfile?
     @State private var showSignOutConfirmation = false
     @State private var isSigningOut = false
+    @State private var showPersonalityFeaturesIntro = false
 
     var mode: QuizMode
     var onCompleted: (() -> Void)?
@@ -40,36 +41,41 @@ struct QuizView: View {
 
                 if mode == .onboarding,
                    !viewModel.isLoading,
-                   viewModel.updatedResultsPresentation == nil,
-                   !preferencePanelExpanded {
+                   viewModel.updatedResultsPresentation == nil {
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
                         onboardingBottomBar
                     }
+                    .opacity(preferencePanelExpanded ? 0 : 1)
+                    .allowsHitTesting(!preferencePanelExpanded)
                     .ignoresSafeArea(edges: .bottom)
                 }
 
                 if preferencePanelExpanded {
-                    preferenceFullScreenPanel
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    preferencePanelOverlay
                 }
             }
-            .animation(.easeInOut(duration: 0.25), value: preferencePanelExpanded)
+            .animation(.preferencePanel, value: preferencePanelExpanded)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(preferencePanelExpanded ? .hidden : .visible, for: .navigationBar)
             .toolbar { quizToolbarContent }
             .sheet(isPresented: $showCategorySheet) {
                 categoryBrowseSheet
             }
+            .sheet(isPresented: $showPersonalityFeaturesIntro) {
+                QuizPersonalityFeaturesIntroSheet()
+            }
         }
         .task { await viewModel.bootstrap() }
+        .onChange(of: viewModel.currentQuestionIndex) { _, _ in
+            withAnimation(.preferencePanel) {
+                preferencePanelExpanded = false
+            }
+            syncPreferenceStateFromRecord()
+        }
         .onDisappear {
             guard !viewModel.didComplete, viewModel.hasBootstrapped, viewModel.canPersistForCurrentUser else { return }
             Task { await viewModel.saveProgressForExit() }
-        }
-        .onChange(of: viewModel.currentQuestionIndex) { _, _ in
-            preferencePanelExpanded = false
-            syncPreferenceStateFromRecord()
         }
         .onChange(of: viewModel.didComplete) { _, completed in
             if completed {
@@ -111,6 +117,15 @@ struct QuizView: View {
             try authManager.signOut()
         } catch {
             viewModel.errorMessage = error.localizedDescription
+        }
+    }
+
+    private func handleContinueFromQuestion() {
+        let fromDemographics = mode == .onboarding
+            && viewModel.currentQuestion.category == "Demographics"
+        viewModel.goNext()
+        if fromDemographics {
+            showPersonalityFeaturesIntro = true
         }
     }
 
@@ -272,6 +287,10 @@ struct QuizView: View {
         .padding(.vertical, compact ? 3 : 4)
         .background(Color(hex: 0xECFDF5))
         .clipShape(RoundedRectangle(cornerRadius: 4))
+        .overlay(
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(Color(hex: 0x059669), lineWidth: 1)
+        )
         .accessibilityLabel("Community question")
     }
 
@@ -343,8 +362,10 @@ struct QuizView: View {
             if showsMultiSelectContinueBar && !preferencePanelExpanded {
                 multiSelectContinueBar
                     .padding(.bottom, showsPrimaryFooter ? quizPrimaryFooterHeight : 0)
-            } else if showsPreferencePanel && !preferencePanelExpanded {
+            } else if showsPreferencePanel {
                 preferenceCollapsedBar
+                    .opacity(preferencePanelExpanded ? 0 : 1)
+                    .allowsHitTesting(!preferencePanelExpanded)
                     .padding(.bottom, showsPrimaryFooter ? quizPrimaryFooterHeight : 0)
             }
         }
@@ -966,7 +987,7 @@ struct QuizView: View {
             isLoading: viewModel.isSaving,
             isDisabled: !viewModel.canAdvance
         ) {
-            viewModel.goNext()
+            handleContinueFromQuestion()
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
@@ -1013,6 +1034,18 @@ struct QuizView: View {
         .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
     }
 
+    private var preferencePanelOverlay: some View {
+        ZStack(alignment: .bottom) {
+            Color.black.opacity(0.16)
+                .ignoresSafeArea()
+                .onTapGesture { closePreferencePanel() }
+                .transition(.opacity)
+
+            preferenceFullScreenPanel
+                .transition(.preferencePanelSlide)
+        }
+    }
+
     private var preferenceFullScreenPanel: some View {
         VStack(spacing: 0) {
             preferenceFullScreenHeader
@@ -1028,6 +1061,12 @@ struct QuizView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(RidgitsColors.surface.ignoresSafeArea())
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: RidgitsRadius.lg,
+                topTrailingRadius: RidgitsRadius.lg
+            )
+        )
     }
 
     private var preferenceFullScreenHeader: some View {
@@ -1078,14 +1117,14 @@ struct QuizView: View {
                 preferredSelection = [single]
             }
         }
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(.preferencePanel) {
             preferencePanelExpanded = true
         }
     }
 
     private func closePreferencePanel() {
         RidgitsHaptics.play(.light)
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(.preferencePanel) {
             preferencePanelExpanded = false
         }
     }
@@ -1224,5 +1263,18 @@ private extension ToolbarContent {
         } else {
             self
         }
+    }
+}
+
+private extension Animation {
+    static let preferencePanel = Animation.spring(response: 0.52, dampingFraction: 0.9, blendDuration: 0.14)
+}
+
+private extension AnyTransition {
+    static var preferencePanelSlide: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.combined(with: .offset(y: 48)),
+            removal: .opacity.combined(with: .offset(y: 32))
+        )
     }
 }

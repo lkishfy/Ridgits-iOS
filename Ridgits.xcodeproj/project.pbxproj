@@ -54,6 +54,7 @@
 		4051FA80748BE41480300AB3 /* ReferralQuizzesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13D3B385EB0EF56750E07ED /* ReferralQuizzesSection.swift */; };
 		42C36DCFC8AFAC2E945C939B /* MatchesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B18D21B7D932940E8248F6 /* MatchesView.swift */; };
 		4340EDE500D0A2C264C3F5A8 /* QuizIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1EB790AD6FF8894A5E3E70 /* QuizIntroView.swift */; };
+		C3D4E5F60718293A4B5C6D7E /* QuizPersonalityFeaturesIntroSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B5C6D /* QuizPersonalityFeaturesIntroSheet.swift */; };
 		44BF43A7D22C95D2436E193D /* RidgitNearbyShareModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26DCCB0B78C0A22DE2EC7BA0 /* RidgitNearbyShareModels.swift */; };
 		46DC3CDA41931844AA69AF70 /* AdditionalArchetypesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93D3E5D3445BF088CD27B6F /* AdditionalArchetypesSection.swift */; };
 		4AF88AC8F629F508D0E10D24 /* referral-first-spark.json in Resources */ = {isa = PBXBuildFile; fileRef = 599E990B8C2F56A791C7B814 /* referral-first-spark.json */; };
@@ -129,6 +130,7 @@
 		F34615D6211853E6583BA18D /* desire-logic.json in Resources */ = {isa = PBXBuildFile; fileRef = 5E97FE82A52B3B5C6827EB0E /* desire-logic.json */; };
 		F3EBFBD255BF9F30EE521C95 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 1C6FE69646D50A66819501A8 /* FirebaseMessaging */; };
 		F7ACAE03B82689BF98ED2329 /* CompatibilityReadoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F1CFA0A670D30656F164F1 /* CompatibilityReadoutView.swift */; };
+		F8A2B1C3D4E5061728394A5B /* ProfileFirstNameHeadsUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F1A0B2C3D405162738495A /* ProfileFirstNameHeadsUpSheet.swift */; };
 		F8B3520EBD9E1706230A88E2 /* RidgitsQuickToolsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F1F11274432698D6A299D7 /* RidgitsQuickToolsService.swift */; };
 		F9DFC3C8FD7F337224FD1C8E /* RidgitNearbyShareOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57284271EDA783B04BC7E465 /* RidgitNearbyShareOverlay.swift */; };
 		FADC7EF52BE3181A29AD9451 /* RidgitsNotificationPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1307814E45662FCEAAC60BA /* RidgitsNotificationPreferences.swift */; };
@@ -198,6 +200,7 @@
 		7AD5A4902272D4AADC2BE62C /* CompareProfilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareProfilesView.swift; sourceTree = "<group>"; };
 		7AE03420C987C04FD9093F84 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7E1EB790AD6FF8894A5E3E70 /* QuizIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizIntroView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B5C6D /* QuizPersonalityFeaturesIntroSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizPersonalityFeaturesIntroSheet.swift; sourceTree = "<group>"; };
 		8115EC12E8BFCAA9645155D5 /* IdentityVerificationStatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityVerificationStatusCard.swift; sourceTree = "<group>"; };
 		81E3815F13C4EEB0F3D68137 /* ProfileSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsView.swift; sourceTree = "<group>"; };
 		8CA644CD26A2AB5C0BD3890A /* RidgitsDisplaySanitize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsDisplaySanitize.swift; sourceTree = "<group>"; };
@@ -251,6 +254,7 @@
 		E1FE3E1B1332FB6DD44B0704 /* RidgitsCompatibilityFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsCompatibilityFilter.swift; sourceTree = "<group>"; };
 		E2C012308069A29AC80D2321 /* RidgitsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsApp.swift; sourceTree = "<group>"; };
 		E6952A1F1B141CAE1DC74AC1 /* RidgitsQuizBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsQuizBadge.swift; sourceTree = "<group>"; };
+		E7F1A0B2C3D405162738495A /* ProfileFirstNameHeadsUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileFirstNameHeadsUpSheet.swift; sourceTree = "<group>"; };
 		E823C10648E78C933F94314F /* RidgitsFirestoreIndexErrorLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsFirestoreIndexErrorLogging.swift; sourceTree = "<group>"; };
 		EBF5A3EEBAA38745D359D883 /* RidgitsConversationsCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsConversationsCache.swift; sourceTree = "<group>"; };
 		EC03E620748060EB5F52FF58 /* MatchProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchProfileView.swift; sourceTree = "<group>"; };
@@ -404,6 +408,7 @@
 				FF8E8203096BA9734713E5FD /* QuizCatalog.swift */,
 				AF953DAAEE1D664710A92940 /* QuizFullResultsView.swift */,
 				7E1EB790AD6FF8894A5E3E70 /* QuizIntroView.swift */,
+				B2C3D4E5F60718293A4B5C6D /* QuizPersonalityFeaturesIntroSheet.swift */,
 				98C92AC49659E2868940B46F /* QuizView.swift */,
 				C3348363D362965897C89290 /* QuizViewModel.swift */,
 				3A5021834ACF8D4FDEFDEE3D /* RidgitsQuizCompatibility.swift */,
@@ -443,6 +448,7 @@
 			children = (
 				81E3815F13C4EEB0F3D68137 /* ProfileSettingsView.swift */,
 				167175E2761DB95BF6011BD5 /* ProfileSetupView.swift */,
+				E7F1A0B2C3D405162738495A /* ProfileFirstNameHeadsUpSheet.swift */,
 				0C1D8E4F95CACE2E9C676B09 /* ProfileView.swift */,
 				DDDC9CE126FFE8BC00343B43 /* RidgitsProfilePhotoPicker.swift */,
 				E6952A1F1B141CAE1DC74AC1 /* RidgitsQuizBadge.swift */,
@@ -737,11 +743,13 @@
 				2070A36D291EBE2412FF9EBB /* PokePackPaywallView.swift in Sources */,
 				E172E41F803A83AE8A935F58 /* ProfileSettingsView.swift in Sources */,
 				16D08A6E61200405EE7EB161 /* ProfileSetupView.swift in Sources */,
+				F8A2B1C3D4E5061728394A5B /* ProfileFirstNameHeadsUpSheet.swift in Sources */,
 				6D9F92BECACF116150243162 /* ProfileView.swift in Sources */,
 				2F523EA7CF4592655E1247A7 /* QuizArchetypeCalculator.swift in Sources */,
 				9F1F84F51DC47CF186859BE1 /* QuizCatalog.swift in Sources */,
 				0D2959B3F90264D9F28285BC /* QuizFullResultsView.swift in Sources */,
 				4340EDE500D0A2C264C3F5A8 /* QuizIntroView.swift in Sources */,
+				C3D4E5F60718293A4B5C6D7E /* QuizPersonalityFeaturesIntroSheet.swift in Sources */,
 				1EEDEE7572F53051C1030EE9 /* QuizView.swift in Sources */,
 				FE4C7C7B340D6319E524616B /* QuizViewModel.swift in Sources */,
 				4EEAEF9372171772437A191A /* ReferralProfileSection.swift in Sources */,
@@ -885,7 +893,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.28;
+				MARKETING_VERSION = 1.29;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ridgits.app;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -969,7 +977,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.28;
+				MARKETING_VERSION = 1.29;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ridgits.app;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

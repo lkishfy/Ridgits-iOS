@@ -116,6 +116,20 @@ enum QuizCatalog {
     static let onboardingQuestionsPerCategory = 10
     static let onboardingPersonalityQuestionCount = onboardingQuestionsPerCategory * personalityCategories.count
     static let onboardingTotalQuestionCount = demographicQuestionIDs.count + onboardingPersonalityQuestionCount
+    static let onboardingCommunityQuestionCount = 5
+
+    /// Pinned community questions in onboarding — Communication slot 2 is global question 6 (after 3 demographics).
+    static let onboardingCommunityPlacements: [(category: String, slotIndex: Int, questionID: String)] = [
+        ("Communication", 2, "comm_020"),
+        ("Intimacy", 3, "intim_020"),
+        ("Values", 2, "vals_004"),
+        ("Social", 5, "socl_018"),
+        ("Commitment", 2, "comt_020"),
+    ]
+
+    private static var onboardingPinnedCommunityIDs: Set<String> {
+        Set(onboardingCommunityPlacements.map(\.questionID))
+    }
 
     static func personalityAnsweredCount(in answers: [String: QuizAnswerRecord]) -> Int {
         answers.filter { key, record in
@@ -185,6 +199,38 @@ enum QuizCatalog {
         questions.firstIndex { $0.id == questionID }
     }
 
+    private static func indicesForOnboardingCategory(
+        _ category: String,
+        in questions: [QuizQuestion],
+        allIndices: [Int]
+    ) -> [Int] {
+        let categoryIndices = allIndices.filter { questions[$0].category == category }
+        let placement = onboardingCommunityPlacements.first { $0.category == category }
+        var selected: [Int] = []
+        var poolCursor = 0
+
+        for slot in 0..<onboardingQuestionsPerCategory {
+            if let placement,
+               slot == placement.slotIndex,
+               let communityIndex = questions.firstIndex(where: { $0.id == placement.questionID }) {
+                selected.append(communityIndex)
+                continue
+            }
+
+            while poolCursor < categoryIndices.count {
+                let candidate = categoryIndices[poolCursor]
+                poolCursor += 1
+                let candidateID = questions[candidate].id
+                if onboardingPinnedCommunityIDs.contains(candidateID) { continue }
+                if selected.contains(candidate) { continue }
+                selected.append(candidate)
+                break
+            }
+        }
+
+        return selected
+    }
+
     static func buildOrderedIndices(mode: QuizMode) -> [Int] {
         let all = questions.enumerated().map { $0.offset }
         switch mode {
@@ -192,7 +238,7 @@ enum QuizCatalog {
             var ordered: [Int] = []
             ordered.append(contentsOf: all.filter { questions[$0].category == "Demographics" })
             for category in personalityCategories {
-                ordered.append(contentsOf: all.filter { questions[$0].category == category }.prefix(onboardingQuestionsPerCategory))
+                ordered.append(contentsOf: indicesForOnboardingCategory(category, in: questions, allIndices: all))
             }
             return ordered
         case .modify:
