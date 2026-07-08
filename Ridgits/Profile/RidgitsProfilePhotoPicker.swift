@@ -48,6 +48,11 @@ struct RidgitsProfilePhotoPicker: View {
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.destructive)
             }
+
+            Text("You must use a profile photo that matches your license or you won't be able to chat.")
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(RidgitsColors.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .onChange(of: selectedItem) { _, item in
             Task { await handleSelection(item) }

@@ -50,7 +50,7 @@ struct MakeRidgitView: View {
                     Text("Make Ridgit")
                         .font(RidgitsTypography.headline(24))
                         .foregroundStyle(RidgitsColors.textHeadline)
-                    Text("Create quizzes that reveal your social media info only to those who pass")
+                    Text("Quizzes that reveal your social media only to those who pass")
                         .font(RidgitsTypography.body(14))
                         .foregroundStyle(RidgitsColors.textSecondary)
                     Text("\(activeRidgitCount) of \(ridgitLimit) active Ridgits")
@@ -115,7 +115,7 @@ struct MakeRidgitView: View {
             Task { await reload(forceRefresh: false) }
         }
         .fullScreenCover(item: $nearbySharePayload) { payload in
-            RidgitNearbyShareSenderSheet(payload: payload) { _ in
+            RidgitNearbyShareSenderSheet(payload: payload, availablePayloads: activeSharePayloads) { _ in
                 nearbySharePayload = nil
             }
             .environmentObject(nearbyPresence)
@@ -270,12 +270,7 @@ struct MakeRidgitView: View {
                     }
 
                     RidgitsSquareButton(title: "Share Nearby", style: .filled) {
-                        nearbySharePayload = RidgitSharePayload(
-                            ridgitId: ridgit.id,
-                            title: ridgit.title,
-                            senderName: senderDisplayName,
-                            previewQuestion: ridgit.questions.first?.question
-                        )
+                        nearbySharePayload = sharePayload(for: ridgit)
                     }
 
                     NavigationLink {
@@ -297,6 +292,25 @@ struct MakeRidgitView: View {
         let name = profile.name.trimmingCharacters(in: .whitespacesAndNewlines)
         if !name.isEmpty { return name }
         return authManager.currentUser?.displayName ?? "Someone nearby"
+    }
+
+    private func sharePayload(for ridgit: RidgitChallenge) -> RidgitSharePayload {
+        RidgitSharePayload(
+            ridgitId: ridgit.id,
+            title: ridgit.title,
+            senderName: senderDisplayName,
+            senderImageUrl: profile.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? nil
+                : profile.image,
+            previewQuestion: ridgit.questions.first?.question
+        )
+    }
+
+    /// All active Ridgits as share payloads, so the bump overlay can offer a picker.
+    private var activeSharePayloads: [RidgitSharePayload] {
+        ridgits
+            .filter { RidgitSlotManager.isActive(ridgitId: $0.id, activeIds: activeRidgitIds) }
+            .map { sharePayload(for: $0) }
     }
 
     private func cancelEditor() {

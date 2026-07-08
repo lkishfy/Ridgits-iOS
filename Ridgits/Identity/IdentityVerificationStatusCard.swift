@@ -5,8 +5,21 @@ struct IdentityVerificationStatusCard: View {
     let canStartVerification: Bool
     let onVerify: () -> Void
     let onSubscribe: () -> Void
+    var onEditProfilePhoto: (() -> Void)? = nil
+    var onRetryPhotoMatch: (() -> Void)? = nil
+    var isRetryingPhotoMatch: Bool = false
+    var photoMatchStatusMessage: String? = nil
 
     private var statusLabel: String {
+        if access.isFullyIdentityVerified && access.isProfilePhotoVerified {
+            return "Verified"
+        }
+        if access.isFullyIdentityVerified && access.profilePhotoIdentityMatchStatus == "failed" {
+            return "Photo verification failed"
+        }
+        if access.isFullyIdentityVerified && !access.isProfilePhotoVerified {
+            return "Photo verification needed"
+        }
         switch access.identityVerificationStatus {
         case "verified":
             if access.isPhoneVerified { return "Verified" }
@@ -24,8 +37,14 @@ struct IdentityVerificationStatusCard: View {
     }
 
     private var statusColor: Color {
-        if access.isFullyIdentityVerified {
+        if access.isProfilePhotoVerified && access.isFullyIdentityVerified {
             return RidgitsColors.forestGreen
+        }
+        if access.isFullyIdentityVerified && access.profilePhotoIdentityMatchStatus == "failed" {
+            return RidgitsColors.destructive
+        }
+        if access.isFullyIdentityVerified {
+            return RidgitsColors.textSecondary
         }
         if access.isIdentityVerified {
             return RidgitsColors.forestGreen
@@ -34,19 +53,31 @@ struct IdentityVerificationStatusCard: View {
     }
 
     private var statusIcon: String {
-        if access.isFullyIdentityVerified || access.isIdentityVerified {
+        if access.isProfilePhotoVerified && access.isFullyIdentityVerified {
             return "checkmark.seal.fill"
+        }
+        if access.isFullyIdentityVerified && access.profilePhotoIdentityMatchStatus == "failed" {
+            return "exclamationmark.triangle.fill"
+        }
+        if access.isFullyIdentityVerified || access.isIdentityVerified {
+            return "person.badge.shield.checkmark.fill"
         }
         return "person.badge.shield.checkmark.fill"
     }
 
     private var detailText: String {
+        if access.isProfilePhotoVerified && access.isFullyIdentityVerified {
+            return "You're verified and your profile photo matches your ID. You can chat with other members."
+        }
+        if access.isFullyIdentityVerified && access.profilePhotoIdentityMatchStatus == "failed" {
+            return "Your profile photo didn't match your verified ID selfie. Use a clear face photo, similar to your ID verification selfie, then try again."
+        }
+        if access.isFullyIdentityVerified && !access.isProfilePhotoVerified {
+            return "Your ID is verified. Add a profile photo that matches your ID selfie to start chatting."
+        }
         if access.isFullyIdentityVerified {
-            if access.isProfilePhotoVerified {
-                return "You're verified and your profile photo matches your ID."
-            }
             if canStartVerification {
-                return "You're verified. You can accept and send messages with an active plan."
+                return "You're verified. Match your profile photo to your ID to chat with other members."
             }
             return "You're verified. Subscribe to Ridgits+ to accept and send messages."
         }
@@ -81,7 +112,25 @@ struct IdentityVerificationStatusCard: View {
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textSecondary)
 
-                if !access.isFullyIdentityVerified {
+                if let photoMatchStatusMessage, !photoMatchStatusMessage.isEmpty {
+                    Text(photoMatchStatusMessage)
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.destructive)
+                }
+
+                if access.isFullyIdentityVerified && !access.isProfilePhotoVerified {
+                    if let onEditProfilePhoto {
+                        RidgitsSquareButton(title: "Change profile photo", style: .filled, action: onEditProfilePhoto)
+                    }
+                    if let onRetryPhotoMatch {
+                        RidgitsSquareButton(
+                            title: isRetryingPhotoMatch ? "Retrying…" : "Retry photo verification",
+                            style: .ghost,
+                            action: onRetryPhotoMatch
+                        )
+                        .disabled(isRetryingPhotoMatch)
+                    }
+                } else if !access.isFullyIdentityVerified {
                     if access.isIdentityVerified, canStartVerification {
                         RidgitsSquareButton(title: "Complete verification", style: .filled, action: onVerify)
                     } else if !access.isIdentityVerified, canStartVerification {

@@ -107,12 +107,14 @@ final class RidgitsAPIClient {
         return try JSONDecoder().decode(RidgitsProfilePhotoMatchResult.self, from: json)
     }
 
-    func registerProfilePhoto(imageUrl: String) async throws {
-        _ = try await authorizedRequest(
+    func registerProfilePhoto(imageUrl: String) async throws -> RidgitsRegisterProfilePhotoResult {
+        let data = try await authorizedRequest(
             path: "/api/profile/register-photo",
             method: "POST",
             body: ["imageUrl": imageUrl]
         )
+        let json = try JSONSerialization.data(withJSONObject: data)
+        return try JSONDecoder().decode(RidgitsRegisterProfilePhotoResult.self, from: json)
     }
 
     func fetchUnlockedSocialInfo(for userId: String) async throws -> RidgitsSocialInfo? {

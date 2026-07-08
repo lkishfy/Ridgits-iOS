@@ -105,6 +105,7 @@
 		B2077D8713B985637FAC4606 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F82945B9BA2E2DFC95102D4D /* FirebaseFirestore */; };
 		B639DAA4FA2FAC05ECD4816C /* RidgitsNearbyPresenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F257D4ED3335E6DF7AC5A1B7 /* RidgitsNearbyPresenceService.swift */; };
 		B6BDFCDE67D6493165AE745A /* RidgitNearbyShareAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDAEDF98C02C44E4AAA7910 /* RidgitNearbyShareAnimationView.swift */; };
+		E4C1A9B72D8F5036A1E74C90 /* RidgitsIntelligenceEdgeGlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B8F6A51C9E4027B5D81F24 /* RidgitsIntelligenceEdgeGlow.swift */; };
 		BABF033B1381E541C81DA2A4 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = 24EE0BC1134EF8779378AE23 /* Secrets.plist */; };
 		BB5C5544432CB4681A528A1F /* PackQuizScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43A6DA4C8F51EB3C2C56592 /* PackQuizScoring.swift */; };
 		BD66C09B2FF3A86BD869F9DF /* RidgitQuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F3D8B82EEE0B85BA578E36 /* RidgitQuizView.swift */; };
@@ -209,6 +210,7 @@
 		8D9859145D608A07A50BDDFD /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
 		8E9431427F1AAC72C151A70E /* ReferralQuizGateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralQuizGateSheet.swift; sourceTree = "<group>"; };
 		8FBF32243EA75F1087B06867 /* CommunityStatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityStatsViewModel.swift; sourceTree = "<group>"; };
+		D3B8F6A51C9E4027B5D81F24 /* RidgitsIntelligenceEdgeGlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsIntelligenceEdgeGlow.swift; sourceTree = "<group>"; };
 		8FDAEDF98C02C44E4AAA7910 /* RidgitNearbyShareAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitNearbyShareAnimationView.swift; sourceTree = "<group>"; };
 		90E0634B98D5BB9A09E6BE19 /* RidgitsAppLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsAppLinks.swift; sourceTree = "<group>"; };
 		92E4C4425C89DEC13798A9FD /* PackQuizViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackQuizViewModel.swift; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 			isa = PBXGroup;
 			children = (
 				8FDAEDF98C02C44E4AAA7910 /* RidgitNearbyShareAnimationView.swift */,
+				D3B8F6A51C9E4027B5D81F24 /* RidgitsIntelligenceEdgeGlow.swift */,
 				26DCCB0B78C0A22DE2EC7BA0 /* RidgitNearbyShareModels.swift */,
 				57284271EDA783B04BC7E465 /* RidgitNearbyShareOverlay.swift */,
 				F257D4ED3335E6DF7AC5A1B7 /* RidgitsNearbyPresenceService.swift */,
@@ -760,6 +763,7 @@
 				4051FA80748BE41480300AB3 /* ReferralQuizzesSection.swift in Sources */,
 				A16CEB06F5A2954E5F296C49 /* ReferralWelcomeView.swift in Sources */,
 				B6BDFCDE67D6493165AE745A /* RidgitNearbyShareAnimationView.swift in Sources */,
+				E4C1A9B72D8F5036A1E74C90 /* RidgitsIntelligenceEdgeGlow.swift in Sources */,
 				44BF43A7D22C95D2436E193D /* RidgitNearbyShareModels.swift in Sources */,
 				F9DFC3C8FD7F337224FD1C8E /* RidgitNearbyShareOverlay.swift in Sources */,
 				BD66C09B2FF3A86BD869F9DF /* RidgitQuizView.swift in Sources */,

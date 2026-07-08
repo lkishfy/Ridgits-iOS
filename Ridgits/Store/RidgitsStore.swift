@@ -81,10 +81,18 @@ final class RidgitsStore: ObservableObject {
     }
     /// App Review / QA bypass from `RIDGITS_BYPASS_EMAILS` on ridgits-api.
     var skipsOnboarding: Bool { access.skipsOnboarding }
-    /// ID + phone verified via Stripe Identity — required to message.
+    /// ID, phone, and profile photo verified — required to message.
     var isVerifiedForMessaging: Bool {
-        access.isReviewBypassAccount || access.isFullyIdentityVerified
+        access.isReviewBypassAccount || access.canMessage
     }
+
+    var needsProfilePhotoMatchForMessaging: Bool {
+        !access.isReviewBypassAccount
+            && access.isFullyIdentityVerified
+            && !access.isProfilePhotoVerified
+    }
+
+    @Published private(set) var isRetryingProfilePhotoMatch = false
     var subscriptionBillingPeriod: RidgitsSubscriptionBilling? {
         guard let raw = access.subscriptionBillingPeriod else { return nil }
         return RidgitsSubscriptionBilling(rawValue: raw)
@@ -251,7 +259,7 @@ final class RidgitsStore: ObservableObject {
         // Status check syncs from Stripe — skip the browser flow if already verified there.
         do {
             let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-            if status.isFullyVerifiedForSubscribe {
+            if status.isFullyVerifiedForSubscribe && status.isProfilePhotoMatched {
                 await refreshAccessInBackground()
                 return true
             }
@@ -264,6 +272,33 @@ final class RidgitsStore: ObservableObject {
             await refreshAccessInBackground()
         }
         return verified
+    }
+
+    /// Re-runs profile photo ↔ ID selfie comparison without changing the photo.
+    func retryProfilePhotoIdentityMatch() async -> String? {
+        isRetryingProfilePhotoMatch = true
+        defer { isRetryingProfilePhotoMatch = false }
+
+        do {
+            let result = try await RidgitsAPIClient.shared.matchProfilePhotoToIdentity()
+            await refreshAccessInBackground()
+            if result.isVerified {
+                return nil
+            }
+            return result.userFacingFailureMessage
+                ?? RidgitsProfilePhotoIdentityMatch.fallbackMismatchMessage(
+                    score: result.score,
+                    threshold: result.threshold
+                )
+        } catch let error as RidgitsError {
+            await refreshAccessInBackground()
+            return RidgitsProfilePhotoIdentityMatch.userFacingMessage(
+                for: error.code ?? "",
+                fallback: error.localizedDescription
+            ) ?? error.localizedDescription
+        } catch {
+            return error.localizedDescription
+        }
     }
 
     /// Opens Apple's subscription management page (Settings / App Store). Prefer this over

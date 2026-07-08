@@ -37,8 +37,30 @@ struct RidgitsProfilePhotoMatchResult: Decodable {
     let status: String
     let score: Double?
     let threshold: Double
+    let message: String?
+    let reason: String?
 
     var isVerified: Bool {
         status == "verified"
     }
+
+    var userFacingFailureMessage: String? {
+        if isVerified { return nil }
+        if let message, !message.isEmpty { return message }
+        return RidgitsProfilePhotoIdentityMatch.fallbackMismatchMessage(
+            score: score,
+            threshold: threshold
+        )
+    }
+}
+
+struct RidgitsRegisterPhotoMatchError: Decodable {
+    let error: String
+    let code: String
+}
+
+struct RidgitsRegisterProfilePhotoResult: Decodable {
+    let ok: Bool
+    let identityMatch: RidgitsProfilePhotoMatchResult?
+    let identityMatchError: RidgitsRegisterPhotoMatchError?
 }

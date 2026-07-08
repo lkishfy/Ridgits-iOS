@@ -20,6 +20,7 @@ struct ProfileView: View {
     @State private var matchLookingFor: [Int] = []
     @State private var showIdentityVerification = false
     @State private var showSubscriptionPaywall = false
+    @State private var photoMatchRetryMessage: String?
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
@@ -134,7 +135,11 @@ struct ProfileView: View {
                 access: ridgitsStore.access,
                 canStartVerification: ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess,
                 onVerify: { showIdentityVerification = true },
-                onSubscribe: { showSubscriptionPaywall = true }
+                onSubscribe: { showSubscriptionPaywall = true },
+                onEditProfilePhoto: { isEditing = true },
+                onRetryPhotoMatch: { Task { await retryProfilePhotoMatch() } },
+                isRetryingPhotoMatch: ridgitsStore.isRetryingProfilePhotoMatch,
+                photoMatchStatusMessage: photoMatchRetryMessage
             )
 
             RidgitsDashboardCard {
@@ -176,6 +181,21 @@ struct ProfileView: View {
                                     .foregroundStyle(RidgitsColors.textSecondary)
                             }
                         }
+                    }
+
+                    if !ridgitsStore.access.isProfilePhotoVerified {
+                        Text(
+                            ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
+                                ? "Your profile photo didn't match your ID. Change your photo or tap Retry photo verification above to try again."
+                                : "You must use a profile photo that matches your license or you won't be able to chat."
+                        )
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(
+                                ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
+                                    ? RidgitsColors.destructive
+                                    : RidgitsColors.textMuted
+                            )
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     if !profile.about.isEmpty {
@@ -595,7 +615,7 @@ struct ProfileView: View {
         }
         RidgitsMatchAgeRange.normalize(on: &profile)
         do {
-            try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
+            let registerResult = try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
             if let uid = authManager.currentUser?.uid {
                 try await RidgitsFirebaseClient.shared.saveDemographicAnswers(
                     uid: uid,
@@ -607,11 +627,16 @@ struct ProfileView: View {
                     applyMatchPreferences(from: progress)
                 }
             }
-            if let matchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded() {
+            if let matchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded(
+                registerResult: registerResult
+            ) {
                 statusMessage = matchMessage
+                photoMatchRetryMessage = matchMessage
             } else {
+                photoMatchRetryMessage = nil
                 isEditing = false
             }
+            await ridgitsStore.refreshAccessInBackground()
         } catch {
             statusMessage = error.localizedDescription
         }
@@ -619,6 +644,18 @@ struct ProfileView: View {
 
     private var canSaveProfile: Bool {
         profile.isCompleteForMatching && RidgitsDisplaySanitize.isValidProfileFirstName(profile.name)
+    }
+
+    @MainActor
+    private func retryProfilePhotoMatch() async {
+        photoMatchRetryMessage = nil
+        if let message = await ridgitsStore.retryProfilePhotoIdentityMatch() {
+            photoMatchRetryMessage = message
+            statusMessage = message
+        } else {
+            photoMatchRetryMessage = nil
+            statusMessage = nil
+        }
     }
 
     private var firstNameBinding: Binding<String> {

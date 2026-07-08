@@ -115,7 +115,9 @@ struct ProfileSettingsView: View {
                     access: ridgitsStore.access,
                     canStartVerification: ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess,
                     onVerify: { showIdentityVerification = true },
-                    onSubscribe: { showSubscriptionPaywall = true }
+                    onSubscribe: { showSubscriptionPaywall = true },
+                    onRetryPhotoMatch: { Task { _ = await ridgitsStore.retryProfilePhotoIdentityMatch() } },
+                    isRetryingPhotoMatch: ridgitsStore.isRetryingProfilePhotoMatch
                 )
 
                 RidgitsDashboardCard {

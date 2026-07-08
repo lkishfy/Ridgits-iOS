@@ -1,21 +1,96 @@
 import SwiftUI
 
+/// Heartbeat haptic loop for nearby sharing. The pulse tightens as the
+/// handoff progresses (peer found → connecting → sending), approximating the
+/// phones getting closer, then fires a success thud when the share lands.
+@MainActor
+private final class RidgitNearbyShareHaptics: ObservableObject {
+    private var timer: Timer?
+    private var currentInterval: TimeInterval = 0
+    private var currentFeedback: RidgitsHaptics.Feedback = .soft
+    private var didPlayTerminalFeedback = false
+
+    func update(phase: RidgitSharePhase, peerCount: Int, isSender: Bool) {
+        switch phase {
+        case .idle:
+            if isSender {
+                startLoop(interval: 1.5, feedback: .soft)
+            } else {
+                stop()
+            }
+
+        case .searching:
+            if peerCount > 0 {
+                startLoop(interval: 0.9, feedback: .soft)
+            } else {
+                startLoop(interval: 1.5, feedback: .soft)
+            }
+
+        case .incomingInvite:
+            startLoop(interval: 0.6, feedback: .light)
+
+        case .inviting, .connecting:
+            startLoop(interval: 0.45, feedback: .light)
+
+        case .sending:
+            startLoop(interval: 0.2, feedback: .medium)
+
+        case .sent, .received:
+            stop()
+            playTerminalOnce(.success)
+
+        case .failed:
+            stop()
+            playTerminalOnce(.error)
+        }
+    }
+
+    func stop() {
+        timer?.invalidate()
+        timer = nil
+        currentInterval = 0
+    }
+
+    private func startLoop(interval: TimeInterval, feedback: RidgitsHaptics.Feedback) {
+        didPlayTerminalFeedback = false
+        guard timer == nil || currentInterval != interval || currentFeedback != feedback else { return }
+
+        currentInterval = interval
+        currentFeedback = feedback
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            Task { @MainActor in
+                RidgitsHaptics.play(feedback)
+            }
+        }
+        RidgitsHaptics.play(feedback)
+    }
+
+    private func playTerminalOnce(_ feedback: RidgitsHaptics.Feedback) {
+        guard !didPlayTerminalFeedback else { return }
+        didPlayTerminalFeedback = true
+        RidgitsHaptics.play(feedback)
+    }
+
+    deinit {
+        timer?.invalidate()
+    }
+}
+
 /// Full-screen sender/receiver overlay for nearby Ridgit sharing.
 struct RidgitNearbyShareOverlay: View {
     @EnvironmentObject private var nearbyPresence: RidgitsNearbyPresenceService
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var haptics = RidgitNearbyShareHaptics()
 
     let senderPayload: RidgitSharePayload?
     let onOpenRidgit: (String) -> Void
+    var availablePayloads: [RidgitSharePayload] = []
+    var onSelectPayload: ((RidgitSharePayload) -> Void)? = nil
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: 0x111827), Color(hex: 0x1F2937), Color.black],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            RidgitsIntelligenceEdgeGlow()
 
             VStack(spacing: 0) {
                 HStack {
@@ -47,6 +122,18 @@ struct RidgitNearbyShareOverlay: View {
             }
         }
         .interactiveDismissDisabled(isBusy)
+        .onAppear { syncHaptics() }
+        .onChange(of: nearbyPresence.sharePhase) { _, _ in syncHaptics() }
+        .onChange(of: nearbyPresence.nearbyPeerCount) { _, _ in syncHaptics() }
+        .onDisappear { haptics.stop() }
+    }
+
+    private func syncHaptics() {
+        haptics.update(
+            phase: nearbyPresence.sharePhase,
+            peerCount: nearbyPresence.nearbyPeerCount,
+            isSender: senderPayload != nil
+        )
     }
 
     @ViewBuilder
@@ -57,7 +144,9 @@ struct RidgitNearbyShareOverlay: View {
                 RidgitNearbyShareAnimationView(
                     mode: .searching,
                     title: "Bring phones together",
-                    subtitle: "Looking for another Ridgits member nearby…"
+                    subtitle: "Looking for another Ridgits member nearby…",
+                    profileName: senderPayload?.senderName,
+                    profileImageURL: senderPayload?.senderImageUrl
                 )
             }
 
@@ -65,28 +154,36 @@ struct RidgitNearbyShareOverlay: View {
             RidgitNearbyShareAnimationView(
                 mode: .searching,
                 title: "Bring phones together",
-                subtitle: subtitleForSearching
+                subtitle: subtitleForSearching,
+                profileName: senderPayload?.senderName,
+                profileImageURL: senderPayload?.senderImageUrl
             )
 
         case .inviting(let peerName), .connecting(let peerName):
             RidgitNearbyShareAnimationView(
                 mode: .connecting,
                 title: "Connecting with \(peerName)",
-                subtitle: "Hold your phones close to share your Ridgit."
+                subtitle: "Hold your phones close to share your Ridgit.",
+                profileName: senderPayload?.senderName,
+                profileImageURL: senderPayload?.senderImageUrl
             )
 
         case .sending:
             RidgitNearbyShareAnimationView(
                 mode: .connecting,
                 title: "Sending Ridgit…",
-                subtitle: "Almost there."
+                subtitle: "Almost there.",
+                profileName: senderPayload?.senderName,
+                profileImageURL: senderPayload?.senderImageUrl
             )
 
         case .sent(let peerName):
             RidgitNearbyShareAnimationView(
                 mode: .success,
                 title: "Shared with \(peerName)",
-                subtitle: "They can accept and take your quiz in Ridgits."
+                subtitle: "They can accept and take your quiz in Ridgits.",
+                profileName: senderPayload?.senderName,
+                profileImageURL: senderPayload?.senderImageUrl
             )
 
         case .incomingInvite(let preview), .received(let preview):
@@ -183,17 +280,63 @@ struct RidgitNearbyShareOverlay: View {
             .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.lg))
 
         case .searching:
-            if nearbyPresence.nearbyPeers.isEmpty {
-                Text("No one detected yet. Keep Ridgits open on both phones.")
-                    .font(RidgitsTypography.caption(13))
-                    .foregroundStyle(Color.white.opacity(0.65))
-                    .multilineTextAlignment(.center)
-            } else {
-                peerPicker
+            VStack(spacing: 16) {
+                ridgitSelector
+
+                if nearbyPresence.nearbyPeers.isEmpty {
+                    Text("No one detected yet. Keep Ridgits open on both phones.")
+                        .font(RidgitsTypography.caption(13))
+                        .foregroundStyle(Color.white.opacity(0.65))
+                        .multilineTextAlignment(.center)
+                } else {
+                    peerPicker
+                }
+            }
+
+        case .idle:
+            if senderPayload != nil {
+                ridgitSelector
             }
 
         default:
             EmptyView()
+        }
+    }
+
+    /// Lets the sender switch which Ridgit gets shared before a connection
+    /// starts, when they have more than one active Ridgit.
+    @ViewBuilder
+    private var ridgitSelector: some View {
+        if availablePayloads.count > 1, let current = senderPayload {
+            Menu {
+                ForEach(availablePayloads) { option in
+                    Button {
+                        guard option.ridgitId != current.ridgitId else { return }
+                        RidgitsHaptics.play(.selection)
+                        onSelectPayload?(option)
+                    } label: {
+                        if option.ridgitId == current.ridgitId {
+                            Label(option.title, systemImage: "checkmark")
+                        } else {
+                            Text(option.title)
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Sharing: \(current.title)")
+                        .font(RidgitsTypography.label(13))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 11)
+                .background(Color.white.opacity(0.12))
+                .clipShape(Capsule())
+            }
         }
     }
 
@@ -229,7 +372,9 @@ struct RidgitNearbyShareOverlay: View {
             RidgitNearbyShareAnimationView(
                 mode: .connecting,
                 title: "\(preview.senderName) is nearby",
-                subtitle: "Wants to share a Ridgit with you."
+                subtitle: "Wants to share a Ridgit with you.",
+                profileName: preview.senderName,
+                profileImageURL: preview.senderImageUrl
             )
 
             VStack(spacing: 8) {
@@ -264,22 +409,38 @@ struct RidgitNearbyShareOverlay: View {
     }
 }
 
-/// Sender sheet launched from a Ridgit card.
+/// Sender sheet launched from a Ridgit card. When the user has multiple
+/// active Ridgits, they can switch which one to share while searching.
 struct RidgitNearbyShareSenderSheet: View {
     @EnvironmentObject private var nearbyPresence: RidgitsNearbyPresenceService
     @Environment(\.dismiss) private var dismiss
 
     let payload: RidgitSharePayload
+    var availablePayloads: [RidgitSharePayload] = []
     let onOpenRidgit: (String) -> Void
 
+    @State private var selectedPayload: RidgitSharePayload?
+
+    private var currentPayload: RidgitSharePayload {
+        selectedPayload ?? payload
+    }
+
     var body: some View {
-        RidgitNearbyShareOverlay(senderPayload: payload, onOpenRidgit: onOpenRidgit)
-            .onAppear {
-                nearbyPresence.beginSharingRidgit(payload)
+        RidgitNearbyShareOverlay(
+            senderPayload: currentPayload,
+            onOpenRidgit: onOpenRidgit,
+            availablePayloads: availablePayloads.isEmpty ? [payload] : availablePayloads,
+            onSelectPayload: { newPayload in
+                selectedPayload = newPayload
+                nearbyPresence.beginSharingRidgit(newPayload)
             }
-            .onDisappear {
-                nearbyPresence.cancelShareFlow()
-            }
+        )
+        .onAppear {
+            nearbyPresence.beginSharingRidgit(currentPayload)
+        }
+        .onDisappear {
+            nearbyPresence.cancelShareFlow()
+        }
     }
 }
 

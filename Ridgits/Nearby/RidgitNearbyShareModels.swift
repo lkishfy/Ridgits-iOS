@@ -8,6 +8,7 @@ struct RidgitSharePayload: Codable, Equatable, Identifiable {
     let ridgitId: String
     let title: String
     let senderName: String
+    let senderImageUrl: String?
     let previewQuestion: String?
 
     static let messageKind = "ridgit_share_v1"
@@ -17,13 +18,15 @@ struct RidgitSharePayload: Codable, Equatable, Identifiable {
         case ridgitId
         case title
         case senderName
+        case senderImageUrl
         case previewQuestion
     }
 
-    init(ridgitId: String, title: String, senderName: String, previewQuestion: String?) {
+    init(ridgitId: String, title: String, senderName: String, senderImageUrl: String? = nil, previewQuestion: String?) {
         self.ridgitId = ridgitId
         self.title = title
         self.senderName = senderName
+        self.senderImageUrl = senderImageUrl
         self.previewQuestion = previewQuestion
     }
 
@@ -36,6 +39,7 @@ struct RidgitSharePayload: Codable, Equatable, Identifiable {
         ridgitId = try container.decode(String.self, forKey: .ridgitId)
         title = try container.decode(String.self, forKey: .title)
         senderName = try container.decode(String.self, forKey: .senderName)
+        senderImageUrl = try container.decodeIfPresent(String.self, forKey: .senderImageUrl)
         previewQuestion = try container.decodeIfPresent(String.self, forKey: .previewQuestion)
     }
 
@@ -45,6 +49,7 @@ struct RidgitSharePayload: Codable, Equatable, Identifiable {
         try container.encode(ridgitId, forKey: .ridgitId)
         try container.encode(title, forKey: .title)
         try container.encode(senderName, forKey: .senderName)
+        try container.encodeIfPresent(senderImageUrl, forKey: .senderImageUrl)
         try container.encodeIfPresent(previewQuestion, forKey: .previewQuestion)
     }
 }

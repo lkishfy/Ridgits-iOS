@@ -224,8 +224,10 @@ struct ProfileSetupView: View {
         nameValidationMessage = nil
         defer { isSaving = false }
         do {
-            try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
-            profilePhotoMatchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded()
+            let registerResult = try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
+            profilePhotoMatchMessage = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded(
+                registerResult: registerResult
+            )
             if profilePhotoMatchMessage == nil {
                 onComplete()
             }

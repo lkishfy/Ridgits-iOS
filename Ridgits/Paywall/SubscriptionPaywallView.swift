@@ -47,6 +47,7 @@ struct SubscriptionPaywallView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     header
+                    communityFundedNote
                     if RidgitsSubscriptionCatalog.offersMonthlySubscriptions {
                         billingToggle
                     }
@@ -145,6 +146,59 @@ struct SubscriptionPaywallView: View {
             }
         }
     }
+
+    private var communityFundedNote: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(RidgitsColors.textMuted)
+                .padding(.top, 1)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Ridgits is a community-funded app. Your subscription supports:")
+                    .font(RidgitsTypography.body(13))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Self.communityFundingItems, id: \.self) { item in
+                        HStack(alignment: .top, spacing: 8) {
+                            Text("•")
+                                .font(RidgitsTypography.label(12))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                                .padding(.top, 1)
+                            Text(item)
+                                .font(RidgitsTypography.caption(12))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RidgitsColors.surface)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(RidgitsColors.border.opacity(0.6))
+                .frame(height: 1)
+        }
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(RidgitsColors.border.opacity(0.6))
+                .frame(height: 1)
+        }
+        .padding(.horizontal, -20)
+    }
+
+    private static let communityFundingItems = [
+        "API & AI costs",
+        "Hosting & infrastructure",
+        "Identity verification & safety",
+        "Development costs",
+    ]
 
     private var billingToggle: some View {
         let yearlyBadge = RidgitsSubscriptionCatalog.maxYearlyDiscountBadge()

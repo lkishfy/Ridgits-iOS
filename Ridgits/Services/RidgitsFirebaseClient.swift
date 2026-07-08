@@ -41,7 +41,8 @@ final class RidgitsFirebaseClient {
         }
     }
 
-    func saveUserProfile(_ profile: RidgitsUserProfile) async throws {
+    @discardableResult
+    func saveUserProfile(_ profile: RidgitsUserProfile) async throws -> RidgitsRegisterProfilePhotoResult? {
         var normalizedProfile = profile
         RidgitsUSLocations.applyNormalizedLocation(to: &normalizedProfile)
         normalizedProfile.normalizeSocialFields()
@@ -81,8 +82,9 @@ final class RidgitsFirebaseClient {
 
         let image = normalizedProfile.image.trimmingCharacters(in: .whitespacesAndNewlines)
         if !image.isEmpty {
-            try await api.registerProfilePhoto(imageUrl: image)
+            return try await api.registerProfilePhoto(imageUrl: image)
         }
+        return nil
     }
 
     func isQuizCompleted(uid: String) async throws -> Bool {

@@ -675,9 +675,16 @@ struct MessagesView: View {
             showProfilePhotoMatchAlert = true
         }
         .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
+            Button("Retry verification") {
+                Task {
+                    if let message = await ridgitsStore.retryProfilePhotoIdentityMatch() {
+                        viewModel.errorMessage = message
+                    }
+                }
+            }
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Update your profile photo in the Profile tab with a clear photo of your face, similar to your ID verification selfie, then try messaging again.")
+            Text("Your profile photo must match your verified ID selfie before you can chat. Update your photo in Profile, or tap Retry verification to try again with your current photo.")
         }
         .task(id: incomingPokeProfile?.id) {
             await openIncomingPokeIfNeeded()
@@ -833,7 +840,8 @@ struct MessagesView: View {
                                         subscriptionPaywallForMessaging = true
                                         showSubscriptionPaywall = true
                                     },
-                                    identityVerification: { showIdentityVerification = true }
+                                    identityVerification: { showIdentityVerification = true },
+                                    profilePhotoMatch: { showProfilePhotoMatchAlert = true }
                                 ) else { return }
                                 Task { await viewModel.approve(convo) }
                             },
@@ -1050,6 +1058,10 @@ struct MessagesView: View {
             showSubscriptionPaywall = true
             return
         }
+        if ridgitsStore.needsProfilePhotoMatchForMessaging {
+            showProfilePhotoMatchAlert = true
+            return
+        }
         guard ridgitsStore.isVerifiedForMessaging else {
             showIdentityVerification = true
             return
@@ -1076,6 +1088,8 @@ struct MessagesView: View {
                 showSubscriptionPaywall = true
             } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
                 showBirthYearPrompt = true
+            } else if ridgitsError.code == "PROFILE_PHOTO_IDENTITY_MISMATCH" {
+                showProfilePhotoMatchAlert = true
             } else if handleExistingConversationError(ridgitsError, match: match) {
                 return
             } else {
@@ -1090,10 +1104,15 @@ struct MessagesView: View {
 
     private func gateMessagingAccess(
         subscriptionPaywall: () -> Void,
-        identityVerification: () -> Void
+        identityVerification: () -> Void,
+        profilePhotoMatch: () -> Void
     ) -> Bool {
         guard ridgitsStore.hasPlusMembership else {
             subscriptionPaywall()
+            return false
+        }
+        if ridgitsStore.needsProfilePhotoMatchForMessaging {
+            profilePhotoMatch()
             return false
         }
         guard ridgitsStore.isVerifiedForMessaging else {
@@ -1161,6 +1180,7 @@ private struct MessageRequestsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showSubscriptionPaywall = false
     @State private var showIdentityVerification = false
+    @State private var showProfilePhotoMatchAlert = false
 
     var body: some View {
         NavigationStack {
@@ -1254,7 +1274,8 @@ private struct MessageRequestsView: View {
                                 onApprove: {
                                     guard gateMessagingAccess(
                                         subscriptionPaywall: { showSubscriptionPaywall = true },
-                                        identityVerification: { showIdentityVerification = true }
+                                        identityVerification: { showIdentityVerification = true },
+                                        profilePhotoMatch: { showProfilePhotoMatchAlert = true }
                                     ) else { return }
                                     Task { await viewModel.approve(convo) }
                                 },
@@ -1329,14 +1350,31 @@ private struct MessageRequestsView: View {
             }
             .environmentObject(ridgitsStore)
         }
+        .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
+            Button("Retry verification") {
+                Task {
+                    if let message = await ridgitsStore.retryProfilePhotoIdentityMatch() {
+                        viewModel.errorMessage = message
+                    }
+                }
+            }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your profile photo must match your verified ID selfie before you can chat. Update your photo in Profile, or tap Retry verification to try again with your current photo.")
+        }
     }
 
     private func gateMessagingAccess(
         subscriptionPaywall: () -> Void,
-        identityVerification: () -> Void
+        identityVerification: () -> Void,
+        profilePhotoMatch: () -> Void
     ) -> Bool {
         guard ridgitsStore.hasPlusMembership else {
             subscriptionPaywall()
+            return false
+        }
+        if ridgitsStore.needsProfilePhotoMatchForMessaging {
+            profilePhotoMatch()
             return false
         }
         guard ridgitsStore.isVerifiedForMessaging else {
@@ -1676,6 +1714,7 @@ struct ConversationDetailView: View {
     @State private var showFlagSheet = false
     @State private var showSubscriptionPaywall = false
     @State private var showIdentityVerification = false
+    @State private var showProfilePhotoMatchAlert = false
     @State private var flagReason = ""
     @State private var currentUserImageURL = ""
     @State private var currentUserInitial = "?"
@@ -1859,6 +1898,18 @@ struct ConversationDetailView: View {
             }
             .environmentObject(ridgitsStore)
         }
+        .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
+            Button("Retry verification") {
+                Task {
+                    if let message = await ridgitsStore.retryProfilePhotoIdentityMatch() {
+                        viewModel.errorMessage = message
+                    }
+                }
+            }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your profile photo must match your verified ID selfie before you can chat. Update your photo in Profile, or tap Retry verification to try again with your current photo.")
+        }
         .sheet(isPresented: $showFlagSheet) {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
@@ -1929,6 +1980,7 @@ struct ConversationDetailView: View {
 
     private var acceptButtonTitle: String {
         if !ridgitsStore.hasPlusMembership { return "Subscribe to accept" }
+        if ridgitsStore.needsProfilePhotoMatchForMessaging { return "Verify photo to accept" }
         if !ridgitsStore.isVerifiedForMessaging { return "Verify to accept" }
         return "Accept message"
     }
@@ -1936,6 +1988,10 @@ struct ConversationDetailView: View {
     private func gateConversationMessagingAccess() -> Bool {
         guard ridgitsStore.hasPlusMembership else {
             showSubscriptionPaywall = true
+            return false
+        }
+        if ridgitsStore.needsProfilePhotoMatchForMessaging {
+            showProfilePhotoMatchAlert = true
             return false
         }
         guard ridgitsStore.isVerifiedForMessaging else {
