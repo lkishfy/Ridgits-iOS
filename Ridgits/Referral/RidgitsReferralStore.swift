@@ -42,19 +42,6 @@ final class RidgitsReferralStore: ObservableObject {
             referralLoadFailed = false
             return
         } catch {
-            // API may be unavailable before deploy — fall back to Firestore for code display.
-        }
-
-        guard let uid = Auth.auth().currentUser?.uid else {
-            referralProfile = nil
-            referralLoadFailed = true
-            return
-        }
-
-        do {
-            referralProfile = try await RidgitsReferralLocalService.loadOrCreateProfile(uid: uid)
-            referralLoadFailed = false
-        } catch {
             referralProfile = nil
             referralLoadFailed = true
         }

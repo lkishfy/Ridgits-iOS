@@ -21,6 +21,12 @@ final class AuthManager: ObservableObject {
         currentUser?.isEmailVerified ?? false
     }
 
+    var requiresEmailVerification: Bool {
+        guard let user = currentUser else { return false }
+        let isPasswordUser = user.providerData.contains { $0.providerId == "password" }
+        return isPasswordUser && !user.isEmailVerified
+    }
+
     init() {
         authStateListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             Task { @MainActor in
@@ -225,13 +231,10 @@ final class AuthManager: ObservableObject {
         }
         if let email { payload["email"] = email }
         if let fullName, !fullName.isEmpty { payload["name"] = fullName }
-        if let birthYear {
-            payload["birthYear"] = birthYear
-            payload["age"] = Calendar.current.component(.year, from: Date()) - birthYear
-            payload["ageVerificationConfirmed"] = true
-            payload["ageVerifiedAt"] = ISO8601DateFormatter().string(from: Date())
-        }
         try await Firestore.firestore().collection("users").document(uid).setData(payload, merge: true)
+        if let birthYear {
+            try await RidgitsAPIClient.shared.saveBirthYear(birthYear)
+        }
     }
 
     private static func describeAuthError(_ error: Error) -> String {

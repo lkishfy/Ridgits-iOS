@@ -805,17 +805,7 @@ final class RidgitsFirebaseClient {
     }
 
     func saveBirthYear(uid: String, birthYear: Int) async throws {
-        let age = Calendar.current.component(.year, from: Date()) - birthYear
-        try await db.collection("users").document(uid).setData(
-            [
-                "birthYear": birthYear,
-                "age": age,
-                "ageVerificationConfirmed": true,
-                "ageVerifiedAt": ISO8601DateFormatter().string(from: Date()),
-                "updatedAt": FieldValue.serverTimestamp(),
-            ],
-            merge: true
-        )
+        try await api.saveBirthYear(birthYear)
     }
 
     func isUserSubscribed(uid: String) async -> Bool {

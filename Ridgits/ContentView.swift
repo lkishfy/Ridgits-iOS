@@ -32,6 +32,8 @@ struct ContentView: View {
                 ReferralWelcomeView {
                     needsReferralWelcome = false
                 }
+            } else if authManager.requiresEmailVerification {
+                EmailVerificationPromptView()
             } else if needsBirthYear {
                 BirthYearPromptView {
                     needsBirthYear = false

@@ -403,6 +403,10 @@ final class RidgitsAPIClient {
         return try JSONDecoder().decode(RidgitsReferralQualifyResponse.self, from: json)
     }
 
+    func saveBirthYear(_ birthYear: Int) async throws {
+        _ = try await authorizedRequest(path: "/api/profile/birth-year", method: "POST", body: ["birthYear": birthYear])
+    }
+
     /// Authoritative pre-signup / post-OAuth check (disposable email, minimum-age birth year).
     /// Unauthenticated — safe to call before a Firebase Auth account exists.
     func validateSignup(email: String? = nil, birthYear: Int? = nil) async throws -> RidgitsSignupValidation {

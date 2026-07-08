@@ -31,6 +31,7 @@
 		1C21C8852CB6354FD9FA3B5C /* RidgitsFirestoreIndexErrorLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = E823C10648E78C933F94314F /* RidgitsFirestoreIndexErrorLogging.swift */; };
 		1D592B846B14F405668EE84A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252F8418EE1CC2484B211CDD /* ContentView.swift */; };
 		1DA676984F920E8B4D94E821 /* EmailAuthSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390B3BF48BE6C9AD20017520 /* EmailAuthSheet.swift */; };
+		1E4F8A2C9D3B7E6F1A0C5D8B /* EmailVerificationPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7E9A1D2F8B6E3A5D0C4F7B /* EmailVerificationPromptView.swift */; };
 		1DBF134FBF88356E1CC2F3AF /* pack_scoring.js in Resources */ = {isa = PBXBuildFile; fileRef = DE778F2EFF0AFA2035666946 /* pack_scoring.js */; };
 		1E6B3FB5106804C388218E2A /* RidgitsProfilePhotoIdentityMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445AAAD73654881A7C1F0995 /* RidgitsProfilePhotoIdentityMatch.swift */; };
 		1E7C8A9B0D1E2F3A4B5C6D7E /* RidgitsCustomerFacingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8D9E0A1B2C3D4E5F60718 /* RidgitsCustomerFacingError.swift */; };
@@ -168,6 +169,7 @@
 		32C8DEF4825245CE962B2090 /* RidgitsGlassTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsGlassTabBar.swift; sourceTree = "<group>"; };
 		339DAB4CC849CFAC428F73CC /* PackQuizCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackQuizCatalog.swift; sourceTree = "<group>"; };
 		390B3BF48BE6C9AD20017520 /* EmailAuthSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAuthSheet.swift; sourceTree = "<group>"; };
+		4C7E9A1D2F8B6E3A5D0C4F7B /* EmailVerificationPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationPromptView.swift; sourceTree = "<group>"; };
 		39F1F11274432698D6A299D7 /* RidgitsQuickToolsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsQuickToolsService.swift; sourceTree = "<group>"; };
 		3A5021834ACF8D4FDEFDEE3D /* RidgitsQuizCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsQuizCompatibility.swift; sourceTree = "<group>"; };
 		3DA7F90CC87910305F762E79 /* DisposableEmailDomains.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisposableEmailDomains.swift; sourceTree = "<group>"; };
@@ -443,6 +445,7 @@
 				D7ABE398AA1AE0E8E3749749 /* BirthYearPromptView.swift */,
 				3DA7F90CC87910305F762E79 /* DisposableEmailDomains.swift */,
 				390B3BF48BE6C9AD20017520 /* EmailAuthSheet.swift */,
+				4C7E9A1D2F8B6E3A5D0C4F7B /* EmailVerificationPromptView.swift */,
 				6DBD03EA351B2A15F2AB2CDF /* LoginView.swift */,
 				CF475316594F35B933AFD9FC /* RidgitsAgeVerificationConsent.swift */,
 				4FF762A070E174822A5C1A07 /* RidgitsMinimumAge.swift */,
@@ -729,6 +732,7 @@
 				CB461460EA1200879D1BAC12 /* DashboardView.swift in Sources */,
 				D2AF0888D0143FAC328F4D92 /* DisposableEmailDomains.swift in Sources */,
 				1DA676984F920E8B4D94E821 /* EmailAuthSheet.swift in Sources */,
+				1E4F8A2C9D3B7E6F1A0C5D8B /* EmailVerificationPromptView.swift in Sources */,
 				5E1F7DDEFE7623BB75D10158 /* IdentityVerificationCoordinator.swift in Sources */,
 				6E103748382DFBE8A5031829 /* IdentityVerificationStatusCard.swift in Sources */,
 				AF44BF8ADF734C786F744083 /* IdentityVerificationView.swift in Sources */,
