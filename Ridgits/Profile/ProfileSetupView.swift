@@ -33,11 +33,11 @@ struct ProfileSetupView: View {
                             field("First name", required: true) {
                                 RidgitsTextField(
                                     placeholder: "First name only",
-                                    text: firstNameBinding
+                                    text: firstNameBinding,
+                                    textContentType: .givenName,
+                                    textInputAutocapitalization: .words,
+                                    autocorrectionDisabled: true
                                 )
-                                .textContentType(.givenName)
-                                .textInputAutocapitalization(.words)
-                                .autocorrectionDisabled()
 
                                 Text("Others only see your first name.")
                                     .font(RidgitsTypography.caption(12))
@@ -163,16 +163,9 @@ struct ProfileSetupView: View {
         Binding(
             get: { profile.name },
             set: { newValue in
-                let sanitized = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(newValue)
-                profile.name = sanitized
-                if newValue.contains(where: \.isWhitespace) {
-                    nameValidationMessage = "Use your first name only."
-                } else if !newValue.isEmpty,
-                          sanitized != newValue.trimmingCharacters(in: .whitespacesAndNewlines) {
-                    nameValidationMessage = "Use letters only."
-                } else {
-                    nameValidationMessage = nil
-                }
+                let result = RidgitsDisplaySanitize.profileFirstNameInputFeedback(for: newValue)
+                profile.name = result.sanitized
+                nameValidationMessage = result.validationMessage
             }
         )
     }

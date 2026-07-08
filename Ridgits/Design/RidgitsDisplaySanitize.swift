@@ -38,6 +38,17 @@ enum RidgitsDisplaySanitize {
         return sanitized.allSatisfy { $0.isLetter || $0 == "'" || $0 == "-" }
     }
 
+    static func profileFirstNameInputFeedback(for raw: String) -> (sanitized: String, validationMessage: String?) {
+        let sanitized = sanitizeProfileFirstNameInput(raw)
+        if raw.contains(where: \.isWhitespace) {
+            return (sanitized, "Use your first name only.")
+        }
+        if !raw.isEmpty, sanitized != raw.trimmingCharacters(in: .whitespacesAndNewlines) {
+            return (sanitized, "Use letters only.")
+        }
+        return (sanitized, nil)
+    }
+
     static func displayFirstName(_ fullName: String) -> String {
         let trimmed = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)

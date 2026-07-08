@@ -11,6 +11,7 @@ struct ProfileView: View {
     @State private var isSaving = false
     @State private var isLoading = true
     @State private var statusMessage: String?
+    @State private var nameValidationMessage: String?
     @State private var matchGender: [Int] = []
     @State private var matchInterestedIn: [Int] = []
     @State private var matchLookingFor: [Int] = []
@@ -47,7 +48,9 @@ struct ProfileView: View {
             guard let uid = authManager.currentUser?.uid,
                   profile.id.isEmpty,
                   let cached = RidgitsProfileCache.shared.profile(for: uid) else { return }
-            profile = cached
+            var cachedProfile = cached
+            cachedProfile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(cachedProfile.name)
+            profile = cachedProfile
             isLoading = false
         }
         .sheet(isPresented: $showIdentityVerification) {
@@ -316,8 +319,24 @@ struct ProfileView: View {
                     RidgitsProfilePhotoPicker(imageURL: $profile.image)
                 }
 
-                fieldBlock("Username", required: true) {
-                    RidgitsTextField(placeholder: "Enter your username", text: $profile.name)
+                fieldBlock("First name", required: true) {
+                    RidgitsTextField(
+                        placeholder: "First name only",
+                        text: firstNameBinding,
+                        textContentType: .givenName,
+                        textInputAutocapitalization: .words,
+                        autocorrectionDisabled: true
+                    )
+
+                    Text("Others only see your first name.")
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.textMuted)
+
+                    if let nameValidationMessage {
+                        Text(nameValidationMessage)
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.destructive)
+                    }
                 }
 
                 fieldBlock("Age", required: true) {
@@ -417,7 +436,7 @@ struct ProfileView: View {
                     RidgitsSquareButton(title: isSaving ? "Saving…" : "Save Profile", style: .filled) {
                         Task { await saveProfile() }
                     }
-                    .disabled(isSaving || !profile.isCompleteForMatching)
+                    .disabled(isSaving || !canSaveProfile)
 
                     if profile.hasBasicProfile {
                         RidgitsSquareButton(title: "Cancel", style: .ghost) {
@@ -497,6 +516,7 @@ struct ProfileView: View {
 
         if let loaded = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid) {
             profile = loaded
+            profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
             RidgitsMatchAgeRange.normalize(on: &profile)
             if !loaded.hasBasicProfile {
                 isEditing = true
@@ -531,7 +551,13 @@ struct ProfileView: View {
     private func saveProfile() async {
         isSaving = true
         statusMessage = nil
+        nameValidationMessage = nil
         defer { isSaving = false }
+        profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+        guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
+            nameValidationMessage = "Enter a valid first name to continue."
+            return
+        }
         RidgitsMatchAgeRange.normalize(on: &profile)
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
@@ -554,6 +580,21 @@ struct ProfileView: View {
         } catch {
             statusMessage = error.localizedDescription
         }
+    }
+
+    private var canSaveProfile: Bool {
+        profile.isCompleteForMatching && RidgitsDisplaySanitize.isValidProfileFirstName(profile.name)
+    }
+
+    private var firstNameBinding: Binding<String> {
+        Binding(
+            get: { profile.name },
+            set: { newValue in
+                let result = RidgitsDisplaySanitize.profileFirstNameInputFeedback(for: newValue)
+                profile.name = result.sanitized
+                nameValidationMessage = result.validationMessage
+            }
+        )
     }
 }
 

@@ -245,6 +245,9 @@ struct RidgitsTextField: View {
     var axis: Axis = .horizontal
     var lineLimit: ClosedRange<Int>? = nil
     var keyboard: UIKeyboardType = .default
+    var textContentType: UITextContentType? = nil
+    var textInputAutocapitalization: TextInputAutocapitalization? = nil
+    var autocorrectionDisabled = false
 
     var body: some View {
         Group {
@@ -260,6 +263,11 @@ struct RidgitsTextField: View {
         .tint(RidgitsColors.ctaBlack)
         .colorScheme(.light)
         .keyboardType(keyboard)
+        .modifier(RidgitsTextFieldInputModifiers(
+            textContentType: textContentType,
+            textInputAutocapitalization: textInputAutocapitalization,
+            autocorrectionDisabled: autocorrectionDisabled
+        ))
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(RidgitsColors.surface)
@@ -267,6 +275,26 @@ struct RidgitsTextField: View {
             RoundedRectangle(cornerRadius: RidgitsRadius.md)
                 .stroke(RidgitsColors.border, lineWidth: 1)
         )
+    }
+}
+
+private struct RidgitsTextFieldInputModifiers: ViewModifier {
+    let textContentType: UITextContentType?
+    let textInputAutocapitalization: TextInputAutocapitalization?
+    let autocorrectionDisabled: Bool
+
+    func body(content: Content) -> some View {
+        var view = AnyView(content)
+        if let textContentType {
+            view = AnyView(view.textContentType(textContentType))
+        }
+        if let textInputAutocapitalization {
+            view = AnyView(view.textInputAutocapitalization(textInputAutocapitalization))
+        }
+        if autocorrectionDisabled {
+            view = AnyView(view.autocorrectionDisabled())
+        }
+        return view
     }
 }
 
