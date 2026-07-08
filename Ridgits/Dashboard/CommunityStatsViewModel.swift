@@ -4,7 +4,7 @@ import FirebaseFirestore
 
 struct CommunityQuizStats: Equatable {
     var totalCompleted: Int = 0
-    var completedThisWeek: Int = 0
+    var completedThisMonth: Int = 0
 }
 
 struct PopularQuestionRating: Equatable {

@@ -1204,13 +1204,15 @@ final class RidgitsFirebaseClient {
                 }
 
                 let totalCompleted = data["totalCompleted"] as? Int ?? 0
-                let completedThisWeek = data["completedThisWeek"] as? Int ?? 0
+                let completedThisMonth = data["completedThisMonth"] as? Int
+                    ?? data["completedThisWeek"] as? Int
+                    ?? 0
 
                 Task { @MainActor in
                     onChange(
                         CommunityQuizStats(
                             totalCompleted: totalCompleted,
-                            completedThisWeek: completedThisWeek
+                            completedThisMonth: completedThisMonth
                         )
                     )
                 }

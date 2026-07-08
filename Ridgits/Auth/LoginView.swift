@@ -1,9 +1,47 @@
 import SwiftUI
 import AuthenticationServices
+import FirebaseFirestore
 
 private enum RidgitsLegalURL {
     static let privacy = URL(string: "https://ridgits.com/privacy-policy")!
     static let terms = URL(string: "https://ridgits.com/terms-conditions")!
+}
+
+@MainActor
+private final class LoginMonthlyQuizStatsViewModel: ObservableObject {
+    private static let minimumDisplayBoost = 16
+
+    @Published private(set) var completedThisMonth = 0
+
+    private var listener: ListenerRegistration?
+
+    var displayedCount: Int {
+        completedThisMonth + Self.minimumDisplayBoost
+    }
+
+    var showsBadge: Bool {
+        true
+    }
+
+    var badgeText: String {
+        let count = displayedCount
+        let noun = count == 1 ? "quiz" : "quizzes"
+        return "\(count.formatted()) \(noun) completed this month"
+    }
+
+    func startListening() {
+        guard listener == nil else { return }
+        listener = RidgitsFirebaseClient.shared.listenCommunityQuizStats { [weak self] stats in
+            Task { @MainActor in
+                self?.completedThisMonth = stats.completedThisMonth
+            }
+        }
+    }
+
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+    }
 }
 
 struct LoginView: View {
@@ -11,6 +49,8 @@ struct LoginView: View {
     let onAppleCompletion: (Result<ASAuthorization, Error>) -> Void
     let onGoogleSignIn: () -> Void
     let onEmailSignIn: () -> Void
+
+    @StateObject private var monthlyStats = LoginMonthlyQuizStatsViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -28,10 +68,11 @@ struct LoginView: View {
                     heroSection
                         .padding(.horizontal, 32)
                         .padding(.top, 24)
-                        .padding(.bottom, 32)
+                        .padding(.bottom, 8)
 
                     authSection
                         .padding(.horizontal, 40)
+                        .padding(.top, 60)
                         .padding(.bottom, 32)
                 }
             }
@@ -39,6 +80,8 @@ struct LoginView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(RidgitsColors.surface.ignoresSafeArea())
+        .onAppear { monthlyStats.startListening() }
+        .onDisappear { monthlyStats.stopListening() }
     }
 
     private var landingNavBar: some View {
@@ -53,29 +96,36 @@ struct LoginView: View {
     }
 
     private var heroSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .center, spacing: 4) {
             RidgitsHeroImageStack()
-                .padding(.bottom, 8)
 
-            Text("Stop Wasting Time")
-                .font(RidgitsTypography.heroTitle(36))
-                .foregroundStyle(RidgitsColors.textHeadline)
-                .tracking(-0.5)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: 8) {
+                if monthlyStats.showsBadge {
+                    LoginMonthlyQuizBadge(text: monthlyStats.badgeText, count: monthlyStats.displayedCount)
+                        .padding(.bottom, 4)
+                }
+
+                Text("Stop Wasting Time")
+                    .font(RidgitsTypography.heroTitle(36))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .tracking(-0.5)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("Community quiz-based matching and dating tools")
+                    .font(RidgitsTypography.body(13))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.88)
+                    .frame(maxWidth: .infinity)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private var authSection: some View {
         VStack(spacing: 16) {
-            Text("Community quiz-based matching and dating tools.")
-                .font(RidgitsTypography.body(14))
-                .foregroundStyle(RidgitsColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .frame(maxWidth: 320)
-                .padding(.bottom, 8)
-
             SignInWithAppleButton(.signIn, onRequest: onAppleRequest, onCompletion: onAppleCompletion)
                 .signInWithAppleButtonStyle(.black)
                 .frame(height: 54)
@@ -96,6 +146,53 @@ struct LoginView: View {
         }
         .frame(maxWidth: 320)
         .frame(maxWidth: .infinity)
+    }
+}
+
+private struct LoginMonthlyQuizBadge: View {
+    let text: String
+    let count: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            RidgitsLivePulseDot()
+
+            Text(text)
+                .font(RidgitsTypography.label(11))
+                .foregroundStyle(Color(hex: 0x065F46))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color(hex: 0xD1FAE5))
+        .clipShape(Capsule())
+        .animation(.easeInOut(duration: 0.25), value: count)
+        .accessibilityLabel(text)
+    }
+}
+
+private struct RidgitsLivePulseDot: View {
+    @State private var isPulsing = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color(hex: 0x059669))
+                .frame(width: 8, height: 8)
+                .scaleEffect(isPulsing ? 2.2 : 1)
+                .opacity(isPulsing ? 0 : 0.75)
+
+            Circle()
+                .fill(Color(hex: 0x059669))
+                .frame(width: 8, height: 8)
+        }
+        .frame(width: 8, height: 8)
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.2).repeatForever(autoreverses: false)) {
+                isPulsing = true
+            }
+        }
     }
 }
 

@@ -292,8 +292,8 @@ struct CommunitySection: View {
 
     private var quizStatsBlock: some View {
         VStack(spacing: 0) {
-            if statsViewModel.stats.completedThisWeek > 0 {
-                weeklyActivityBadge
+            if statsViewModel.stats.completedThisMonth > 0 {
+                monthlyActivityBadge
                     .padding(.bottom, 16)
             }
 
@@ -311,13 +311,13 @@ struct CommunitySection: View {
         .frame(maxWidth: .infinity)
     }
 
-    private var weeklyActivityBadge: some View {
+    private var monthlyActivityBadge: some View {
         HStack(spacing: 8) {
             Circle()
                 .fill(Color(hex: 0x059669))
                 .frame(width: 8, height: 8)
 
-            Text(weeklyActivityBadgeText)
+            Text(monthlyActivityBadgeText)
                 .font(RidgitsTypography.label(11))
                 .foregroundStyle(Color(hex: 0x065F46))
         }
@@ -327,10 +327,10 @@ struct CommunitySection: View {
         .clipShape(Capsule())
     }
 
-    private var weeklyActivityBadgeText: String {
-        let count = statsViewModel.stats.completedThisWeek
+    private var monthlyActivityBadgeText: String {
+        let count = statsViewModel.stats.completedThisMonth
         let noun = count == 1 ? "quiz" : "quizzes"
-        return "\(count.formatted()) \(noun) completed this week"
+        return "\(count.formatted()) \(noun) completed this month"
     }
 
     private var popularQuestionsBlock: some View {

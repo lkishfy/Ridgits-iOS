@@ -287,10 +287,6 @@ struct QuizView: View {
         .padding(.vertical, compact ? 3 : 4)
         .background(Color(hex: 0xECFDF5))
         .clipShape(RoundedRectangle(cornerRadius: 4))
-        .overlay(
-            RoundedRectangle(cornerRadius: 4)
-                .stroke(Color(hex: 0x059669), lineWidth: 1)
-        )
         .accessibilityLabel("Community question")
     }
 
