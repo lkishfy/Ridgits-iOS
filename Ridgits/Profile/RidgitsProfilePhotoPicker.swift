@@ -105,7 +105,7 @@ struct RidgitsProfilePhotoPicker: View {
 
         localPreview = uiImage
         do {
-            let urls = try await RidgitsQuickToolsService.shared.uploadImages([jpeg], folder: "profilePhotos")
+            let urls = try await RidgitsQuickToolsService.shared.uploadImages([jpeg], folder: "profile_images")
             guard let url = urls.first else {
                 uploadError = "Upload failed. Please try again."
                 localPreview = nil
@@ -114,7 +114,13 @@ struct RidgitsProfilePhotoPicker: View {
             imageURL = url
         } catch {
             localPreview = nil
-            uploadError = error.localizedDescription
+            let message = error.localizedDescription
+            if message.localizedCaseInsensitiveContains("permission") ||
+                message.localizedCaseInsensitiveContains("unauthorized") {
+                uploadError = "Could not upload your photo. Please sign in again and try once more."
+            } else {
+                uploadError = message
+            }
         }
     }
 }

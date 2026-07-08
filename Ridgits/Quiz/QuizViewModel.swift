@@ -410,7 +410,14 @@ final class QuizViewModel: ObservableObject {
     }
 
     func completeQuiz() async {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let uid = Auth.auth().currentUser?.uid else {
+            errorMessage = "Please sign in again to save your quiz."
+            return
+        }
+        guard hasBootstrapped else {
+            errorMessage = "Still loading your quiz. Try again in a moment."
+            return
+        }
         guard mode == .modify || canFinish else {
             errorMessage = "Answer at least \(finishAnswerThreshold) questions to finish."
             return

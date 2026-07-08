@@ -683,27 +683,44 @@ struct QuizView: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                 Text(title)
-                    .font(RidgitsTypography.caption(11))
+                    .font(RidgitsTypography.label(12))
+                    .tracking(0.4)
                     .lineLimit(1)
             }
             .fixedSize(horizontal: true, vertical: false)
-            .foregroundStyle(active ? .white : (enabled ? RidgitsColors.textHeadline : RidgitsColors.textMuted))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(active ? activeColor : RidgitsColors.surface)
+            .foregroundStyle(chipForeground(active: active, enabled: enabled, activeColor: activeColor))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(chipBackground(active: active, enabled: enabled, activeColor: activeColor))
             .overlay(
-                Capsule()
-                    .stroke(active ? activeColor : RidgitsColors.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                    .stroke(chipBorder(active: active, enabled: enabled, activeColor: activeColor), lineWidth: active ? 2 : 1)
             )
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
         }
         .disabled(!enabled)
         .buttonStyle(RidgitsHapticPlainButtonStyle())
         .layoutPriority(1)
+        .opacity(enabled ? 1 : 0.5)
+    }
+
+    private func chipForeground(active: Bool, enabled: Bool, activeColor: Color) -> Color {
+        guard enabled else { return RidgitsColors.textMuted }
+        return active ? activeColor : RidgitsColors.textHeadline
+    }
+
+    private func chipBackground(active: Bool, enabled: Bool, activeColor: Color) -> Color {
+        guard enabled else { return RidgitsColors.hoverSurface }
+        return active ? activeColor.opacity(0.1) : RidgitsColors.surface
+    }
+
+    private func chipBorder(active: Bool, enabled: Bool, activeColor: Color) -> Color {
+        guard enabled else { return RidgitsColors.border }
+        return active ? activeColor : RidgitsColors.optionBorder
     }
 
     private func modifyIconFeatureChip(
@@ -716,13 +733,13 @@ struct QuizView: View {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(enabled ? RidgitsColors.textHeadline : RidgitsColors.textMuted)
-                .frame(width: 34, height: 34)
+                .frame(width: 40, height: 40)
                 .background(RidgitsColors.surface)
                 .overlay(
-                    Capsule()
-                        .stroke(RidgitsColors.border, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                        .stroke(RidgitsColors.optionBorder, lineWidth: 1)
                 )
-                .clipShape(Capsule())
+                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
         }
         .disabled(!enabled)
         .buttonStyle(RidgitsHapticPlainButtonStyle())

@@ -8,6 +8,8 @@ struct ProfileSetupView: View {
     @State private var interestDraft = ""
     @State private var isSaving = false
     @State private var profilePhotoMatchMessage: String?
+    @State private var saveErrorMessage: String?
+    @State private var nameValidationMessage: String?
 
     var onComplete: () -> Void
 
@@ -28,8 +30,24 @@ struct ProfileSetupView: View {
 
                     RidgitsDashboardCard {
                         VStack(alignment: .leading, spacing: 14) {
-                            field("Name", required: true) {
-                                RidgitsTextField(placeholder: "Username", text: $profile.name)
+                            field("First name", required: true) {
+                                RidgitsTextField(
+                                    placeholder: "First name only",
+                                    text: firstNameBinding
+                                )
+                                .textContentType(.givenName)
+                                .textInputAutocapitalization(.words)
+                                .autocorrectionDisabled()
+
+                                Text("Others only see your first name.")
+                                    .font(RidgitsTypography.caption(12))
+                                    .foregroundStyle(RidgitsColors.textMuted)
+
+                                if let nameValidationMessage {
+                                    Text(nameValidationMessage)
+                                        .font(RidgitsTypography.caption(12))
+                                        .foregroundStyle(RidgitsColors.destructive)
+                                }
                             }
                             field("City & state", required: true) {
                                 RidgitsLocationPicker(
@@ -60,22 +78,57 @@ struct ProfileSetupView: View {
 
                             VStack(alignment: .leading, spacing: 8) {
                                 RidgitsFormStyle.fieldLabel("Interests", required: true)
-                                HStack {
+                                HStack(spacing: 8) {
                                     RidgitsTextField(placeholder: "Add interest", text: $interestDraft)
                                     Button("Add") {
-                                        let trimmed = interestDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-                                        guard !trimmed.isEmpty else { return }
-                                        profile.interests.append(trimmed)
-                                        interestDraft = ""
+                                        addInterest()
                                     }
                                     .font(RidgitsTypography.label(12))
+                                    .foregroundStyle(RidgitsColors.textHeadline)
+                                    .buttonStyle(RidgitsHapticPlainButtonStyle())
+                                    .disabled(interestDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                }
+
+                                if profile.interests.isEmpty {
+                                    Text("Add at least one interest to continue.")
+                                        .font(RidgitsTypography.caption(12))
+                                        .foregroundStyle(RidgitsColors.textMuted)
+                                } else {
+                                    ProfileSetupFlowLayout(spacing: 8) {
+                                        ForEach(profile.interests, id: \.self) { interest in
+                                            HStack(spacing: 4) {
+                                                Text(interest)
+                                                    .font(RidgitsTypography.caption(12))
+                                                Button {
+                                                    profile.interests.removeAll { $0 == interest }
+                                                } label: {
+                                                    Image(systemName: "xmark")
+                                                        .font(.system(size: 9, weight: .bold))
+                                                }
+                                                .buttonStyle(RidgitsHapticPlainButtonStyle())
+                                            }
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 5)
+                                            .background(RidgitsColors.hoverSurface)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: RidgitsRadius.sm)
+                                                    .stroke(RidgitsColors.border, lineWidth: 1)
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
                             RidgitsSquareButton(title: isSaving ? "Saving…" : "Save & Continue", style: .filled) {
                                 Task { await save() }
                             }
-                            .disabled(!profile.isCompleteForMatching || isSaving)
+                            .disabled(!canCompleteSetup || isSaving)
+
+                            if let saveErrorMessage {
+                                Text(saveErrorMessage)
+                                    .font(RidgitsTypography.caption(12))
+                                    .foregroundStyle(RidgitsColors.destructive)
+                            }
 
                             if let profilePhotoMatchMessage {
                                 Text(profilePhotoMatchMessage)
@@ -102,6 +155,28 @@ struct ProfileSetupView: View {
         }
     }
 
+    private var canCompleteSetup: Bool {
+        profile.isCompleteForMatching && RidgitsDisplaySanitize.isValidProfileFirstName(profile.name)
+    }
+
+    private var firstNameBinding: Binding<String> {
+        Binding(
+            get: { profile.name },
+            set: { newValue in
+                let sanitized = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(newValue)
+                profile.name = sanitized
+                if newValue.contains(where: \.isWhitespace) {
+                    nameValidationMessage = "Use your first name only."
+                } else if !newValue.isEmpty,
+                          sanitized != newValue.trimmingCharacters(in: .whitespacesAndNewlines) {
+                    nameValidationMessage = "Use letters only."
+                } else {
+                    nameValidationMessage = nil
+                }
+            }
+        )
+    }
+
     private func field<Content: View>(_ title: String, required: Bool = false, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             RidgitsFormStyle.fieldLabel(title, required: required)
@@ -112,11 +187,22 @@ struct ProfileSetupView: View {
     private func loadExisting() async {
         guard let uid = authManager.currentUser?.uid else { return }
         profile = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)) ?? profile
+        if !profile.name.isEmpty {
+            profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+        }
     }
 
     private func save() async {
         isSaving = true
+        saveErrorMessage = nil
         profilePhotoMatchMessage = nil
+        nameValidationMessage = nil
+        profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+        guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
+            isSaving = false
+            nameValidationMessage = "Enter a valid first name to continue."
+            return
+        }
         defer { isSaving = false }
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
@@ -124,6 +210,62 @@ struct ProfileSetupView: View {
             if profilePhotoMatchMessage == nil {
                 onComplete()
             }
-        } catch {}
+        } catch {
+            saveErrorMessage = error.localizedDescription
+        }
+    }
+
+    private func addInterest() {
+        let trimmed = interestDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let alreadyAdded = profile.interests.contains {
+            $0.compare(trimmed, options: .caseInsensitive) == .orderedSame
+        }
+        guard !alreadyAdded else {
+            interestDraft = ""
+            return
+        }
+        profile.interests.append(trimmed)
+        interestDraft = ""
+        RidgitsHaptics.play(.light)
+    }
+}
+
+private struct ProfileSetupFlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 0
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > width, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+        }
+        return CGSize(width: width, height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > bounds.maxX, x > bounds.minX {
+                x = bounds.minX
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+        }
     }
 }

@@ -18,6 +18,26 @@ enum RidgitsDisplaySanitize {
         #"(p+[\W_]*o+[\W_]*r+[\W_]*n+)"#,
     ]
 
+    /// Keeps only the first name token and allowed characters for profile setup.
+    static func sanitizeProfileFirstNameInput(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let firstToken = trimmed
+            .split(whereSeparator: \.isWhitespace)
+            .map(String.init)
+            .first ?? trimmed
+        let filtered = firstToken.filter { character in
+            character.isLetter || character == "'" || character == "-"
+        }
+        return String(filtered.prefix(30))
+    }
+
+    static func isValidProfileFirstName(_ name: String) -> Bool {
+        let sanitized = sanitizeProfileFirstNameInput(name)
+        guard !sanitized.isEmpty, sanitized.count <= 30 else { return false }
+        guard sanitized.first?.isLetter == true else { return false }
+        return sanitized.allSatisfy { $0.isLetter || $0 == "'" || $0 == "-" }
+    }
+
     static func displayFirstName(_ fullName: String) -> String {
         let trimmed = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
