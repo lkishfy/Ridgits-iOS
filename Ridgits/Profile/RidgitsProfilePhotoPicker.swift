@@ -49,10 +49,9 @@ struct RidgitsProfilePhotoPicker: View {
                     .foregroundStyle(RidgitsColors.destructive)
             }
 
-            Text("You must use a profile photo that matches your license or you won't be able to chat.")
-                .font(RidgitsTypography.caption(12))
-                .foregroundStyle(RidgitsColors.textMuted)
-                .fixedSize(horizontal: false, vertical: true)
+            RidgitsProfilePhotoIdentityHint(
+                message: "You must use a profile photo that matches your license or you won't be able to chat."
+            )
         }
         .onChange(of: selectedItem) { _, item in
             Task { await handleSelection(item) }
@@ -126,6 +125,26 @@ struct RidgitsProfilePhotoPicker: View {
             } else {
                 uploadError = message
             }
+        }
+    }
+}
+
+struct RidgitsProfilePhotoIdentityHint: View {
+    let message: String
+    var textColor: Color = RidgitsColors.textMuted
+    var iconColor: Color = RidgitsColors.textMuted
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "info.circle.fill")
+                .font(.system(size: 13))
+                .foregroundStyle(iconColor)
+                .padding(.top, 1)
+
+            Text(message)
+                .font(RidgitsTypography.caption(12))
+                .foregroundStyle(textColor)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

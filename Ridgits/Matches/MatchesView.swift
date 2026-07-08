@@ -23,6 +23,8 @@ struct MatchesView: View {
     @State private var pokeConfirmMatch: RidgitsMatch?
     @State private var unpokeConfirmMatch: RidgitsMatch?
     @State private var messagingBlockedMessage: String?
+    @State private var showIdentityVerification = false
+    @State private var showProfilePhotoMatchAlert = false
 
     private var nearbyAccess: RidgitsNearbySearchAccess {
         RidgitsNearbySearchAccess.from(store: ridgitsStore)
@@ -160,6 +162,15 @@ struct MatchesView: View {
                 }
                 .environmentObject(authManager)
             }
+            .sheet(isPresented: $showIdentityVerification) {
+                IdentityVerificationView { success in
+                    showIdentityVerification = false
+                    if success {
+                        Task { await ridgitsStore.refreshAccessInBackground() }
+                    }
+                }
+                .environmentObject(ridgitsStore)
+            }
             .sheet(item: $composeMatch) { match in
                 composeSheet(for: match)
             }
@@ -231,6 +242,18 @@ struct MatchesView: View {
                 if let match = unpokeConfirmMatch {
                     Text("Delete your poke to \(match.displayFirstName)?")
                 }
+            }
+            .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
+                Button("Retry verification") {
+                    Task {
+                        if let message = await ridgitsStore.retryProfilePhotoIdentityMatch() {
+                            viewModel.errorMessage = message
+                        }
+                    }
+                }
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Your profile photo must match your verified ID selfie before you can chat. Update your photo in Profile, or tap Retry verification to try again with your current photo.")
             }
     }
 
@@ -344,6 +367,18 @@ struct MatchesView: View {
         }
     }
 
+    private func gateMessagingAccess() -> Bool {
+        if ridgitsStore.needsProfilePhotoMatchForMessaging {
+            showProfilePhotoMatchAlert = true
+            return false
+        }
+        guard ridgitsStore.isVerifiedForMessaging else {
+            showIdentityVerification = true
+            return false
+        }
+        return true
+    }
+
     private func requestMessage(to match: RidgitsMatch) {
         if RidgitsNearbyAccess.requiresUpgradeToMessage(
             personAtDistanceMiles: match.distanceMiles,
@@ -358,6 +393,7 @@ struct MatchesView: View {
             )
             return
         }
+        guard gateMessagingAccess() else { return }
         if let closedMessage = messagingViewModel.messagingClosedMessage(for: match) {
             messagingBlockedMessage = closedMessage
             return
@@ -852,6 +888,7 @@ struct MatchesView: View {
                             return
                         }
                         Task {
+                            guard gateMessagingAccess() else { return }
                             let trimmed = composeMessage.trimmingCharacters(in: .whitespacesAndNewlines)
                             if RidgitsMessagingValidation.blocksEarlyPhoneNumber(text: trimmed, messageCount: 0) {
                                 messagingViewModel.showEarlyPhoneNumberPrompt = true
@@ -873,6 +910,10 @@ struct MatchesView: View {
                                     showSubscriptionPaywall = true
                                 } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
                                     showBirthYearPrompt = true
+                                } else if ridgitsError.code == "IDENTITY_VERIFICATION_REQUIRED" {
+                                    showIdentityVerification = true
+                                } else if ridgitsError.code == "PROFILE_PHOTO_IDENTITY_MISMATCH" {
+                                    showProfilePhotoMatchAlert = true
                                 } else if handleExistingConversationError(ridgitsError, match: match) {
                                     return
                                 } else {

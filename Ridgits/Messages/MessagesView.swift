@@ -520,11 +520,14 @@ struct MessagesView: View {
                 MatchProfileView(
                     match: match,
                     onMessage: {
-                        guard ridgitsStore.hasPlusMembership else {
-                            subscriptionPaywallForMessaging = true
-                            showSubscriptionPaywall = true
-                            return
-                        }
+                        guard gateMessagingAccess(
+                            subscriptionPaywall: {
+                                subscriptionPaywallForMessaging = true
+                                showSubscriptionPaywall = true
+                            },
+                            identityVerification: { showIdentityVerification = true },
+                            profilePhotoMatch: { showProfilePhotoMatchAlert = true }
+                        ) else { return }
                         guard beginCompose(to: match) else { return }
                         pokeProfileMatch = nil
                     },

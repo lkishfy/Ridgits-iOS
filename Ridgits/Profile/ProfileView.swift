@@ -184,18 +184,17 @@ struct ProfileView: View {
                     }
 
                     if !ridgitsStore.access.isProfilePhotoVerified {
-                        Text(
-                            ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
+                        RidgitsProfilePhotoIdentityHint(
+                            message: ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
                                 ? "Your profile photo didn't match your ID. Change your photo or tap Retry photo verification above to try again."
-                                : "You must use a profile photo that matches your license or you won't be able to chat."
+                                : "You must use a profile photo that matches your license or you won't be able to chat.",
+                            textColor: ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
+                                ? RidgitsColors.destructive
+                                : RidgitsColors.textMuted,
+                            iconColor: ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
+                                ? RidgitsColors.destructive
+                                : RidgitsColors.textMuted
                         )
-                            .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(
-                                ridgitsStore.access.profilePhotoIdentityMatchStatus == "failed"
-                                    ? RidgitsColors.destructive
-                                    : RidgitsColors.textMuted
-                            )
-                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     if !profile.about.isEmpty {
