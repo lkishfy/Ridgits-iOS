@@ -45,8 +45,8 @@ enum RidgitsCustomerFacingError {
         }
     }
 
-    static func sanitize(_ message: String, code: String? = nil) -> String {
-        let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+    static func sanitize(_ rawMessage: String, code: String? = nil) -> String {
+        let trimmed = rawMessage.trimmingCharacters(in: .whitespacesAndNewlines)
         if let code, let coded = message(for: code),
            trimmed.isEmpty || looksLikeVendorOrInternalError(trimmed) {
             return coded
