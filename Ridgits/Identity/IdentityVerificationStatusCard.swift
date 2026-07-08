@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct IdentityVerificationStatusCard: View {
+    static let photoMatchDeadlineWarning =
+        "Add your profile photo within 48 hours of verifying your ID. If verification does not work, email support@ridgits.com and we will help."
+
     let access: RidgitsAccess
     let canStartVerification: Bool
+    let hasProfilePhoto: Bool
     let onVerify: () -> Void
     let onSubscribe: () -> Void
     var onEditProfilePhoto: (() -> Void)? = nil
@@ -75,6 +79,9 @@ struct IdentityVerificationStatusCard: View {
         if access.isFullyIdentityVerified && !access.isProfilePhotoVerified {
             return "Your ID is verified. Add a profile photo that matches your ID selfie to start chatting."
         }
+        if canStartVerification && !access.isIdentityVerified {
+            return "Add a profile photo first, then complete identity verification to accept and send messages."
+        }
         if access.isFullyIdentityVerified {
             if canStartVerification {
                 return "You're verified. Match your profile photo to your ID to chat with other members."
@@ -84,10 +91,18 @@ struct IdentityVerificationStatusCard: View {
         if access.isIdentityVerified {
             return "Your ID is verified. Complete phone verification to finish."
         }
-        if canStartVerification {
-            return "Complete identity verification to accept and send messages."
-        }
         return "Subscribe first to unlock identity verification, then verify to message other members."
+    }
+
+    private var shouldShowPhotoDeadlineWarning: Bool {
+        if access.isReviewBypassAccount { return false }
+        if access.isFullyIdentityVerified && !access.isProfilePhotoVerified { return true }
+        if canStartVerification && !access.isIdentityVerified { return true }
+        return false
+    }
+
+    private var needsProfilePhotoBeforeVerify: Bool {
+        canStartVerification && !access.isIdentityVerified && !hasProfilePhoto
     }
 
     var body: some View {
@@ -112,6 +127,12 @@ struct IdentityVerificationStatusCard: View {
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textSecondary)
 
+                if shouldShowPhotoDeadlineWarning {
+                    Text(Self.photoMatchDeadlineWarning)
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.destructive)
+                }
+
                 if let photoMatchStatusMessage, !photoMatchStatusMessage.isEmpty {
                     Text(photoMatchStatusMessage)
                         .font(RidgitsTypography.caption(12))
@@ -131,7 +152,9 @@ struct IdentityVerificationStatusCard: View {
                         .disabled(isRetryingPhotoMatch)
                     }
                 } else if !access.isFullyIdentityVerified {
-                    if access.isIdentityVerified, canStartVerification {
+                    if needsProfilePhotoBeforeVerify, let onEditProfilePhoto {
+                        RidgitsSquareButton(title: "Add profile photo first", style: .filled, action: onEditProfilePhoto)
+                    } else if access.isIdentityVerified, canStartVerification {
                         RidgitsSquareButton(title: "Complete verification", style: .filled, action: onVerify)
                     } else if !access.isIdentityVerified, canStartVerification {
                         RidgitsSquareButton(title: "Verify identity", style: .filled, action: onVerify)

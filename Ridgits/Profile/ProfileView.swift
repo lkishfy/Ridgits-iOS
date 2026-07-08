@@ -134,6 +134,7 @@ struct ProfileView: View {
             IdentityVerificationStatusCard(
                 access: ridgitsStore.access,
                 canStartVerification: ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess,
+                hasProfilePhoto: !profile.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                 onVerify: { showIdentityVerification = true },
                 onSubscribe: { showSubscriptionPaywall = true },
                 onEditProfilePhoto: { isEditing = true },

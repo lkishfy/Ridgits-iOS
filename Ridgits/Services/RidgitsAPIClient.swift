@@ -474,9 +474,11 @@ final class RidgitsAPIClient {
 
         let json = (try? JSONSerialization.jsonObject(with: responseData) as? [String: Any]) ?? [:]
         guard (200...299).contains(http.statusCode) else {
-            let message = json["error"] as? String ?? "Request failed (\(http.statusCode))"
-            RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(message, context: "\(method) \(path)")
-            if let code = json["code"] as? String {
+            let rawMessage = json["error"] as? String ?? "Request failed (\(http.statusCode))"
+            let code = json["code"] as? String
+            let message = RidgitsCustomerFacingError.sanitize(rawMessage, code: code)
+            RidgitsFirestoreIndexErrorLogging.logIfMissingIndex(rawMessage, context: "\(method) \(path)")
+            if let code {
                 throw RidgitsError.serverCoded(message: message, code: code)
             }
             throw RidgitsError.server(message)

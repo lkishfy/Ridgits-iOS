@@ -1,4 +1,5 @@
 import AuthenticationServices
+import FirebaseAuth
 import Foundation
 import UIKit
 
@@ -35,7 +36,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
                 return true
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = RidgitsCustomerFacingError.sanitize(error.localizedDescription)
             return false
         }
 
@@ -73,8 +74,13 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
                     finish(success: false)
                     return
                 }
+                if ridgitsError.code == "PROFILE_PHOTO_REQUIRED" {
+                    errorMessage = "Add a profile photo on your profile before starting identity verification."
+                    finish(success: false)
+                    return
+                }
             }
-            errorMessage = error.localizedDescription
+            errorMessage = RidgitsCustomerFacingError.sanitize(error.localizedDescription)
             finish(success: false)
         }
     }
@@ -96,7 +102,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
             Task { @MainActor in
                 guard let self else { return }
                 if let error, (error as NSError).code != ASWebAuthenticationSessionError.canceledLogin.rawValue {
-                    self.errorMessage = error.localizedDescription
+                    self.errorMessage = RidgitsCustomerFacingError.sanitize(error.localizedDescription)
                     self.finish(success: false)
                     return
                 }
@@ -132,7 +138,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
                     return
                 }
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = RidgitsCustomerFacingError.sanitize(error.localizedDescription)
                 finish(success: false)
                 return
             }

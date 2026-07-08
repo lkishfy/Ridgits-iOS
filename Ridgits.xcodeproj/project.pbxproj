@@ -33,6 +33,7 @@
 		1DA676984F920E8B4D94E821 /* EmailAuthSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390B3BF48BE6C9AD20017520 /* EmailAuthSheet.swift */; };
 		1DBF134FBF88356E1CC2F3AF /* pack_scoring.js in Resources */ = {isa = PBXBuildFile; fileRef = DE778F2EFF0AFA2035666946 /* pack_scoring.js */; };
 		1E6B3FB5106804C388218E2A /* RidgitsProfilePhotoIdentityMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445AAAD73654881A7C1F0995 /* RidgitsProfilePhotoIdentityMatch.swift */; };
+		1E7C8A9B0D1E2F3A4B5C6D7E /* RidgitsCustomerFacingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8D9E0A1B2C3D4E5F60718 /* RidgitsCustomerFacingError.swift */; };
 		1E8C8F1127B325B978E9E04F /* CompareProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5A4902272D4AADC2BE62C /* CompareProfilesView.swift */; };
 		1EEDEE7572F53051C1030EE9 /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C92AC49659E2868940B46F /* QuizView.swift */; };
 		205C0BFF104E17B446550568 /* boundaries.json in Resources */ = {isa = PBXBuildFile; fileRef = 4B61B84A7508ADA4C84AD179 /* boundaries.json */; };
@@ -172,6 +173,7 @@
 		3DA7F90CC87910305F762E79 /* DisposableEmailDomains.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisposableEmailDomains.swift; sourceTree = "<group>"; };
 		430CA1330512DE4EE4BB3117 /* social-battery.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "social-battery.json"; sourceTree = "<group>"; };
 		445AAAD73654881A7C1F0995 /* RidgitsProfilePhotoIdentityMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsProfilePhotoIdentityMatch.swift; sourceTree = "<group>"; };
+		2F8D9E0A1B2C3D4E5F60718 /* RidgitsCustomerFacingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsCustomerFacingError.swift; sourceTree = "<group>"; };
 		465816C2404A3A07EFBB57CD /* IdentityVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityVerificationView.swift; sourceTree = "<group>"; };
 		47A8D4BB57207455082A7295 /* RidgitsNearbyAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RidgitsNearbyAccess.swift; sourceTree = "<group>"; };
 		497927D649F5A16664C5EE0C /* referral-slow-burn.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "referral-slow-burn.json"; sourceTree = "<group>"; };
@@ -345,6 +347,7 @@
 				8115EC12E8BFCAA9645155D5 /* IdentityVerificationStatusCard.swift */,
 				465816C2404A3A07EFBB57CD /* IdentityVerificationView.swift */,
 				60672608DF345ACE678E5992 /* RidgitsIdentityModels.swift */,
+				2F8D9E0A1B2C3D4E5F60718 /* RidgitsCustomerFacingError.swift */,
 				445AAAD73654881A7C1F0995 /* RidgitsProfilePhotoIdentityMatch.swift */,
 			);
 			path = Identity;
@@ -800,6 +803,7 @@
 				6C774222F03F834A8CA2CBEB /* RidgitsProfileCache.swift in Sources */,
 				5A7C9E1D3F842B6A90123456 /* RidgitsRidgitListCache.swift in Sources */,
 				1E6B3FB5106804C388218E2A /* RidgitsProfilePhotoIdentityMatch.swift in Sources */,
+				1E7C8A9B0D1E2F3A4B5C6D7E /* RidgitsCustomerFacingError.swift in Sources */,
 				A166DD4CD2AF2D0B3C1D13D5 /* RidgitsProfilePhotoPicker.swift in Sources */,
 				F8A91C2D4E6B7039481A5D2E /* RidgitsSocialHandleEditor.swift in Sources */,
 				82997486DD1023518B5D27B2 /* RidgitsPushNotificationService.swift in Sources */,

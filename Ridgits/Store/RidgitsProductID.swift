@@ -87,9 +87,12 @@ enum RidgitsError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notAuthenticated: return "Please sign in to continue."
-        case .configuration(let message): return message
-        case .server(let message): return message
-        case .serverCoded(let message, _): return message
+        case .configuration(let message):
+            return RidgitsCustomerFacingError.sanitize(message)
+        case .server(let message):
+            return RidgitsCustomerFacingError.sanitize(message)
+        case .serverCoded(let message, let code):
+            return RidgitsCustomerFacingError.sanitize(message, code: code)
         case .decoding: return "Could not read server response."
         }
     }

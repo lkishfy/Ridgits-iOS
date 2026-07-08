@@ -19,6 +19,7 @@ struct ProfileSettingsView: View {
     @State private var deleteError: String?
     @State private var showIdentityVerification = false
     @State private var showSubscriptionPaywall = false
+    @State private var showAddPhotoFirstAlert = false
 
     private var requiresPassword: Bool {
         authManager.currentUser?.providerData.contains { $0.providerID == EmailAuthProviderID } == true
@@ -114,8 +115,10 @@ struct ProfileSettingsView: View {
                 IdentityVerificationStatusCard(
                     access: ridgitsStore.access,
                     canStartVerification: ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess,
+                    hasProfilePhoto: !profile.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                     onVerify: { showIdentityVerification = true },
                     onSubscribe: { showSubscriptionPaywall = true },
+                    onEditProfilePhoto: { showAddPhotoFirstAlert = true },
                     onRetryPhotoMatch: { Task { _ = await ridgitsStore.retryProfilePhotoIdentityMatch() } },
                     isRetryingPhotoMatch: ridgitsStore.isRetryingProfilePhotoMatch
                 )
@@ -170,6 +173,11 @@ struct ProfileSettingsView: View {
                 subheadline: "Identity Verification is included after you subscribe."
             )
             .environmentObject(ridgitsStore)
+        }
+        .alert("Add a profile photo first", isPresented: $showAddPhotoFirstAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Go back to your profile and add a clear face photo before starting identity verification.")
         }
         .task {
             await authManager.refreshEmailVerificationStatus()

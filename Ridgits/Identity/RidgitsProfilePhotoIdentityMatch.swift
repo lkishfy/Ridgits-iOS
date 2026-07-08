@@ -11,7 +11,7 @@ enum RidgitsProfilePhotoIdentityMatch {
             return userFacingMessage(for: error.code, fallback: error.error)
         }
         if let match = registerResult.identityMatch, !match.isVerified {
-            return match.userFacingFailureMessage
+            return sanitizedFailureMessage(match)
         }
         return nil
     }
@@ -37,7 +37,7 @@ enum RidgitsProfilePhotoIdentityMatch {
             if result.isVerified {
                 return nil
             }
-            return result.userFacingFailureMessage
+            return sanitizedFailureMessage(result)
         } catch let error as RidgitsError {
             return userFacingMessage(for: error.code ?? "", fallback: error.localizedDescription)
         } catch {
@@ -46,26 +46,29 @@ enum RidgitsProfilePhotoIdentityMatch {
     }
 
     static func userFacingMessage(for code: String, fallback: String) -> String? {
+        if let coded = RidgitsCustomerFacingError.message(for: code) {
+            return coded
+        }
+
         switch code {
         case "FACE_MATCH_FAILED", "PROFILE_PHOTO_IDENTITY_MISMATCH":
-            return fallback.isEmpty ? genericMismatchMessage : fallback
-        case "FACE_MATCH_UNAVAILABLE":
-            return fallback.isEmpty
-                ? "Profile photo verification is temporarily unavailable. Try again in a few minutes."
-                : fallback
-        case "IDENTITY_SELFIE_UNAVAILABLE":
-            return fallback.isEmpty
-                ? "We could not access your verified ID selfie. Try again in a few minutes."
-                : fallback
-        case "IDENTITY_VERIFICATION_REQUIRED", "IDENTITY_REVERIFICATION_REQUIRED":
-            return fallback
-        case "INVALID_PROFILE_PHOTO":
-            return fallback.isEmpty ? "A valid profile photo is required." : fallback
+            let sanitized = RidgitsCustomerFacingError.sanitize(fallback)
+            return sanitized == RidgitsCustomerFacingError.supportMessage()
+                ? genericMismatchMessage
+                : sanitized
         case "PROFILE_PHOTO_ALREADY_CLAIMED":
             return "This profile photo is already linked to another Ridgits account."
         default:
-            return fallback.isEmpty ? nil : fallback
+            let sanitized = RidgitsCustomerFacingError.sanitize(fallback, code: code.isEmpty ? nil : code)
+            return sanitized == RidgitsCustomerFacingError.supportMessage() && fallback.isEmpty ? nil : sanitized
         }
+    }
+
+    static func sanitizedFailureMessage(_ result: RidgitsProfilePhotoMatchResult) -> String {
+        if let message = result.userFacingFailureMessage {
+            return RidgitsCustomerFacingError.sanitize(message)
+        }
+        return fallbackMismatchMessage(score: result.score, threshold: result.threshold)
     }
 
     static func fallbackMismatchMessage(score: Double?, threshold: Double) -> String {

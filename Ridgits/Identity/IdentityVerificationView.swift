@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct IdentityVerificationView: View {
     @EnvironmentObject private var ridgitsStore: RidgitsStore
@@ -9,6 +10,9 @@ struct IdentityVerificationView: View {
     var autoStart: Bool
     var onComplete: (Bool) -> Void
 
+    @State private var hasProfilePhoto = false
+    @State private var isLoadingProfile = true
+
     init(autoStart: Bool = false, onComplete: @escaping (Bool) -> Void) {
         self.autoStart = autoStart
         self.onComplete = onComplete
@@ -16,6 +20,10 @@ struct IdentityVerificationView: View {
 
     private var canStartVerification: Bool {
         ridgitsStore.hasPlusMembership || ridgitsStore.hasNearbyAccess
+    }
+
+    private var canProceed: Bool {
+        canStartVerification && hasProfilePhoto && !isLoadingProfile
     }
 
     var body: some View {
@@ -29,6 +37,7 @@ struct IdentityVerificationView: View {
 
                     RidgitsDashboardCard {
                         VStack(alignment: .leading, spacing: 14) {
+                            bullet("Add a profile photo on your profile before you start (required).")
                             bullet("Confirm you're \(RidgitsMinimumAge.accountYears)+ with a driver's license or passport.")
                             bullet("Verify your phone number with a one-time code.")
                             bullet("Take a quick selfie so we know it's really you.")
@@ -38,10 +47,26 @@ struct IdentityVerificationView: View {
                         .padding(16)
                     }
 
+                    Text(IdentityVerificationStatusCard.photoMatchDeadlineWarning)
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.destructive)
+
                     if !canStartVerification {
                         Text("Subscribe to Ridgits+ first to unlock identity verification.")
                             .font(RidgitsTypography.caption(12))
                             .foregroundStyle(RidgitsColors.textSecondary)
+                    }
+
+                    if isLoadingProfile {
+                        ProgressView("Checking profile photo…")
+                            .font(RidgitsTypography.body(13))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 8)
+                    } else if !hasProfilePhoto {
+                        Text("Add a profile photo on your profile before continuing. Your photo must match your ID selfie within 48 hours of verifying.")
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.destructive)
                     }
 
                     if let error = coordinator.errorMessage {
@@ -57,7 +82,7 @@ struct IdentityVerificationView: View {
                         ) {
                             Task { await coordinator.startVerificationFlow() }
                         }
-                        .disabled(coordinator.isVerifying || !canStartVerification)
+                        .disabled(coordinator.isVerifying || !canProceed)
                     } else if coordinator.isVerifying {
                         ProgressView("Opening verification…")
                             .font(RidgitsTypography.body(13))
@@ -87,7 +112,8 @@ struct IdentityVerificationView: View {
                 }
             }
             .task {
-                guard autoStart, canStartVerification else { return }
+                await loadProfilePhotoStatus()
+                guard autoStart, canProceed else { return }
                 await coordinator.startVerificationFlow()
             }
             .onChange(of: coordinator.verificationSucceeded) { _, succeeded in
@@ -95,6 +121,29 @@ struct IdentityVerificationView: View {
                 onComplete(true)
                 dismiss()
             }
+        }
+    }
+
+    @MainActor
+    private func loadProfilePhotoStatus() async {
+        isLoadingProfile = true
+        defer { isLoadingProfile = false }
+
+        guard let uid = Auth.auth().currentUser?.uid else {
+            hasProfilePhoto = false
+            return
+        }
+
+        if let cached = RidgitsProfileCache.shared.profile(for: uid),
+           !cached.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            hasProfilePhoto = true
+            return
+        }
+
+        if let loaded = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid) {
+            hasProfilePhoto = !loaded.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        } else {
+            hasProfilePhoto = false
         }
     }
 
