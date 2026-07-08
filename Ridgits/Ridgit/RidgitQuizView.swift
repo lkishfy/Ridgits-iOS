@@ -12,6 +12,8 @@ struct RidgitQuizView: View {
     @State private var isComplete = false
     @State private var attempts = 0
     @State private var isSubscribed = false
+    @State private var compatibility: RidgitsCompatibility?
+    @State private var showCompatibilityUnavailable = false
 
     var body: some View {
         Group {
@@ -39,6 +41,13 @@ struct RidgitQuizView: View {
     private func quizContent(_ ridgit: RidgitChallenge) -> some View {
         ScrollView {
             VStack(spacing: 16) {
+                if let compatibility, compatibility.hasScores, authManager.userIsLoggedIn {
+                    RidgitQuizCompatibilityCard(
+                        creatorFirstName: RidgitsDisplaySanitize.displayFirstName(ridgit.profile.name),
+                        compatibility: compatibility
+                    )
+                }
+
                 RidgitsDashboardCard {
                     VStack(alignment: .leading, spacing: 14) {
                         HStack(spacing: 12) {
@@ -60,6 +69,12 @@ struct RidgitQuizView: View {
                         Text("Ridgit quizzes only work in the Ridgits app. Pass to unlock their social handle.")
                             .font(RidgitsTypography.caption(12))
                             .foregroundStyle(RidgitsColors.textMuted)
+
+                        if showCompatibilityUnavailable, authManager.userIsLoggedIn, !isComplete {
+                            Text("Complete the Ridgits quiz to see how compatible you are.")
+                                .font(RidgitsTypography.caption(12))
+                                .foregroundStyle(RidgitsColors.textMuted)
+                        }
 
                         if !authManager.userIsLoggedIn {
                             Text("Sign in to Ridgits to take this quiz.")
@@ -141,11 +156,11 @@ struct RidgitQuizView: View {
             Text("You passed!")
                 .font(RidgitsTypography.headline(18))
                 .foregroundStyle(RidgitsColors.textHeadline)
-            if !ridgit.profile.socialHandle.isEmpty {
+            if !ridgit.profile.socialInfo.isEmpty {
                 Text("Connect:")
                     .font(RidgitsTypography.caption(11))
                     .foregroundStyle(RidgitsColors.textMuted)
-                Text(ridgit.profile.socialHandle)
+                Text(ridgit.profile.socialInfo.displayText)
                     .font(RidgitsTypography.headline(20))
                     .foregroundStyle(RidgitsColors.textHeadline)
             } else {
@@ -206,6 +221,28 @@ struct RidgitQuizView: View {
         if let ridgit {
             selectedAnswers = Array(repeating: nil, count: ridgit.questions.count)
             isSubscribed = await RidgitsFirebaseClient.shared.isUserSubscribed(uid: ridgit.userId)
+            await loadCompatibility(for: ridgit)
+        }
+    }
+
+    @MainActor
+    private func loadCompatibility(for ridgit: RidgitChallenge) async {
+        compatibility = nil
+        showCompatibilityUnavailable = false
+
+        guard authManager.userIsLoggedIn,
+              let uid = Auth.auth().currentUser?.uid,
+              uid != ridgit.userId else {
+            return
+        }
+
+        if let scores = await RidgitsQuizCompatibility.compatibilityBetween(
+            currentUserId: uid,
+            otherUserId: ridgit.userId
+        ), scores.hasScores {
+            compatibility = scores
+        } else {
+            showCompatibilityUnavailable = true
         }
     }
 }

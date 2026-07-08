@@ -115,6 +115,18 @@ final class RidgitsAPIClient {
         )
     }
 
+    func fetchUnlockedSocialInfo(for userId: String) async throws -> RidgitsSocialInfo? {
+        let data = try await authorizedRequest(
+            path: "/api/profile/social?userId=\(userId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? userId)",
+            method: "GET",
+            body: nil
+        )
+        let handle = (data["socialHandle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let platform = RidgitsSocialPlatform.from(storageValue: data["socialPlatform"] as? String)
+        let info = RidgitsSocialInfo(platform: platform, handle: handle)
+        return info.isEmpty ? nil : info
+    }
+
     func linkPurchase(
         transactionId: String,
         productId: String,

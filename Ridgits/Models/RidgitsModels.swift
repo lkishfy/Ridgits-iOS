@@ -1,6 +1,41 @@
 import Foundation
 import FirebaseFirestore
 
+enum RidgitsSocialPlatform: String, CaseIterable, Equatable, Codable {
+    case instagram
+    case tiktok
+
+    var displayName: String {
+        switch self {
+        case .instagram: return "Instagram"
+        case .tiktok: return "TikTok"
+        }
+    }
+
+    static func from(storageValue: String?) -> RidgitsSocialPlatform? {
+        guard let storageValue else { return nil }
+        return RidgitsSocialPlatform(rawValue: storageValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+    }
+}
+
+struct RidgitsSocialInfo: Equatable {
+    let platform: RidgitsSocialPlatform?
+    let handle: String
+
+    var displayText: String {
+        let trimmed = handle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+        if let platform {
+            return "\(platform.displayName) · \(trimmed)"
+        }
+        return trimmed
+    }
+
+    var isEmpty: Bool {
+        handle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+}
+
 struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     let id: String
     var name: String
@@ -14,6 +49,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
     var aspirations: String
     var additionalImages: [String]
     var socialHandle: String
+    var socialPlatform: RidgitsSocialPlatform?
     var ageRangeMin: Int?
     var ageRangeMax: Int?
     var subscriptionTier: String
@@ -41,11 +77,25 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             || !location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    var socialInfo: RidgitsSocialInfo {
+        RidgitsSocialInfo(platform: socialPlatform, handle: socialHandle)
+    }
+
+    mutating func normalizeSocialFields() {
+        socialHandle = socialHandle.trimmingCharacters(in: .whitespacesAndNewlines)
+        if socialHandle.isEmpty {
+            socialPlatform = nil
+            socialHandle = ""
+        } else if socialPlatform == nil {
+            socialHandle = ""
+        }
+    }
+
     static func empty(uid: String) -> RidgitsUserProfile {
         RidgitsUserProfile(
             id: uid, name: "", location: "", locationCity: "", locationStateCode: "", age: nil, image: "",
             about: "", interests: [], aspirations: "", additionalImages: [],
-            socialHandle: "", ageRangeMin: nil, ageRangeMax: nil, subscriptionTier: "free",
+            socialHandle: "", socialPlatform: nil, ageRangeMin: nil, ageRangeMax: nil, subscriptionTier: "free",
             profilePhotoVerified: false,
             visibleInCommunity: true,
             completedQuizBadges: []
@@ -82,6 +132,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             aspirations: data["aspirations"] as? String ?? "",
             additionalImages: data["additionalImages"] as? [String] ?? [],
             socialHandle: data["socialHandle"] as? String ?? "",
+            socialPlatform: RidgitsSocialPlatform.from(storageValue: data["socialPlatform"] as? String),
             ageRangeMin: data["ageRangeMin"] as? Int ?? (data["ageRangeMin"] as? String).flatMap(Int.init),
             ageRangeMax: data["ageRangeMax"] as? Int ?? (data["ageRangeMax"] as? String).flatMap(Int.init),
             subscriptionTier: data["subscriptionTier"] as? String ?? "free",
@@ -102,6 +153,7 @@ struct RidgitsUserProfile: Identifiable, Equatable, Codable {
             "location": location,
             "image": image,
             "socialHandle": socialHandle,
+            "socialPlatform": socialPlatform?.rawValue as Any,
             "about": about,
             "interests": interests,
             "age": age as Any,

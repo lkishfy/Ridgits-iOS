@@ -14,6 +14,8 @@ struct MatchProfileView: View {
     @State private var profile: RidgitsUserProfile?
     @State private var compatibility = RidgitsCompatibility.empty
     @State private var isLoadingProfile = true
+    @State private var viewerHasCompletedQuiz = false
+    @State private var unlockedSocialInfo: RidgitsSocialInfo?
 
     private var sentPoke: Bool {
         pokeInbox.sentPokeIdsByUser[match.userId] != nil
@@ -31,6 +33,7 @@ struct MatchProfileView: View {
                 if !displayInterests.isEmpty {
                     interestsSection
                 }
+                socialInfoSection
                 if !displayAspirations.isEmpty {
                     aspirationsSection
                 }
@@ -158,6 +161,25 @@ struct MatchProfileView: View {
         profileTextSection(title: "Aspirations", body: displayAspirations)
     }
 
+    @ViewBuilder
+    private var socialInfoSection: some View {
+        if isLoadingProfile {
+            EmptyView()
+        } else if let unlockedSocialInfo, !unlockedSocialInfo.isEmpty {
+            profileTextSection(title: "Social", body: unlockedSocialInfo.displayText)
+        } else if !viewerHasCompletedQuiz {
+            VStack(alignment: .leading, spacing: 8) {
+                sectionBadge("Social")
+                Text("Complete the Ridgits quiz to unlock their social handle.")
+                    .font(RidgitsTypography.body(14))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
     private var actionButtons: some View {
         HStack(spacing: 10) {
             if let closedLabel = messagingViewModel.messagingClosedLabel(for: match) {
@@ -280,6 +302,16 @@ struct MatchProfileView: View {
         }
 
         profile = await RidgitsFirebaseClient.shared.fetchPublicProfile(uid: match.userId)
+
+        if let uid = Auth.auth().currentUser?.uid {
+            viewerHasCompletedQuiz = (try? await RidgitsFirebaseClient.shared.isQuizCompleted(uid: uid)) == true
+            if viewerHasCompletedQuiz {
+                unlockedSocialInfo = await RidgitsFirebaseClient.shared.fetchUnlockedSocialInfo(
+                    for: match.userId,
+                    viewerUid: uid
+                )
+            }
+        }
     }
 }
 

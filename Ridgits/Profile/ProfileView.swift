@@ -170,8 +170,8 @@ struct ProfileView: View {
                                     .font(RidgitsTypography.body(13))
                                     .foregroundStyle(RidgitsColors.textSecondary)
                             }
-                            if !profile.socialHandle.isEmpty {
-                                Text(profile.socialHandle)
+                            if !profile.socialInfo.isEmpty {
+                                Text(profile.socialInfo.displayText)
                                     .font(RidgitsTypography.body(13))
                                     .foregroundStyle(RidgitsColors.textSecondary)
                             }
@@ -372,8 +372,11 @@ struct ProfileView: View {
                     )
                 }
 
-                fieldBlock("Social Handle") {
-                    RidgitsTextField(placeholder: "@username", text: $profile.socialHandle)
+                fieldBlock("Social (Optional)") {
+                    RidgitsSocialHandleEditor(
+                        platform: $profile.socialPlatform,
+                        handle: $profile.socialHandle
+                    )
                 }
 
                 fieldBlock("About Me", required: true) {

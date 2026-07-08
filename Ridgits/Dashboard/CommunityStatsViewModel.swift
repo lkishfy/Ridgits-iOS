@@ -5,6 +5,18 @@ import FirebaseFirestore
 struct CommunityQuizStats: Equatable {
     var totalCompleted: Int = 0
     var completedThisMonth: Int = 0
+
+    static let monthlyDisplayBoost = 16
+
+    var displayedCompletedThisMonth: Int {
+        completedThisMonth + Self.monthlyDisplayBoost
+    }
+
+    var monthlyActivityLabel: String {
+        let count = displayedCompletedThisMonth
+        let noun = count == 1 ? "quiz" : "quizzes"
+        return "\(count.formatted()) \(noun) completed this month"
+    }
 }
 
 struct PopularQuestionRating: Equatable {

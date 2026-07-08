@@ -292,10 +292,8 @@ struct CommunitySection: View {
 
     private var quizStatsBlock: some View {
         VStack(spacing: 0) {
-            if statsViewModel.stats.completedThisMonth > 0 {
-                monthlyActivityBadge
-                    .padding(.bottom, 16)
-            }
+            monthlyActivityBadge
+                .padding(.bottom, 16)
 
             Text("Ridgits Quizzes Completed")
                 .font(RidgitsTypography.caption(13))
@@ -328,9 +326,7 @@ struct CommunitySection: View {
     }
 
     private var monthlyActivityBadgeText: String {
-        let count = statsViewModel.stats.completedThisMonth
-        let noun = count == 1 ? "quiz" : "quizzes"
-        return "\(count.formatted()) \(noun) completed this month"
+        statsViewModel.stats.monthlyActivityLabel
     }
 
     private var popularQuestionsBlock: some View {

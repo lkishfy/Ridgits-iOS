@@ -9,14 +9,12 @@ private enum RidgitsLegalURL {
 
 @MainActor
 private final class LoginMonthlyQuizStatsViewModel: ObservableObject {
-    private static let minimumDisplayBoost = 16
-
-    @Published private(set) var completedThisMonth = 0
+    @Published private(set) var stats = CommunityQuizStats()
 
     private var listener: ListenerRegistration?
 
     var displayedCount: Int {
-        completedThisMonth + Self.minimumDisplayBoost
+        stats.displayedCompletedThisMonth
     }
 
     var showsBadge: Bool {
@@ -24,16 +22,14 @@ private final class LoginMonthlyQuizStatsViewModel: ObservableObject {
     }
 
     var badgeText: String {
-        let count = displayedCount
-        let noun = count == 1 ? "quiz" : "quizzes"
-        return "\(count.formatted()) \(noun) completed this month"
+        stats.monthlyActivityLabel
     }
 
     func startListening() {
         guard listener == nil else { return }
         listener = RidgitsFirebaseClient.shared.listenCommunityQuizStats { [weak self] stats in
             Task { @MainActor in
-                self?.completedThisMonth = stats.completedThisMonth
+                self?.stats = stats
             }
         }
     }

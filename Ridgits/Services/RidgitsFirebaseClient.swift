@@ -44,6 +44,7 @@ final class RidgitsFirebaseClient {
     func saveUserProfile(_ profile: RidgitsUserProfile) async throws {
         var normalizedProfile = profile
         RidgitsUSLocations.applyNormalizedLocation(to: &normalizedProfile)
+        normalizedProfile.normalizeSocialFields()
 
         let payload: [String: Any] = [
             "name": normalizedProfile.name,
@@ -57,6 +58,7 @@ final class RidgitsFirebaseClient {
             "aspirations": normalizedProfile.aspirations,
             "additionalImages": normalizedProfile.additionalImages,
             "socialHandle": normalizedProfile.socialHandle,
+            "socialPlatform": normalizedProfile.socialPlatform?.rawValue ?? FieldValue.delete(),
             "ageRangeMin": normalizedProfile.ageRangeMin as Any,
             "ageRangeMax": normalizedProfile.ageRangeMax as Any,
             "visibleInCommunity": normalizedProfile.visibleInCommunity,
@@ -65,7 +67,16 @@ final class RidgitsFirebaseClient {
             "geocodedFromLocation": FieldValue.delete(),
         ]
         try await db.collection("users").document(normalizedProfile.id).setData(payload, merge: true)
-        try await db.collection("publicProfiles").document(normalizedProfile.id).setData(payload, merge: true)
+
+        var publicPayload = payload
+        publicPayload.removeValue(forKey: "socialHandle")
+        publicPayload.removeValue(forKey: "socialPlatform")
+        publicPayload.removeValue(forKey: "ageRangeMin")
+        publicPayload.removeValue(forKey: "ageRangeMax")
+        publicPayload.removeValue(forKey: "visibleInCommunity")
+        publicPayload["socialHandle"] = FieldValue.delete()
+        publicPayload["socialPlatform"] = FieldValue.delete()
+        try await db.collection("publicProfiles").document(normalizedProfile.id).setData(publicPayload, merge: true)
         RidgitsProfileCache.shared.save(normalizedProfile)
 
         let image = normalizedProfile.image.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -986,7 +997,28 @@ final class RidgitsFirebaseClient {
         guard let doc = try? await db.collection("publicProfiles").document(uid).getDocument(),
               doc.exists,
               let data = doc.data() else { return nil }
-        return RidgitsUserProfile.from(uid: uid, data: data)
+        var profile = RidgitsUserProfile.from(uid: uid, data: data)
+        profile.socialHandle = ""
+        profile.socialPlatform = nil
+        return profile
+    }
+
+    func fetchUnlockedSocialInfo(for userId: String, viewerUid: String) async -> RidgitsSocialInfo? {
+        guard userId != viewerUid else {
+            if let profile = try? await fetchUserProfile(uid: viewerUid, policy: .cacheFirst) {
+                let info = profile.socialInfo
+                return info.isEmpty ? nil : info
+            }
+            return nil
+        }
+
+        guard (try? await isQuizCompleted(uid: viewerUid)) == true else { return nil }
+
+        do {
+            return try await RidgitsAPIClient.shared.fetchUnlockedSocialInfo(for: userId)
+        } catch {
+            return nil
+        }
     }
 
     func enrichConversations(

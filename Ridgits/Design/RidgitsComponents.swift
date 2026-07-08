@@ -202,6 +202,77 @@ struct RidgitsCompatibilityBadge: View {
     }
 }
 
+struct RidgitQuizCompatibilityCard: View {
+    let creatorFirstName: String
+    let compatibility: RidgitsCompatibility
+
+    private var resolved: RidgitsCompatibility {
+        compatibility.withDerivedOverallIfNeeded()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Your compatibility")
+                        .font(RidgitsTypography.label(13))
+                        .foregroundStyle(RidgitsColors.textHeadline)
+                    Text("with \(creatorFirstName)")
+                        .font(RidgitsTypography.caption(12))
+                        .foregroundStyle(RidgitsColors.textSecondary)
+                }
+                Spacer(minLength: 12)
+                RidgitsCompatibilityBadge(percent: resolved.overall)
+            }
+
+            VStack(spacing: 8) {
+                dimensionRow("Communication", resolved.communication)
+                dimensionRow("Relational Depth", resolved.intimacy)
+                dimensionRow("Values", resolved.values)
+                dimensionRow("Social", resolved.social)
+                dimensionRow("Life Direction", resolved.commitment)
+            }
+        }
+        .padding(14)
+        .background(RidgitsColors.contextBar)
+        .overlay(
+            RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                .stroke(RidgitsColors.border, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+    }
+
+    private func dimensionRow(_ title: String, _ value: Int) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(title)
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textHeadline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                Spacer(minLength: 8)
+                Text("\(value)%")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .monospacedDigit()
+            }
+
+            Capsule()
+                .fill(RidgitsColors.surface)
+                .frame(maxWidth: .infinity)
+                .frame(height: 5)
+                .overlay(alignment: .leading) {
+                    GeometryReader { geo in
+                        Capsule()
+                            .fill(RidgitsColors.ctaBlack)
+                            .frame(width: max(0, geo.size.width * CGFloat(value) / 100))
+                    }
+                }
+                .clipShape(Capsule())
+        }
+    }
+}
+
 struct RidgitsLoadingView: View {
     @State private var isSpinning = false
 
