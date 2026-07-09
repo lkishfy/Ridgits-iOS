@@ -143,7 +143,7 @@ struct IdentityVerificationView: View {
                         onComplete(true)
                         dismiss()
                     },
-                    onRetryPhotoMatch: successPhotoMatchStatus == "failed"
+                    onRetryPhotoMatch: !successCanMessage && successPhotoMatchStatus != "pending"
                         ? {
                             showSuccessSheet = false
                             Task {

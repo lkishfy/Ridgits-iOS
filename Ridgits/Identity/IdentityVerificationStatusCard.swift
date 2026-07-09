@@ -4,6 +4,14 @@ struct IdentityVerificationStatusCard: View {
     static let photoMatchDeadlineWarning =
         "Add your profile photo within 48 hours of verifying your ID. If verification does not work, email support@ridgits.com and we will help."
 
+    static let photoMatchFailureAfterStripeTitle = "Photo verification needed"
+
+    static let photoMatchFailureAfterStripeMessage =
+        "Your government ID and phone are verified, but your profile photo didn't match your ID selfie. Update your profile photo on Profile to a clear, front-facing picture similar to your verification selfie, then tap Retry within 48 hours of verifying."
+
+    static let photoMatchFailureSupportPrompt =
+        "If it still doesn't work, email support@ridgits.com and we'll help you finish verification."
+
     let access: RidgitsAccess
     let canStartVerification: Bool
     let hasProfilePhoto: Bool
