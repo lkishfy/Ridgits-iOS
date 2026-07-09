@@ -584,9 +584,9 @@ struct ProfileView: View {
     }
 
     @MainActor
-    private func commitLocationDraftIfNeeded() {
+    private func commitLocationDraftIfNeeded() async {
         guard !profile.hasNormalizedLocation else { return }
-        guard let normalized = RidgitsUSLocations.resolveDraftSelection(locationQueryDraft) else {
+        guard let normalized = await RidgitsUSLocations.resolveDraftSelectionAsync(locationQueryDraft) else {
             return
         }
         profile.locationCity = normalized.city
@@ -597,7 +597,7 @@ struct ProfileView: View {
 
     @MainActor
     private func saveProfile() async {
-        commitLocationDraftIfNeeded()
+        await commitLocationDraftIfNeeded()
         if RidgitsDisplaySanitize.containsLastNameAttempt(profile.name) {
             showLastNameHeadsUp = true
             return

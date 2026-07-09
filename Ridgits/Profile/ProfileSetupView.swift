@@ -300,9 +300,9 @@ struct ProfileSetupView: View {
         )
     }
 
-    private func commitLocationDraftIfNeeded() {
+    private func commitLocationDraftIfNeeded() async {
         guard !profile.hasNormalizedLocation else { return }
-        guard let normalized = RidgitsUSLocations.resolveDraftSelection(locationQueryDraft) else {
+        guard let normalized = await RidgitsUSLocations.resolveDraftSelectionAsync(locationQueryDraft) else {
             return
         }
         profile.locationCity = normalized.city
@@ -313,7 +313,7 @@ struct ProfileSetupView: View {
     }
 
     private func save() async {
-        commitLocationDraftIfNeeded()
+        await commitLocationDraftIfNeeded()
         saveErrorMessage = nil
 
         if !canCompleteSetup {

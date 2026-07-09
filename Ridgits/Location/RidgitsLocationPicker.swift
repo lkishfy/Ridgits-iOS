@@ -91,6 +91,15 @@ enum RidgitsUSLocations {
         return entries.map { CityOption(city: $0.city, stateCode: $0.stateCode) }
     }()
 
+    private static let citiesByPrefix: [String: [CityOption]] = {
+        var buckets: [String: [CityOption]] = [:]
+        for option in cities {
+            let prefix = String(option.city.prefix(2)).lowercased()
+            buckets[prefix, default: []].append(option)
+        }
+        return buckets
+    }()
+
     struct NormalizedLocation: Equatable {
         let city: String
         let stateCode: String
@@ -127,24 +136,84 @@ enum RidgitsUSLocations {
         return trimmed
     }
 
-    static func searchCities(_ query: String, limit: Int = 8) -> [CityOption] {
-        let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    static func searchCities(_ query: String, limit: Int = 12) -> [CityOption] {
+        let (cityQuery, stateFilter) = parseSearchQuery(query)
+        let q = cityQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard q.count >= 2 else { return [] }
 
-        return cities
+        let prefix = String(q.prefix(2))
+        let bucket = citiesByPrefix[prefix] ?? []
+
+        return bucket
             .filter { option in
-                let cityLower = option.city.lowercased()
-                let labelLower = option.label.lowercased()
-                return cityLower.hasPrefix(q) || labelLower.contains(q)
+                cityMatchesQuery(
+                    option.city,
+                    stateCode: option.stateCode,
+                    query: q,
+                    stateFilter: stateFilter
+                )
             }
             .sorted { lhs, rhs in
-                let lhsPrefix = lhs.city.lowercased().hasPrefix(q) ? 0 : 1
-                let rhsPrefix = rhs.city.lowercased().hasPrefix(q) ? 0 : 1
-                if lhsPrefix != rhsPrefix { return lhsPrefix < rhsPrefix }
+                let lhsScore = matchScore(city: lhs.city, stateCode: lhs.stateCode, query: q, stateFilter: stateFilter)
+                let rhsScore = matchScore(city: rhs.city, stateCode: rhs.stateCode, query: q, stateFilter: stateFilter)
+                if lhsScore != rhsScore { return lhsScore < rhsScore }
                 return lhs.city.localizedCaseInsensitiveCompare(rhs.city) == .orderedAscending
             }
             .prefix(limit)
             .map { $0 }
+    }
+
+    static func parseSearchQuery(_ query: String) -> (cityQuery: String, stateFilter: String?) {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let commaParts = trimmed
+            .split(separator: ",", omittingEmptySubsequences: true)
+            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        if commaParts.count >= 2, let code = resolveStateCode(commaParts[commaParts.count - 1]) {
+            let cityPart = commaParts.dropLast().joined(separator: ", ")
+            return (cityPart, code)
+        }
+
+        return (trimmed, nil)
+    }
+
+    private static func cityMatchesQuery(
+        _ city: String,
+        stateCode: String,
+        query: String,
+        stateFilter: String?
+    ) -> Bool {
+        if let stateFilter, stateCode.uppercased() != stateFilter.uppercased() {
+            return false
+        }
+
+        let cityLower = city.lowercased()
+        let labelLower = "\(cityLower), \(stateCode.lowercased())"
+        if cityLower.hasPrefix(query) || labelLower.contains(query) {
+            return true
+        }
+
+        let tokens = query.split(whereSeparator: \.isWhitespace).map(String.init).filter { !$0.isEmpty }
+        guard !tokens.isEmpty else { return false }
+
+        var searchStart = cityLower.startIndex
+        for token in tokens {
+            guard let range = cityLower[searchStart...].range(of: token) else { return false }
+            searchStart = range.upperBound
+        }
+        return true
+    }
+
+    private static func matchScore(city: String, stateCode: String, query: String, stateFilter: String?) -> Int {
+        if let stateFilter, stateCode.uppercased() != stateFilter.uppercased() {
+            return 100
+        }
+        let cityLower = city.lowercased()
+        if cityLower == query { return 0 }
+        if cityLower.hasPrefix(query) { return 1 }
+        if cityLower.contains(query) { return 2 }
+        return 3
     }
 
     private static let countryTokens: Set<String> = [
@@ -152,12 +221,16 @@ enum RidgitsUSLocations {
     ]
 
     private static func stripTrailingCountryParts(_ parts: [String]) -> [String] {
-        guard !parts.isEmpty else { return parts }
-        let last = parts[parts.count - 1].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        if countryTokens.contains(last) {
-            return stripTrailingCountryParts(Array(parts.dropLast()))
+        var result = parts
+        while !result.isEmpty {
+            let last = result[result.count - 1].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if countryTokens.contains(last) {
+                result.removeLast()
+            } else {
+                break
+            }
         }
-        return parts
+        return result
     }
 
     static func parse(_ location: String, city: String = "", stateCode: String = "") -> (city: String, stateCode: String) {
@@ -264,6 +337,10 @@ enum RidgitsUSLocations {
         let parsed = parse(trimmed)
         return normalize(city: parsed.city, stateCode: parsed.stateCode)
     }
+
+    static func resolveDraftSelectionAsync(_ query: String) async -> NormalizedLocation? {
+        resolveDraftSelection(query)
+    }
 }
 
 struct RidgitsLocationPicker: View {
@@ -311,7 +388,7 @@ struct RidgitsLocationPicker: View {
                     validationMessage = nil
                 } else {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        commitQueryOnBlur()
+                        Task { await commitQueryOnBlur() }
                         isOpen = false
                         suggestions = []
                     }
@@ -323,7 +400,7 @@ struct RidgitsLocationPicker: View {
                 syncQueryFromSelection()
             }
             .onChange(of: commitNonce) { _, _ in
-                commitQueryOnBlur()
+                Task { await commitQueryOnBlur() }
             }
             .onChange(of: city) { _, _ in syncQueryFromSelection() }
             .onChange(of: stateCode) { _, _ in syncQueryFromSelection() }
@@ -346,7 +423,7 @@ struct RidgitsLocationPicker: View {
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textMuted)
             } else if isFocused && query.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 && suggestions.isEmpty {
-                Text("No matches found. Try a nearby city or type City, ST (e.g. Austin, TX).")
+                Text("No matches found. Try a nearby city or type City, ST (e.g. East Providence, RI).")
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textMuted)
             }
@@ -402,7 +479,7 @@ struct RidgitsLocationPicker: View {
         }
     }
 
-    private func commitQueryOnBlur() {
+    private func commitQueryOnBlur() async {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if trimmed.isEmpty {
@@ -414,7 +491,7 @@ struct RidgitsLocationPicker: View {
             return
         }
 
-        if let normalized = RidgitsUSLocations.resolveDraftSelection(trimmed) {
+        if let normalized = await RidgitsUSLocations.resolveDraftSelectionAsync(trimmed) {
             applySelection(
                 city: normalized.city,
                 stateCode: normalized.stateCode,
@@ -428,7 +505,7 @@ struct RidgitsLocationPicker: View {
             return
         }
 
-        validationMessage = "Select a city from the list, or type City, ST (e.g. Austin, TX)."
+        validationMessage = "Select a city from the list, or type City, ST (e.g. East Providence, RI)."
     }
 
     private func applySelection(city newCity: String, stateCode newStateCode: String, label: String) {
