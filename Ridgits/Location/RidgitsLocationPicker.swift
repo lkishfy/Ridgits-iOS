@@ -405,14 +405,10 @@ struct RidgitsLocationPicker: View {
             .onChange(of: city) { _, _ in syncQueryFromSelection() }
             .onChange(of: stateCode) { _, _ in syncQueryFromSelection() }
             .onChange(of: legacyLocation) { _, _ in syncQueryFromSelection() }
-            .overlay(alignment: .topLeading) {
-                if isOpen && isFocused && !suggestions.isEmpty {
-                    suggestionsDropdown
-                        .offset(y: 52)
-                        .zIndex(20)
-                }
+
+            if isOpen && isFocused && !suggestions.isEmpty {
+                suggestionsDropdown
             }
-            .zIndex(isOpen && isFocused ? 10 : 0)
 
             if let validationMessage {
                 Text(validationMessage)
@@ -423,7 +419,7 @@ struct RidgitsLocationPicker: View {
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textMuted)
             } else if isFocused && query.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 && suggestions.isEmpty {
-                Text("No matches found. Try a nearby city or type City, ST (e.g. East Providence, RI).")
+                Text("No matches found. Try a nearby city or type City, ST (e.g. Chicago, IL).")
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textMuted)
             }
@@ -446,7 +442,6 @@ struct RidgitsLocationPicker: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RidgitsColors.inputSurface)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -458,13 +453,13 @@ struct RidgitsLocationPicker: View {
             }
         }
         .frame(maxHeight: 220)
-        .background(RidgitsColors.inputSurface)
+        .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
         .overlay(
             RoundedRectangle(cornerRadius: RidgitsRadius.md)
                 .stroke(RidgitsColors.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
     }
 
     private func syncQueryFromSelection() {
@@ -505,7 +500,7 @@ struct RidgitsLocationPicker: View {
             return
         }
 
-        validationMessage = "Select a city from the list, or type City, ST (e.g. East Providence, RI)."
+        validationMessage = "Select a city from the list, or type City, ST (e.g. Chicago, IL)."
     }
 
     private func applySelection(city newCity: String, stateCode newStateCode: String, label: String) {
