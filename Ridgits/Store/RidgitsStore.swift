@@ -569,8 +569,16 @@ final class RidgitsStore: ObservableObject {
         }
     }
 
-    func restorePurchases() async {
-        guard !isRestoring else { return }
+    /// Whether an active subscriber still needs Stripe Identity (ID + phone + selfie).
+    var needsIdentityVerificationAfterSubscription: Bool {
+        isMembershipActive && !isVerifiedForMessaging
+    }
+
+    /// Restores App Store purchases. Returns `true` when subscription is active but identity
+    /// verification still needs to run (same follow-up as after a fresh purchase).
+    @discardableResult
+    func restorePurchases() async -> Bool {
+        guard !isRestoring else { return false }
         isRestoring = true
         purchaseError = nil
         restoreStatusMessage = nil
@@ -594,8 +602,10 @@ final class RidgitsStore: ObservableObject {
             } else {
                 restoreStatusMessage = "No active subscriptions found for this Apple ID."
             }
+            return needsIdentityVerificationAfterSubscription
         } catch {
             purchaseError = error.localizedDescription
+            return false
         }
     }
 

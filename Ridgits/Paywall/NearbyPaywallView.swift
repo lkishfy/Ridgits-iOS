@@ -8,6 +8,8 @@ struct NearbyPaywallView: View {
     var nearbyCount: Int = 0
     var radiusMiles: Int = 30
 
+    @State private var showPostRestoreIdentityVerification = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -71,7 +73,13 @@ struct NearbyPaywallView: View {
                     }
 
                     Button {
-                        Task { await ridgitsStore.restorePurchases() }
+                        Task {
+                            let needsIdentity = await ridgitsStore.restorePurchases()
+                            await ridgitsStore.refreshAccessInBackground()
+                            if needsIdentity {
+                                showPostRestoreIdentityVerification = true
+                            }
+                        }
                     } label: {
                         HStack(spacing: 8) {
                             if ridgitsStore.isRestoring {
@@ -112,6 +120,14 @@ struct NearbyPaywallView: View {
                 }
             }
             .task { await ridgitsStore.loadProducts() }
+            .sheet(isPresented: $showPostRestoreIdentityVerification) {
+                IdentityVerificationView(autoStart: true) { success in
+                    showPostRestoreIdentityVerification = false
+                    Task { await ridgitsStore.refreshAccessInBackground() }
+                    if success { dismiss() }
+                }
+                .environmentObject(ridgitsStore)
+            }
         }
     }
 

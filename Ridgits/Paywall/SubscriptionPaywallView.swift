@@ -69,7 +69,13 @@ struct SubscriptionPaywallView: View {
                     }
 
                     Button {
-                        Task { await ridgitsStore.restorePurchases() }
+                        Task {
+                            let needsIdentity = await ridgitsStore.restorePurchases()
+                            await ridgitsStore.refreshAccessInBackground()
+                            if needsIdentity {
+                                showPostPurchaseIdentityVerification = true
+                            }
+                        }
                     } label: {
                         HStack(spacing: 8) {
                             if ridgitsStore.isRestoring {
