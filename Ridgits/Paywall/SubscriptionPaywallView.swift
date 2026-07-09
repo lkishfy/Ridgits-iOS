@@ -148,50 +148,53 @@ struct SubscriptionPaywallView: View {
     }
 
     private var communityFundedNote: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "info.circle.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(RidgitsColors.textMuted)
-                .padding(.top, 1)
+        VStack(alignment: .leading, spacing: 14) {
+            Text("COMMUNITY FUNDED")
+                .font(RidgitsTypography.banner(10))
+                .fontWeight(.bold)
+                .tracking(0.8)
+                .foregroundStyle(RidgitsColors.ctaBlack)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Self.communityFundedAccentOrange)
+                .clipShape(Capsule())
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Ridgits is a community-funded app. Your subscription supports:")
-                    .font(RidgitsTypography.body(13))
-                    .foregroundStyle(RidgitsColors.textHeadline)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("You're keeping\nRidgits independent")
+                    .font(RidgitsTypography.headline(20))
+                    .foregroundStyle(.white)
                     .fixedSize(horizontal: false, vertical: true)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(Self.communityFundingItems, id: \.self) { item in
-                        HStack(alignment: .top, spacing: 8) {
-                            Text("•")
-                                .font(RidgitsTypography.label(12))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                                .padding(.top, 1)
-                            Text(item)
-                                .font(RidgitsTypography.caption(12))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
+                Text("No ads. No investors. Your subscription directly supports:")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(Color.white.opacity(0.82))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Self.communityFundingItems, id: \.self) { item in
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 14, height: 14)
+                            .padding(.top, 1)
+                        Text(item)
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(Color.white.opacity(0.88))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.vertical, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RidgitsColors.surface)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(RidgitsColors.border.opacity(0.6))
-                .frame(height: 1)
-        }
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(RidgitsColors.border.opacity(0.6))
-                .frame(height: 1)
-        }
+        .background(RidgitsColors.ctaBlack)
         .padding(.horizontal, -20)
     }
+
+    private static let communityFundedAccentOrange = Color(hex: 0xE65F23)
 
     private static let communityFundingItems = [
         "API & AI costs",

@@ -38,12 +38,24 @@ enum RidgitsDisplaySanitize {
         return sanitized.allSatisfy { $0.isLetter || $0 == "'" || $0 == "-" }
     }
 
-    static func profileFirstNameInputFeedback(for raw: String) -> (sanitized: String, attemptedLastName: Bool, validationMessage: String?) {
-        let sanitized = sanitizeProfileFirstNameInput(raw)
-        if raw.contains(where: \.isWhitespace) {
-            return (sanitized, true, nil)
+    /// Filters characters while typing but keeps spaces so we can block save if a last name was entered.
+    static func filterProfileFirstNameTyping(_ raw: String) -> String {
+        let filtered = raw.filter { character in
+            character.isLetter || character.isWhitespace || character == "'" || character == "-"
         }
-        if !raw.isEmpty, sanitized != raw.trimmingCharacters(in: .whitespacesAndNewlines) {
+        return String(filtered.prefix(40))
+    }
+
+    static func containsLastNameAttempt(_ raw: String) -> Bool {
+        raw.contains(where: \.isWhitespace)
+    }
+    static func profileFirstNameInputFeedback(for raw: String) -> (sanitized: String, attemptedLastName: Bool, validationMessage: String?) {
+        let filtered = filterProfileFirstNameTyping(raw)
+        if containsLastNameAttempt(filtered) {
+            return (filtered, true, nil)
+        }
+        let sanitized = sanitizeProfileFirstNameInput(filtered)
+        if !filtered.isEmpty, sanitized != filtered.trimmingCharacters(in: .whitespacesAndNewlines) {
             return (sanitized, false, "Use letters only.")
         }
         return (sanitized, false, nil)

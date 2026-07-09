@@ -116,9 +116,12 @@ struct IdentityVerificationStatusCard: View {
                         Text("Identity Verification")
                             .font(RidgitsTypography.label(14))
                             .foregroundStyle(RidgitsColors.textHeadline)
-                        Text(statusLabel)
-                            .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(statusColor)
+
+                        if !(access.isProfilePhotoVerified && access.isFullyIdentityVerified) {
+                            Text(statusLabel)
+                                .font(RidgitsTypography.caption(12))
+                                .foregroundStyle(statusColor)
+                        }
                     }
                     Spacer(minLength: 0)
                 }

@@ -23,7 +23,7 @@ final class AuthManager: ObservableObject {
 
     var requiresEmailVerification: Bool {
         guard let user = currentUser else { return false }
-        let isPasswordUser = user.providerData.contains { $0.providerId == "password" }
+        let isPasswordUser = user.providerData.contains { $0.providerID == EmailAuthProviderID }
         return isPasswordUser && !user.isEmailVerified
     }
 

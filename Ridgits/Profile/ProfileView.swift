@@ -12,15 +12,15 @@ struct ProfileView: View {
     @State private var isLoading = true
     @State private var statusMessage: String?
     @State private var nameValidationMessage: String?
-    @State private var attemptedLastNameEntry = false
     @State private var showLastNameHeadsUp = false
-    @State private var pendingSaveAfterHeadsUp = false
     @State private var matchGender: [Int] = []
     @State private var matchInterestedIn: [Int] = []
     @State private var matchLookingFor: [Int] = []
     @State private var showIdentityVerification = false
     @State private var showSubscriptionPaywall = false
     @State private var photoMatchRetryMessage: String?
+    @State private var locationQueryDraft = ""
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
@@ -53,10 +53,9 @@ struct ProfileView: View {
                   profile.id.isEmpty,
                   let cached = RidgitsProfileCache.shared.profile(for: uid) else { return }
             var cachedProfile = cached
-            if cachedProfile.name.contains(where: \.isWhitespace) {
-                attemptedLastNameEntry = true
+            if !cachedProfile.name.isEmpty, !RidgitsDisplaySanitize.containsLastNameAttempt(cachedProfile.name) {
+                cachedProfile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(cachedProfile.name)
             }
-            cachedProfile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(cachedProfile.name)
             profile = cachedProfile
             isLoading = false
         }
@@ -77,12 +76,7 @@ struct ProfileView: View {
             )
             .environmentObject(ridgitsStore)
         }
-        .sheet(isPresented: $showLastNameHeadsUp, onDismiss: {
-            guard pendingSaveAfterHeadsUp else { return }
-            pendingSaveAfterHeadsUp = false
-            attemptedLastNameEntry = false
-            Task { await performSaveProfile() }
-        }) {
+        .sheet(isPresented: $showLastNameHeadsUp) {
             ProfileFirstNameHeadsUpSheet()
         }
         .task {
@@ -129,6 +123,36 @@ struct ProfileView: View {
 
     private var displayContent: some View {
         VStack(alignment: .leading, spacing: 16) {
+            NavigationLink {
+                SubscriptionPaywallView(showsDragIndicator: false)
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if ridgitsStore.isMembershipActive {
+                            RidgitsVerifiedBadgeLabel(tier: ridgitsStore.membershipTier, badgeSize: 16)
+                        } else {
+                            Text("Manage Subscription")
+                                .font(RidgitsTypography.label(14))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                        }
+                        Text("Ridgits+, Premium, and Ultra")
+                            .font(RidgitsTypography.caption(12))
+                            .foregroundStyle(RidgitsColors.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(RidgitsColors.textMuted)
+                }
+                .padding(16)
+                .background(RidgitsColors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: RidgitsRadius.lg)
+                        .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
+                )
+            }
+            .buttonStyle(RidgitsHapticPlainButtonStyle())
+
             ReferralProfileSection()
 
             IdentityVerificationStatusCard(
@@ -161,9 +185,6 @@ struct ProfileView: View {
                                         tier: ridgitsStore.membershipTier,
                                         size: 18
                                     )
-                                }
-                                if ridgitsStore.access.isProfilePhotoVerified {
-                                    RidgitsPhotoVerifiedBadge(size: 18)
                                 }
                             }
                             if let age = profile.age {
@@ -249,36 +270,6 @@ struct ProfileView: View {
                 }
                 .padding(16)
             }
-
-            NavigationLink {
-                SubscriptionPaywallView(showsDragIndicator: false)
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        if ridgitsStore.isMembershipActive {
-                            RidgitsVerifiedBadgeLabel(tier: ridgitsStore.membershipTier, badgeSize: 16)
-                        } else {
-                            Text("Manage Subscription")
-                                .font(RidgitsTypography.label(14))
-                                .foregroundStyle(RidgitsColors.textHeadline)
-                        }
-                        Text("Ridgits+, Premium, and Ultra")
-                            .font(RidgitsTypography.caption(12))
-                            .foregroundStyle(RidgitsColors.textSecondary)
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(RidgitsColors.textMuted)
-                }
-                .padding(16)
-                .background(RidgitsColors.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: RidgitsRadius.lg)
-                        .stroke(RidgitsColors.dashboardBorder, lineWidth: 1)
-                )
-            }
-            .buttonStyle(RidgitsHapticPlainButtonStyle())
 
             if let statusMessage, !isEditing {
                 Text(statusMessage)
@@ -388,6 +379,7 @@ struct ProfileView: View {
                     RidgitsLocationPicker(
                         city: $profile.locationCity,
                         stateCode: $profile.locationStateCode,
+                        query: $locationQueryDraft,
                         legacyLocation: profile.location
                     )
                 }
@@ -552,11 +544,15 @@ struct ProfileView: View {
         defer { isLoading = false }
 
         if let loaded = try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid) {
-            if loaded.name.contains(where: \.isWhitespace) {
-                attemptedLastNameEntry = true
-            }
             profile = loaded
-            profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+            if !RidgitsDisplaySanitize.containsLastNameAttempt(profile.name) {
+                profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+            }
+            locationQueryDraft = RidgitsUSLocations.displayLabel(
+                city: profile.locationCity,
+                stateCode: profile.locationStateCode,
+                legacyLocation: profile.location
+            )
             RidgitsMatchAgeRange.normalize(on: &profile)
             if !loaded.hasBasicProfile {
                 isEditing = true
@@ -588,15 +584,27 @@ struct ProfileView: View {
     }
 
     @MainActor
+    private func commitLocationDraftIfNeeded() {
+        guard !profile.hasNormalizedLocation else { return }
+        guard let normalized = RidgitsUSLocations.resolveDraftSelection(locationQueryDraft) else {
+            return
+        }
+        profile.locationCity = normalized.city
+        profile.locationStateCode = normalized.stateCode
+        profile.location = normalized.display
+        locationQueryDraft = normalized.display
+    }
+
+    @MainActor
     private func saveProfile() async {
+        commitLocationDraftIfNeeded()
+        if RidgitsDisplaySanitize.containsLastNameAttempt(profile.name) {
+            showLastNameHeadsUp = true
+            return
+        }
         profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
         guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
             nameValidationMessage = "Enter a valid first name to continue."
-            return
-        }
-        if attemptedLastNameEntry {
-            pendingSaveAfterHeadsUp = true
-            showLastNameHeadsUp = true
             return
         }
         await performSaveProfile()
@@ -643,7 +651,7 @@ struct ProfileView: View {
     }
 
     private var canSaveProfile: Bool {
-        profile.isCompleteForMatching && RidgitsDisplaySanitize.isValidProfileFirstName(profile.name)
+        profile.isCompleteForMatching
     }
 
     @MainActor
@@ -662,11 +670,15 @@ struct ProfileView: View {
         Binding(
             get: { profile.name },
             set: { newValue in
-                let result = RidgitsDisplaySanitize.profileFirstNameInputFeedback(for: newValue)
-                profile.name = result.sanitized
-                nameValidationMessage = result.validationMessage
-                if result.attemptedLastName {
-                    attemptedLastNameEntry = true
+                let filtered = RidgitsDisplaySanitize.filterProfileFirstNameTyping(newValue)
+                profile.name = filtered
+                if RidgitsDisplaySanitize.containsLastNameAttempt(filtered) {
+                    nameValidationMessage = nil
+                } else if !filtered.isEmpty,
+                          !RidgitsDisplaySanitize.isValidProfileFirstName(filtered) {
+                    nameValidationMessage = "Use letters only."
+                } else {
+                    nameValidationMessage = nil
                 }
             }
         )

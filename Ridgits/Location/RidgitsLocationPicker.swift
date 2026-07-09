@@ -233,17 +233,56 @@ enum RidgitsUSLocations {
             }
             .joined(separator: " ")
     }
+
+    static func resolveDraftSelection(_ query: String) -> NormalizedLocation? {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let suggestions = searchCities(trimmed)
+        if let exact = suggestions.first(where: { $0.label.compare(trimmed, options: .caseInsensitive) == .orderedSame }) {
+            return normalize(city: exact.city, stateCode: exact.stateCode)
+        }
+
+        if suggestions.count == 1, trimmed.compare(suggestions[0].city, options: .caseInsensitive) == .orderedSame {
+            let only = suggestions[0]
+            return normalize(city: only.city, stateCode: only.stateCode)
+        }
+
+        let needle = trimmed.lowercased()
+        if needle.count >= 2 {
+            let cityMatches = suggestions.filter { $0.city.lowercased() == needle }
+            if cityMatches.count == 1, let match = cityMatches.first {
+                return normalize(city: match.city, stateCode: match.stateCode)
+            }
+
+            let prefixMatches = suggestions.filter { $0.city.lowercased().hasPrefix(needle) }
+            if prefixMatches.count == 1, let match = prefixMatches.first {
+                return normalize(city: match.city, stateCode: match.stateCode)
+            }
+        }
+
+        let parsed = parse(trimmed)
+        return normalize(city: parsed.city, stateCode: parsed.stateCode)
+    }
 }
 
 struct RidgitsLocationPicker: View {
     @Binding var city: String
     @Binding var stateCode: String
+    @Binding var query: String
     var legacyLocation: String = ""
+    /// Increment from parent to flush typed city text into bindings before save.
+    var commitNonce: Int = 0
 
-    @State private var query = ""
     @State private var isOpen = false
     @State private var suggestions: [RidgitsUSLocations.CityOption] = []
+    @State private var validationMessage: String?
+    @State private var didInitializeQuery = false
     @FocusState private var isFocused: Bool
+
+    private var hasValidSelection: Bool {
+        RidgitsUSLocations.normalize(city: city, stateCode: stateCode) != nil
+    }
 
     private var showLegacyHint: Bool {
         city.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -253,90 +292,102 @@ struct RidgitsLocationPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ZStack(alignment: .topLeading) {
-                RidgitsTextField(
-                    placeholder: "Search city and state",
-                    text: $query
-                )
-                .focused($isFocused)
-                .textInputAutocapitalization(.words)
-                .autocorrectionDisabled()
-                .onChange(of: query) { _, newValue in
+            RidgitsTextField(
+                placeholder: "Search city and state",
+                text: $query
+            )
+            .focused($isFocused)
+            .textInputAutocapitalization(.words)
+            .autocorrectionDisabled()
+            .onChange(of: query) { _, newValue in
+                guard isFocused else { return }
+                validationMessage = nil
+                isOpen = true
+                suggestions = RidgitsUSLocations.searchCities(newValue)
+            }
+            .onChange(of: isFocused) { _, focused in
+                if focused {
                     isOpen = true
-                    suggestions = RidgitsUSLocations.searchCities(newValue)
-                }
-                .onChange(of: isFocused) { _, focused in
-                    if focused {
-                        isOpen = true
-                    } else {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                            isOpen = false
-                            query = RidgitsUSLocations.displayLabel(
-                                city: city,
-                                stateCode: stateCode,
-                                legacyLocation: legacyLocation
-                            )
-                        }
-                    }
-                }
-                .onAppear {
-                    query = RidgitsUSLocations.displayLabel(
-                        city: city,
-                        stateCode: stateCode,
-                        legacyLocation: legacyLocation
-                    )
-                }
-                .onChange(of: city) { _, _ in syncQueryFromSelection() }
-                .onChange(of: stateCode) { _, _ in syncQueryFromSelection() }
-                .onChange(of: legacyLocation) { _, _ in syncQueryFromSelection() }
-
-                if isOpen && !suggestions.isEmpty {
-                    VStack(spacing: 0) {
-                        Spacer().frame(height: 52)
-
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                ForEach(suggestions) { option in
-                                    Button {
-                                        select(option)
-                                    } label: {
-                                        HStack {
-                                            Text(option.label)
-                                                .font(RidgitsTypography.body(14))
-                                                .foregroundStyle(RidgitsColors.textPrimary)
-                                            Spacer()
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 10)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(RidgitsColors.inputSurface)
-                                    }
-                                    .buttonStyle(.plain)
-
-                                    if option.id != suggestions.last?.id {
-                                        Divider()
-                                    }
-                                }
-                            }
-                        }
-                        .frame(maxHeight: 220)
-                        .background(RidgitsColors.inputSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: RidgitsRadius.md)
-                                .stroke(RidgitsColors.border, lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+                    validationMessage = nil
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        commitQueryOnBlur()
+                        isOpen = false
+                        suggestions = []
                     }
                 }
             }
+            .onAppear {
+                guard !didInitializeQuery else { return }
+                didInitializeQuery = true
+                syncQueryFromSelection()
+            }
+            .onChange(of: commitNonce) { _, _ in
+                commitQueryOnBlur()
+            }
+            .onChange(of: city) { _, _ in syncQueryFromSelection() }
+            .onChange(of: stateCode) { _, _ in syncQueryFromSelection() }
+            .onChange(of: legacyLocation) { _, _ in syncQueryFromSelection() }
+            .overlay(alignment: .topLeading) {
+                if isOpen && isFocused && !suggestions.isEmpty {
+                    suggestionsDropdown
+                        .offset(y: 52)
+                        .zIndex(20)
+                }
+            }
+            .zIndex(isOpen && isFocused ? 10 : 0)
 
-            if showLegacyHint {
+            if let validationMessage {
+                Text(validationMessage)
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.destructive)
+            } else if showLegacyHint {
                 Text("Current location: \(legacyLocation). Select a city from the list to improve nearby matching.")
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textMuted)
+            } else if isFocused && query.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 && suggestions.isEmpty {
+                Text("No matches found. Try a nearby city or type City, ST (e.g. Austin, TX).")
                     .font(RidgitsTypography.caption(12))
                     .foregroundStyle(RidgitsColors.textMuted)
             }
         }
+    }
+
+    private var suggestionsDropdown: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                ForEach(suggestions) { option in
+                    Button {
+                        select(option)
+                    } label: {
+                        HStack {
+                            Text(option.label)
+                                .font(RidgitsTypography.body(14))
+                                .foregroundStyle(RidgitsColors.textPrimary)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RidgitsColors.inputSurface)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    if option.id != suggestions.last?.id {
+                        Divider()
+                    }
+                }
+            }
+        }
+        .frame(maxHeight: 220)
+        .background(RidgitsColors.inputSurface)
+        .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: RidgitsRadius.md)
+                .stroke(RidgitsColors.border, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
     }
 
     private func syncQueryFromSelection() {
@@ -346,12 +397,49 @@ struct RidgitsLocationPicker: View {
             stateCode: stateCode,
             legacyLocation: legacyLocation
         )
+        if hasValidSelection {
+            validationMessage = nil
+        }
+    }
+
+    private func commitQueryOnBlur() {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmed.isEmpty {
+            if hasValidSelection {
+                syncQueryFromSelection()
+            } else {
+                validationMessage = "City and state are required."
+            }
+            return
+        }
+
+        if let normalized = RidgitsUSLocations.resolveDraftSelection(trimmed) {
+            applySelection(
+                city: normalized.city,
+                stateCode: normalized.stateCode,
+                label: normalized.display
+            )
+            return
+        }
+
+        if hasValidSelection {
+            syncQueryFromSelection()
+            return
+        }
+
+        validationMessage = "Select a city from the list, or type City, ST (e.g. Austin, TX)."
+    }
+
+    private func applySelection(city newCity: String, stateCode newStateCode: String, label: String) {
+        city = newCity
+        stateCode = newStateCode
+        query = label
+        validationMessage = nil
     }
 
     private func select(_ option: RidgitsUSLocations.CityOption) {
-        city = option.city
-        stateCode = option.stateCode
-        query = option.label
+        applySelection(city: option.city, stateCode: option.stateCode, label: option.label)
         isOpen = false
         isFocused = false
         suggestions = []

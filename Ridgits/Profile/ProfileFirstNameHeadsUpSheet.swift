@@ -6,16 +6,16 @@ struct ProfileFirstNameHeadsUpSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
-                Text("No need for a last name")
+                Text("First name only")
                     .font(RidgitsTypography.headline(22))
                     .foregroundStyle(RidgitsColors.textHeadline)
 
-                Text("Just a heads up — others only see your first name on Ridgits.")
+                Text("Others only see your first name on Ridgits — no last name needed. Go back, remove anything after your first name, then save again.")
                     .font(RidgitsTypography.body(14))
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                RidgitsPrimaryButton(title: "Got it") {
+                RidgitsPrimaryButton(title: "Go back") {
                     dismiss()
                 }
                 .padding(.top, 8)

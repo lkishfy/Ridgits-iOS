@@ -10,9 +10,10 @@ struct ProfileSetupView: View {
     @State private var profilePhotoMatchMessage: String?
     @State private var saveErrorMessage: String?
     @State private var nameValidationMessage: String?
-    @State private var attemptedLastNameEntry = false
     @State private var showLastNameHeadsUp = false
-    @State private var pendingSaveAfterHeadsUp = false
+    @State private var locationCommitNonce = 0
+    @State private var locationQueryDraft = ""
+    @State private var hasLoadedExistingProfile = false
 
     var onComplete: () -> Void
 
@@ -56,7 +57,9 @@ struct ProfileSetupView: View {
                                 RidgitsLocationPicker(
                                     city: $profile.locationCity,
                                     stateCode: $profile.locationStateCode,
-                                    legacyLocation: profile.location
+                                    query: $locationQueryDraft,
+                                    legacyLocation: profile.location,
+                                    commitNonce: locationCommitNonce
                                 )
                             }
                             field("Age", required: true) {
@@ -125,9 +128,14 @@ struct ProfileSetupView: View {
                             RidgitsSquareButton(title: isSaving ? "Saving…" : "Save & Continue", style: .filled) {
                                 Task { await save() }
                             }
-                            .disabled(!canCompleteSetup || isSaving)
+                            .disabled(isSaving)
 
-                            if let saveErrorMessage {
+                            if !canCompleteSetup && !isSaving {
+                                Text(setupBlockersMessage)
+                                    .font(RidgitsTypography.caption(12))
+                                    .foregroundStyle(RidgitsColors.destructive)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } else if let saveErrorMessage {
                                 Text(saveErrorMessage)
                                     .font(RidgitsTypography.caption(12))
                                     .foregroundStyle(RidgitsColors.destructive)
@@ -144,6 +152,8 @@ struct ProfileSetupView: View {
                 }
                 .padding(16)
             }
+            .scrollDismissesKeyboard(.interactively)
+            .scrollClipDisabled()
             .background(RidgitsColors.feedBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -153,32 +163,76 @@ struct ProfileSetupView: View {
                         isMembershipActive: ridgitsStore.isMembershipActive
                     )
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                    }
+                    .font(RidgitsTypography.label(14))
+                }
             }
             .task { await loadExisting() }
-            .sheet(isPresented: $showLastNameHeadsUp, onDismiss: {
-                guard pendingSaveAfterHeadsUp else { return }
-                pendingSaveAfterHeadsUp = false
-                attemptedLastNameEntry = false
-                Task { await performSave() }
-            }) {
+            .sheet(isPresented: $showLastNameHeadsUp) {
                 ProfileFirstNameHeadsUpSheet()
             }
         }
     }
 
     private var canCompleteSetup: Bool {
-        profile.isCompleteForMatching && RidgitsDisplaySanitize.isValidProfileFirstName(profile.name)
+        profile.isCompleteForMatching
+            && RidgitsDisplaySanitize.isValidProfileFirstName(profile.name)
+            && !RidgitsDisplaySanitize.containsLastNameAttempt(profile.name)
+    }
+
+    private var setupBlockersMessage: String {
+        var missing: [String] = []
+        if profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            missing.append("first name")
+        } else if RidgitsDisplaySanitize.containsLastNameAttempt(profile.name) {
+            missing.append("first name only (remove your last name)")
+        } else if !RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) {
+            missing.append("valid first name")
+        }
+        if !profile.hasNormalizedLocation {
+            missing.append("city & state")
+        }
+        if profile.age == nil {
+            missing.append("age")
+        }
+        if profile.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            missing.append("profile photo")
+        }
+        if profile.about.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            missing.append("about")
+        }
+        if profile.aspirations.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            missing.append("aspirations")
+        }
+        if profile.interests.isEmpty {
+            missing.append("at least one interest")
+        }
+        guard !missing.isEmpty else { return "" }
+        return "Still needed: " + missing.joined(separator: ", ") + "."
     }
 
     private var firstNameBinding: Binding<String> {
         Binding(
             get: { profile.name },
             set: { newValue in
-                let result = RidgitsDisplaySanitize.profileFirstNameInputFeedback(for: newValue)
-                profile.name = result.sanitized
-                nameValidationMessage = result.validationMessage
-                if result.attemptedLastName {
-                    attemptedLastNameEntry = true
+                let filtered = RidgitsDisplaySanitize.filterProfileFirstNameTyping(newValue)
+                profile.name = filtered
+                if RidgitsDisplaySanitize.containsLastNameAttempt(filtered) {
+                    nameValidationMessage = "First name only — remove anything after your first name."
+                } else if !filtered.isEmpty,
+                          !RidgitsDisplaySanitize.isValidProfileFirstName(filtered) {
+                    nameValidationMessage = "Use letters only."
+                } else {
+                    nameValidationMessage = nil
                 }
             }
         )
@@ -193,25 +247,87 @@ struct ProfileSetupView: View {
 
     private func loadExisting() async {
         guard let uid = authManager.currentUser?.uid else { return }
+        guard !hasLoadedExistingProfile else { return }
+        hasLoadedExistingProfile = true
+
         let loaded = (try? await RidgitsFirebaseClient.shared.fetchUserProfile(uid: uid)) ?? profile
-        if loaded.name.contains(where: \.isWhitespace) {
-            attemptedLastNameEntry = true
-        }
-        profile = loaded
+        mergeLoadedProfile(loaded)
+
         if !profile.name.isEmpty {
-            profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+            if RidgitsDisplaySanitize.containsLastNameAttempt(profile.name) {
+                nameValidationMessage = "First name only — remove anything after your first name."
+            } else if !RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) {
+                profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+            } else {
+                profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
+            }
         }
     }
 
+    private func mergeLoadedProfile(_ loaded: RidgitsUserProfile) {
+        if profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.name = loaded.name
+        }
+        if profile.locationCity.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.locationCity = loaded.locationCity
+        }
+        if profile.locationStateCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.locationStateCode = loaded.locationStateCode
+        }
+        if profile.location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.location = loaded.location
+        }
+        if profile.age == nil {
+            profile.age = loaded.age
+        }
+        if profile.image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.image = loaded.image
+        }
+        if profile.about.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.about = loaded.about
+        }
+        if profile.aspirations.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.aspirations = loaded.aspirations
+        }
+        if profile.interests.isEmpty {
+            profile.interests = loaded.interests
+        }
+
+        locationQueryDraft = RidgitsUSLocations.displayLabel(
+            city: profile.locationCity,
+            stateCode: profile.locationStateCode,
+            legacyLocation: profile.location
+        )
+    }
+
+    private func commitLocationDraftIfNeeded() {
+        guard !profile.hasNormalizedLocation else { return }
+        guard let normalized = RidgitsUSLocations.resolveDraftSelection(locationQueryDraft) else {
+            return
+        }
+        profile.locationCity = normalized.city
+        profile.locationStateCode = normalized.stateCode
+        profile.location = normalized.display
+        locationQueryDraft = normalized.display
+        locationCommitNonce += 1
+    }
+
     private func save() async {
+        commitLocationDraftIfNeeded()
+        saveErrorMessage = nil
+
+        if !canCompleteSetup {
+            saveErrorMessage = setupBlockersMessage
+            return
+        }
+
+        if RidgitsDisplaySanitize.containsLastNameAttempt(profile.name) {
+            showLastNameHeadsUp = true
+            return
+        }
         profile.name = RidgitsDisplaySanitize.sanitizeProfileFirstNameInput(profile.name)
         guard RidgitsDisplaySanitize.isValidProfileFirstName(profile.name) else {
             nameValidationMessage = "Enter a valid first name to continue."
-            return
-        }
-        if attemptedLastNameEntry {
-            pendingSaveAfterHeadsUp = true
-            showLastNameHeadsUp = true
             return
         }
         await performSave()
