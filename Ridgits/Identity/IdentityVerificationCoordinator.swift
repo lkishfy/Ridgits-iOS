@@ -32,8 +32,13 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
     func runVerificationFlow() async -> Bool {
         do {
             let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-            if status.isFullyVerifiedForSubscribe {
+            if status.canMessage {
                 return true
+            }
+            if status.isStripeIdentityFlowComplete {
+                _ = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded()
+                let refreshed = try await RidgitsAPIClient.shared.fetchIdentityStatus()
+                return refreshed.canMessage
             }
         } catch {
             errorMessage = RidgitsCustomerFacingError.sanitize(error.localizedDescription)
@@ -101,14 +106,18 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
         ) { [weak self] callbackURL, error in
             Task { @MainActor in
                 guard let self else { return }
-                if let error, (error as NSError).code != ASWebAuthenticationSessionError.canceledLogin.rawValue {
-                    self.errorMessage = RidgitsCustomerFacingError.sanitize(error.localizedDescription)
-                    self.finish(success: false)
-                    return
+                if let error {
+                    let nsError = error as NSError
+                    if nsError.domain == ASWebAuthenticationSessionError.errorDomain,
+                       nsError.code == ASWebAuthenticationSessionError.canceledLogin.rawValue {
+                        self.finish(success: false)
+                        return
+                    }
                 }
-                if callbackURL != nil || RidgitsAppLinks.isIdentityCompleteURL(callbackURL) {
-                    await self.pollUntilVerified()
+                if let callbackURL, !RidgitsAppLinks.isIdentityCompleteURL(callbackURL) {
+                    // Stripe may redirect through https first; deep link still triggers poll via notification.
                 }
+                await self.pollUntilVerified()
             }
         }
         session.presentationContextProvider = self
@@ -124,13 +133,13 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
         isVerifying = true
         defer { isVerifying = false }
 
-        for attempt in 0..<20 {
+        for attempt in 0..<30 {
             if attempt > 0 {
                 try? await Task.sleep(nanoseconds: 1_500_000_000)
             }
             do {
                 let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-                if status.isFullyVerifiedForSubscribe {
+                if status.isStripeIdentityFlowComplete {
                     authSession?.cancel()
                     authSession = nil
                     _ = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded()

@@ -207,13 +207,43 @@ enum RidgitsNearbyAccess {
         let headline = "Upgrade to message this person"
         let subheadline: String
         if tier == .premium {
-            subheadline = "Premium unlocks messaging for matches in your metro area (0 mi)."
+            subheadline = "This match is in your metro area (same city/region). Premium unlocks metro messaging — Ridgits+ covers 10–150 miles by distance."
         } else if let miles, miles < Double(freeMinRadiusMiles) {
-            subheadline = "Ridgits+ lets you message matches from 10 miles and closer."
+            subheadline = "Ridgits+ lets you message matches 10–150 miles away by distance."
         } else {
             subheadline = "Subscribe to send message requests on Ridgits."
         }
         return (headline, subheadline)
+    }
+
+    /// Paywall copy when a locked radius chip is tapped (Metro for Ridgits+, closer presets for free).
+    static func radiusPaywallCopy(
+        for preset: Int,
+        access: RidgitsNearbySearchAccess,
+        closeMatchCount: Int = 0
+    ) -> (headline: String, subheadline: String, requiredTier: RidgitsSubscriptionTier) {
+        let requiredTier = paywallTier(forLockedPreset: preset, access: access)
+
+        if isMetroPreset(preset) {
+            var subheadline =
+                "Metro shows people in your same city or region — separate from distance search. Ridgits+ searches 10–150 mi; Premium unlocks metro."
+            if closeMatchCount > 0 {
+                let noun = closeMatchCount == 1 ? "person is" : "people are"
+                subheadline = "\(closeMatchCount) \(noun) in your metro area. \(subheadline)"
+            }
+            return ("Unlock metro search", subheadline, .premium)
+        }
+
+        var subheadline = "Free members search 30–150 mi. Ridgits+ unlocks 10–150 mi by distance."
+        if closeMatchCount > 0 {
+            let noun = closeMatchCount == 1 ? "person" : "people"
+            subheadline += " · \(closeMatchCount) \(noun) within \(preset) mi"
+        }
+        return ("Search closer", subheadline, requiredTier)
+    }
+
+    static func premiumMetroTeaserSubheadline() -> String {
+        "Metro shows people in your same city or region — not the same as “within 10 miles.”"
     }
 }
 

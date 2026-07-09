@@ -12,6 +12,9 @@ struct IdentityVerificationView: View {
 
     @State private var hasProfilePhoto = false
     @State private var isLoadingProfile = true
+    @State private var showSuccessSheet = false
+    @State private var successCanMessage = false
+    @State private var successPhotoMatchStatus = "none"
 
     init(autoStart: Bool = false, onComplete: @escaping (Bool) -> Void) {
         self.autoStart = autoStart
@@ -42,7 +45,8 @@ struct IdentityVerificationView: View {
                             bullet("Verify your phone number with a one-time code.")
                             bullet("Take a quick selfie so we know it's really you.")
                             bullet("Ridgits only stores your verification status and a hashed phone fingerprint.")
-                            bullet("Subscribe first, then complete this step to accept and send messages.")
+                            bullet("Your subscription badge activates as soon as you subscribe.")
+                            bullet("Complete this step when you're ready to accept and send messages.")
                         }
                         .padding(16)
                     }
@@ -118,8 +122,39 @@ struct IdentityVerificationView: View {
             }
             .onChange(of: coordinator.verificationSucceeded) { _, succeeded in
                 guard succeeded else { return }
-                onComplete(true)
-                dismiss()
+                Task {
+                    await ridgitsStore.refreshAccessInBackground()
+                    if let status = try? await RidgitsAPIClient.shared.fetchIdentityStatus() {
+                        successCanMessage = status.canMessage
+                        successPhotoMatchStatus = status.profilePhotoIdentityMatchStatus
+                    } else {
+                        successCanMessage = ridgitsStore.isVerifiedForMessaging
+                        successPhotoMatchStatus = ridgitsStore.access.profilePhotoIdentityMatchStatus
+                    }
+                    showSuccessSheet = true
+                }
+            }
+            .sheet(isPresented: $showSuccessSheet) {
+                IdentityVerificationSuccessSheet(
+                    canMessage: successCanMessage,
+                    photoMatchStatus: successPhotoMatchStatus,
+                    onDone: {
+                        showSuccessSheet = false
+                        onComplete(true)
+                        dismiss()
+                    },
+                    onRetryPhotoMatch: successPhotoMatchStatus == "failed"
+                        ? {
+                            showSuccessSheet = false
+                            Task {
+                                _ = await ridgitsStore.retryProfilePhotoIdentityMatch()
+                                await ridgitsStore.refreshAccessInBackground()
+                                onComplete(true)
+                                dismiss()
+                            }
+                        }
+                        : nil
+                )
             }
         }
     }

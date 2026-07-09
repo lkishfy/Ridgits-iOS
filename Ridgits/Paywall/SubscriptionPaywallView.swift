@@ -14,8 +14,8 @@ struct SubscriptionPaywallView: View {
 
     @State private var ultraYearlyVariant: RidgitsSubscriptionCatalog.UltraYearlyVariant = .standard
     @State private var selectedBilling: RidgitsSubscriptionBilling = .yearly
-    @State private var showPostPurchaseIdentityVerification = false
     @State private var showManageSubscriptionSheet = false
+    @State private var membershipTierAtOpen: RidgitsSubscriptionTier?
 
     private let tiers: [RidgitsSubscriptionTier] = [.plus, .premium, .ultra]
     private var billing: RidgitsSubscriptionBilling { .yearly }
@@ -69,13 +69,7 @@ struct SubscriptionPaywallView: View {
                     }
 
                     Button {
-                        Task {
-                            let needsIdentity = await ridgitsStore.restorePurchases()
-                            await ridgitsStore.refreshAccessInBackground()
-                            if needsIdentity {
-                                showPostPurchaseIdentityVerification = true
-                            }
-                        }
+                        Task { await ridgitsStore.restorePurchases() }
                     } label: {
                         HStack(spacing: 8) {
                             if ridgitsStore.isRestoring {
@@ -98,26 +92,17 @@ struct SubscriptionPaywallView: View {
         }
         .background(RidgitsColors.feedBackground)
         .modifier(SubscriptionPaywallSheetPresentation(showsDragIndicator: showsDragIndicator))
+        .onAppear {
+            membershipTierAtOpen = ridgitsStore.membershipTier
+        }
         .task {
             await ridgitsStore.loadProducts()
-            await ridgitsStore.refreshAccessInBackground()
-            dismissIfSubscriptionAlreadySatisfied()
         }
         .onChange(of: ridgitsStore.membershipTier) { _, _ in
-            dismissIfSubscriptionAlreadySatisfied()
+            dismissIfUpgradedToHighlightedTier()
         }
         .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
-            dismissIfSubscriptionAlreadySatisfied()
-        }
-        .sheet(isPresented: $showPostPurchaseIdentityVerification) {
-            IdentityVerificationView(autoStart: true) { success in
-                showPostPurchaseIdentityVerification = false
-                Task { await ridgitsStore.refreshAccessInBackground() }
-                if success {
-                    dismiss()
-                }
-            }
-            .environmentObject(ridgitsStore)
+            dismissIfUpgradedToHighlightedTier()
         }
         .sheet(isPresented: $showManageSubscriptionSheet) {
             ManageSubscriptionSheet()
@@ -159,10 +144,10 @@ struct SubscriptionPaywallView: View {
                 .font(RidgitsTypography.banner(10))
                 .fontWeight(.bold)
                 .tracking(0.8)
-                .foregroundStyle(RidgitsColors.ctaBlack)
+                .foregroundStyle(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(Self.communityFundedAccentOrange)
+                .background(Self.communityFundedAccentGreen)
                 .clipShape(Capsule())
 
             VStack(alignment: .leading, spacing: 6) {
@@ -200,7 +185,7 @@ struct SubscriptionPaywallView: View {
         .padding(.horizontal, -20)
     }
 
-    private static let communityFundedAccentOrange = Color(hex: 0xE65F23)
+    private static let communityFundedAccentGreen = Color(hex: 0x2F5540)
 
     private static let communityFundingItems = [
         "API & AI costs",
@@ -384,11 +369,7 @@ struct SubscriptionPaywallView: View {
                                 || ridgitsStore.hasPlusMembership
                                 || ridgitsStore.membershipTier.rank >= tier.rank
                             guard subscriptionActive else { return }
-                            if ridgitsStore.isVerifiedForMessaging {
-                                dismiss()
-                            } else {
-                                showPostPurchaseIdentityVerification = true
-                            }
+                            dismiss()
                         }
                     }
                     .disabled(ridgitsStore.isPurchasing)
@@ -411,10 +392,13 @@ struct SubscriptionPaywallView: View {
         }
     }
 
-    private func dismissIfSubscriptionAlreadySatisfied() {
+    private func dismissIfUpgradedToHighlightedTier() {
         guard let highlightTier else { return }
+        guard let baseline = membershipTierAtOpen else { return }
         guard ridgitsStore.isMembershipActive else { return }
-        guard ridgitsStore.membershipTier.rank >= highlightTier.rank else { return }
+        let current = ridgitsStore.membershipTier
+        guard current.rank > baseline.rank else { return }
+        guard current.rank >= highlightTier.rank else { return }
         dismiss()
     }
 }

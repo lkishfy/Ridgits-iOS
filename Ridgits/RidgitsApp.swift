@@ -31,6 +31,10 @@ struct RidgitsApp: App {
                 .onOpenURL { url in
                     _ = deepLinkRouter.handle(url)
                 }
+                .onChange(of: deepLinkRouter.identityReturnReceived) { _, received in
+                    guard received else { return }
+                    Task { await ridgitsStore.refreshAccessInBackground() }
+                }
                 .onAppear {
                     RidgitsPushNotificationService.shared.configure(deepLinkRouter: deepLinkRouter)
                 }
@@ -104,6 +108,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
-        GIDSignIn.sharedInstance.handle(url)
+        if GIDSignIn.sharedInstance.handle(url) {
+            return true
+        }
+        if RidgitsAppLinks.isIdentityCompleteURL(url) {
+            NotificationCenter.default.post(
+                name: RidgitsAppLinks.identityVerificationCompleteNotification,
+                object: url
+            )
+            return true
+        }
+        return false
     }
 }

@@ -12,6 +12,7 @@ struct MatchesView: View {
     var onOpenConversation: ((String, String?) -> Void)? = nil
     @State private var showSubscriptionPaywall = false
     @State private var subscriptionPaywallHighlight: RidgitsSubscriptionTier = .plus
+    @State private var paywallMembershipTierAtOpen: RidgitsSubscriptionTier = .free
     @State private var paywallHeadline: String?
     @State private var paywallSubheadline: String?
     @State private var showPokePackPaywall = false
@@ -23,7 +24,7 @@ struct MatchesView: View {
     @State private var pokeConfirmMatch: RidgitsMatch?
     @State private var unpokeConfirmMatch: RidgitsMatch?
     @State private var messagingBlockedMessage: String?
-    @State private var showIdentityVerification = false
+    @State private var identityVerificationGate: IdentityVerificationMessagingGate?
     @State private var showProfilePhotoMatchAlert = false
 
     private var nearbyAccess: RidgitsNearbySearchAccess {
@@ -133,16 +134,17 @@ struct MatchesView: View {
                     paywallSubheadline = nil
                 }
             }
-            .onChange(of: ridgitsStore.membershipTier) { _, _ in
+            .onChange(of: ridgitsStore.membershipTier) { _, newTier in
                 viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
                     viewModel.maxDistance,
                     access: nearbyAccess
                 )
                 Task { await viewModel.load(access: nearbyAccess, forceRefresh: true) }
                 guard showSubscriptionPaywall else { return }
-                if !shouldPresentSubscriptionPaywall(requiredTier: subscriptionPaywallHighlight) {
-                    showSubscriptionPaywall = false
-                }
+                guard ridgitsStore.isMembershipActive else { return }
+                guard newTier.rank > paywallMembershipTierAtOpen.rank else { return }
+                guard newTier.rank >= subscriptionPaywallHighlight.rank else { return }
+                showSubscriptionPaywall = false
             }
             .onChange(of: ridgitsStore.isMembershipActive) { _, _ in
                 viewModel.maxDistance = RidgitsNearbyAccess.clampRadius(
@@ -162,15 +164,7 @@ struct MatchesView: View {
                 }
                 .environmentObject(authManager)
             }
-            .sheet(isPresented: $showIdentityVerification) {
-                IdentityVerificationView { success in
-                    showIdentityVerification = false
-                    if success {
-                        Task { await ridgitsStore.refreshAccessInBackground() }
-                    }
-                }
-                .environmentObject(ridgitsStore)
-            }
+            .identityVerificationMessagingGate($identityVerificationGate)
             .sheet(item: $composeMatch) { match in
                 composeSheet(for: match)
             }
@@ -321,20 +315,16 @@ struct MatchesView: View {
         }
         let requiredTier = nearbyAccess.lockedRadiusPaywallTier(for: preset)
         guard shouldPresentSubscriptionPaywall(requiredTier: requiredTier) else { return }
-        subscriptionPaywallHighlight = requiredTier
-        paywallHeadline = "Search closer"
-        paywallSubheadline = subscriptionPaywallSubheadline(for: preset)
+        let copy = RidgitsNearbyAccess.radiusPaywallCopy(
+            for: preset,
+            access: nearbyAccess,
+            closeMatchCount: viewModel.closeMatchCount
+        )
+        subscriptionPaywallHighlight = copy.requiredTier
+        paywallHeadline = copy.headline
+        paywallSubheadline = copy.subheadline
         Task { await viewModel.refreshCloseMatchPreview(at: preset, access: nearbyAccess) }
-        showSubscriptionPaywall = true
-    }
-
-    private func subscriptionPaywallSubheadline(for preset: Int) -> String {
-        var parts = [subscriptionPaywallSubheadline]
-        if viewModel.closeMatchCount > 0 {
-            let noun = viewModel.closeMatchCount == 1 ? "person" : "people"
-            parts.append("\(viewModel.closeMatchCount) \(noun) within \(preset) miles")
-        }
-        return parts.joined(separator: " · ")
+        openSubscriptionPaywallSheet()
     }
 
     private func shouldPresentSubscriptionPaywall(requiredTier: RidgitsSubscriptionTier) -> Bool {
@@ -351,17 +341,22 @@ struct MatchesView: View {
         subscriptionPaywallHighlight = requiredTier
         paywallHeadline = headline
         paywallSubheadline = subheadline
+        openSubscriptionPaywallSheet()
+    }
+
+    private func openSubscriptionPaywallSheet() {
+        paywallMembershipTierAtOpen = ridgitsStore.membershipTier
         showSubscriptionPaywall = true
     }
 
     private var subscriptionPaywallSubheadline: String {
         switch subscriptionPaywallHighlight {
         case .plus:
-            return "Free members search from 30 to 150 miles. Ridgits+ unlocks search from 10 miles."
+            return "Free members search 30–150 mi. Ridgits+ unlocks 10–150 mi by distance."
         case .premium:
-            return "Premium unlocks metro search (0 mi) and full range down to 0 miles."
+            return RidgitsNearbyAccess.premiumMetroTeaserSubheadline() + " Upgrade to Premium to unlock metro search and messaging."
         case .ultra:
-            return "Ultra includes metro search (0 mi) and the full 0–150 mile range."
+            return "Ultra includes metro search and the full 0–150 mile range."
         default:
             return "Upgrade to search closer."
         }
@@ -373,7 +368,7 @@ struct MatchesView: View {
             return false
         }
         guard ridgitsStore.isVerifiedForMessaging else {
-            showIdentityVerification = true
+            identityVerificationGate = .requiredPrompt
             return false
         }
         return true
@@ -538,7 +533,7 @@ struct MatchesView: View {
                 presentSubscriptionPaywall(
                     requiredTier: .plus,
                     headline: "See nearby matches",
-                    subheadline: "Free members search from 30 to 150 miles. Ridgits+ unlocks search from 10 miles."
+                    subheadline: "Free members search 30–150 mi. Ridgits+ unlocks 10–150 mi by distance."
                 )
             }
             .font(RidgitsTypography.caption(13))
@@ -574,9 +569,9 @@ struct MatchesView: View {
         let radius = viewModel.closeMatchPreviewRadiusMiles
         if viewModel.closeMatchCount > 0 {
             let noun = viewModel.closeMatchCount == 1 ? "match" : "matches"
-            return "\(viewModel.closeMatchCount) \(noun) within \(radius) miles."
+            return "\(viewModel.closeMatchCount) \(noun) within \(radius) mi by distance."
         }
-        return "Subscribe to see matches within \(radius) miles."
+        return "Subscribe to see matches from 10 miles and closer by distance."
     }
 
     private var premiumCloseMatchesTeaser: some View {
@@ -594,11 +589,11 @@ struct MatchesView: View {
 
             Spacer(minLength: 8)
 
-            Button("Unlock closer") {
+            Button("Unlock metro") {
                 presentSubscriptionPaywall(
                     requiredTier: .premium,
-                    headline: "See closer matches",
-                    subheadline: "Premium unlocks metro search (0 mi) and the full 0–150 mile range."
+                    headline: "Unlock metro search",
+                    subheadline: RidgitsNearbyAccess.premiumMetroTeaserSubheadline() + " Upgrade to Premium to see and message metro matches."
                 )
             }
             .font(RidgitsTypography.caption(13))
@@ -618,7 +613,7 @@ struct MatchesView: View {
 
     private var premiumCloseMatchesTeaserMessage: String {
         let noun = viewModel.closeMatchCount == 1 ? "match is" : "matches are"
-        return "\(viewModel.closeMatchCount) \(noun) in your metro area — unlock with Premium."
+        return "\(viewModel.closeMatchCount) \(noun) in your metro area — \(RidgitsNearbyAccess.premiumMetroTeaserSubheadline())"
     }
 
     private var nearbyRadiusRangeLabel: String {
@@ -719,22 +714,29 @@ struct MatchesView: View {
     private func radiusPresetChip(_ preset: Int) -> some View {
         let isLocked = RidgitsNearbyAccess.isLockedPreset(preset, access: nearbyAccess)
         let isSelected = !isLocked && viewModel.maxDistance == preset
+        let isMetro = RidgitsNearbyAccess.isMetroPreset(preset)
 
         Button {
             attemptRadiusChange(to: Double(preset))
         } label: {
-            Text(preset == 0 ? "Metro" : "\(preset)")
-                .font(RidgitsTypography.caption(11))
-                .foregroundStyle(isSelected ? .white : RidgitsColors.textSecondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-                .frame(maxWidth: .infinity)
-                .background(isSelected ? RidgitsColors.ctaBlack : RidgitsColors.hoverSurface)
-                .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
+            HStack(spacing: 4) {
+                Text(isMetro ? "Metro" : "\(preset)")
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 8, weight: .semibold))
+                }
+            }
+            .font(RidgitsTypography.caption(11))
+            .foregroundStyle(isSelected ? .white : RidgitsColors.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .frame(maxWidth: .infinity)
+            .background(isSelected ? RidgitsColors.ctaBlack : RidgitsColors.hoverSurface)
+            .clipShape(RoundedRectangle(cornerRadius: RidgitsRadius.sm))
         }
         .buttonStyle(RidgitsHapticPlainButtonStyle())
-        .opacity(isLocked ? 0.45 : 1)
         .disabled(viewModel.isLoadingNearby)
+        .accessibilityHint(isLocked ? "Requires upgrade" : "")
     }
 
     private var sortMenu: some View {
@@ -907,11 +909,11 @@ struct MatchesView: View {
                                 if ridgitsError.code == "EARLY_PHONE_NUMBER" {
                                     messagingViewModel.showEarlyPhoneNumberPrompt = true
                                 } else if ridgitsError.code == "SUBSCRIPTION_REQUIRED" || ridgitsError.code == "MONTHLY_MESSAGE_LIMIT_REACHED" {
-                                    showSubscriptionPaywall = true
+                                    openSubscriptionPaywallSheet()
                                 } else if ridgitsError.code == "AGE_VERIFICATION_REQUIRED" || ridgitsError.code == "UNDERAGE" {
                                     showBirthYearPrompt = true
                                 } else if ridgitsError.code == "IDENTITY_VERIFICATION_REQUIRED" {
-                                    showIdentityVerification = true
+                                    identityVerificationGate = .requiredPrompt
                                 } else if ridgitsError.code == "PROFILE_PHOTO_IDENTITY_MISMATCH" {
                                     showProfilePhotoMatchAlert = true
                                 } else if handleExistingConversationError(ridgitsError, match: match) {

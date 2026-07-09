@@ -489,7 +489,7 @@ struct MessagesView: View {
     @State private var showSubscriptionPaywall = false
     @State private var subscriptionPaywallForMessaging = false
     @State private var showBirthYearPrompt = false
-    @State private var showIdentityVerification = false
+    @State private var identityVerificationGate: IdentityVerificationMessagingGate?
     @State private var showProfilePhotoMatchAlert = false
     @State private var composeMatch: RidgitsMatch?
     @State private var composeMessage = ""
@@ -525,7 +525,7 @@ struct MessagesView: View {
                                 subscriptionPaywallForMessaging = true
                                 showSubscriptionPaywall = true
                             },
-                            identityVerification: { showIdentityVerification = true },
+                            identityVerification: { identityVerificationGate = .requiredPrompt },
                             profilePhotoMatch: { showProfilePhotoMatchAlert = true }
                         ) else { return }
                         guard beginCompose(to: match) else { return }
@@ -599,15 +599,7 @@ struct MessagesView: View {
             }
             .environmentObject(authManager)
         }
-        .sheet(isPresented: $showIdentityVerification) {
-            IdentityVerificationView { success in
-                showIdentityVerification = false
-                if success {
-                    Task { await ridgitsStore.refreshAccessInBackground() }
-                }
-            }
-            .environmentObject(ridgitsStore)
-        }
+        .identityVerificationMessagingGate($identityVerificationGate)
         .sheet(isPresented: $showPokePackPaywall) {
             PokePackPaywallView {
                 Task { await matchesViewModel.refreshPokeCredits() }
@@ -670,7 +662,7 @@ struct MessagesView: View {
         .onChange(of: viewModel.showIdentityVerificationPrompt) { _, showPrompt in
             guard showPrompt else { return }
             viewModel.showIdentityVerificationPrompt = false
-            showIdentityVerification = true
+            identityVerificationGate = .requiredPrompt
         }
         .onChange(of: viewModel.showProfilePhotoMatchPrompt) { _, showPrompt in
             guard showPrompt else { return }
@@ -843,7 +835,7 @@ struct MessagesView: View {
                                         subscriptionPaywallForMessaging = true
                                         showSubscriptionPaywall = true
                                     },
-                                    identityVerification: { showIdentityVerification = true },
+                                    identityVerification: { identityVerificationGate = .requiredPrompt },
                                     profilePhotoMatch: { showProfilePhotoMatchAlert = true }
                                 ) else { return }
                                 Task { await viewModel.approve(convo) }
@@ -1066,7 +1058,7 @@ struct MessagesView: View {
             return
         }
         guard ridgitsStore.isVerifiedForMessaging else {
-            showIdentityVerification = true
+            identityVerificationGate = .requiredPrompt
             return
         }
         let text = composeMessage.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1182,7 +1174,7 @@ private struct MessageRequestsView: View {
     let onViewSentPokeProfile: (RidgitsPoke) async -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showSubscriptionPaywall = false
-    @State private var showIdentityVerification = false
+    @State private var identityVerificationGate: IdentityVerificationMessagingGate?
     @State private var showProfilePhotoMatchAlert = false
 
     var body: some View {
@@ -1277,7 +1269,7 @@ private struct MessageRequestsView: View {
                                 onApprove: {
                                     guard gateMessagingAccess(
                                         subscriptionPaywall: { showSubscriptionPaywall = true },
-                                        identityVerification: { showIdentityVerification = true },
+                                        identityVerification: { identityVerificationGate = .requiredPrompt },
                                         profilePhotoMatch: { showProfilePhotoMatchAlert = true }
                                     ) else { return }
                                     Task { await viewModel.approve(convo) }
@@ -1344,15 +1336,7 @@ private struct MessageRequestsView: View {
                 subheadline: "Ridgits+ lets you approve requests and reply to people who reached out."
             )
         }
-        .sheet(isPresented: $showIdentityVerification) {
-            IdentityVerificationView(autoStart: true) { success in
-                showIdentityVerification = false
-                if success {
-                    Task { await ridgitsStore.refreshAccessInBackground() }
-                }
-            }
-            .environmentObject(ridgitsStore)
-        }
+        .identityVerificationMessagingGate($identityVerificationGate)
         .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
             Button("Retry verification") {
                 Task {
@@ -1716,7 +1700,7 @@ struct ConversationDetailView: View {
     let onBack: () -> Void
     @State private var showFlagSheet = false
     @State private var showSubscriptionPaywall = false
-    @State private var showIdentityVerification = false
+    @State private var identityVerificationGate: IdentityVerificationMessagingGate?
     @State private var showProfilePhotoMatchAlert = false
     @State private var flagReason = ""
     @State private var currentUserImageURL = ""
@@ -1892,15 +1876,7 @@ struct ConversationDetailView: View {
                 subheadline: "Ridgits+ lets you accept message requests and keep the conversation going."
             )
         }
-        .sheet(isPresented: $showIdentityVerification) {
-            IdentityVerificationView(autoStart: true) { success in
-                showIdentityVerification = false
-                if success {
-                    Task { await ridgitsStore.refreshAccessInBackground() }
-                }
-            }
-            .environmentObject(ridgitsStore)
-        }
+        .identityVerificationMessagingGate($identityVerificationGate)
         .alert("Profile photo must match your ID", isPresented: $showProfilePhotoMatchAlert) {
             Button("Retry verification") {
                 Task {
@@ -1998,7 +1974,7 @@ struct ConversationDetailView: View {
             return false
         }
         guard ridgitsStore.isVerifiedForMessaging else {
-            showIdentityVerification = true
+            identityVerificationGate = .requiredPrompt
             return false
         }
         return true

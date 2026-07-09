@@ -250,7 +250,7 @@ final class RidgitsStore: ObservableObject {
         false
     }
 
-    /// Opens Stripe Identity after a successful subscription purchase when still unverified.
+    /// Opens Stripe Identity when the user chooses to verify (required for messaging only).
     func promptIdentityVerificationIfNeeded() async -> Bool {
         await refreshAccessInBackground()
         if isVerifiedForMessaging {
@@ -259,9 +259,14 @@ final class RidgitsStore: ObservableObject {
         // Status check syncs from Stripe — skip the browser flow if already verified there.
         do {
             let status = try await RidgitsAPIClient.shared.fetchIdentityStatus()
-            if status.isFullyVerifiedForSubscribe && status.isProfilePhotoMatched {
+            if status.canMessage {
                 await refreshAccessInBackground()
                 return true
+            }
+            if status.isStripeIdentityFlowComplete {
+                _ = await RidgitsProfilePhotoIdentityMatch.matchAfterProfileSaveIfNeeded()
+                await refreshAccessInBackground()
+                return isVerifiedForMessaging
             }
         } catch {
             purchaseError = error.localizedDescription
@@ -569,16 +574,8 @@ final class RidgitsStore: ObservableObject {
         }
     }
 
-    /// Whether an active subscriber still needs Stripe Identity (ID + phone + selfie).
-    var needsIdentityVerificationAfterSubscription: Bool {
-        isMembershipActive && !isVerifiedForMessaging
-    }
-
-    /// Restores App Store purchases. Returns `true` when subscription is active but identity
-    /// verification still needs to run (same follow-up as after a fresh purchase).
-    @discardableResult
-    func restorePurchases() async -> Bool {
-        guard !isRestoring else { return false }
+    func restorePurchases() async {
+        guard !isRestoring else { return }
         isRestoring = true
         purchaseError = nil
         restoreStatusMessage = nil
@@ -602,10 +599,8 @@ final class RidgitsStore: ObservableObject {
             } else {
                 restoreStatusMessage = "No active subscriptions found for this Apple ID."
             }
-            return needsIdentityVerificationAfterSubscription
         } catch {
             purchaseError = error.localizedDescription
-            return false
         }
     }
 

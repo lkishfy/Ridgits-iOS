@@ -21,6 +21,9 @@ struct IdentityVerificationStatusCard: View {
         if access.isFullyIdentityVerified && access.profilePhotoIdentityMatchStatus == "failed" {
             return "Photo verification failed"
         }
+        if access.isFullyIdentityVerified && access.profilePhotoIdentityMatchStatus == "pending" {
+            return "Checking profile photo…"
+        }
         if access.isFullyIdentityVerified && !access.isProfilePhotoVerified {
             return "Photo verification needed"
         }
@@ -77,10 +80,13 @@ struct IdentityVerificationStatusCard: View {
             return "Your profile photo didn't match your verified ID selfie. Use a clear face photo, similar to your ID verification selfie, then try again."
         }
         if access.isFullyIdentityVerified && !access.isProfilePhotoVerified {
-            return "Your ID is verified. Add a profile photo that matches your ID selfie to start chatting."
+            if access.profilePhotoIdentityMatchStatus == "pending" {
+                return "Your ID is verified. We're comparing your profile photo to your ID selfie now."
+            }
+            return "Your ID is verified. Tap Retry photo verification below, or update your profile photo if it doesn't match your ID selfie."
         }
         if canStartVerification && !access.isIdentityVerified {
-            return "Add a profile photo first, then complete identity verification to accept and send messages."
+            return "Your subscription badge is active. Add a profile photo, then verify to accept and send messages."
         }
         if access.isFullyIdentityVerified {
             if canStartVerification {
@@ -91,7 +97,7 @@ struct IdentityVerificationStatusCard: View {
         if access.isIdentityVerified {
             return "Your ID is verified. Complete phone verification to finish."
         }
-        return "Subscribe first to unlock identity verification, then verify to message other members."
+        return "Subscribe to unlock your badge and premium features. Verify separately when you're ready to message."
     }
 
     private var shouldShowPhotoDeadlineWarning: Bool {

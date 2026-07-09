@@ -5,6 +5,7 @@ struct RidgitsIdentityStatus: Decodable {
     let identityVerifiedAt: String?
     let phoneVerificationStatus: String?
     let phoneVerifiedAt: String?
+    let phoneVerificationRequired: Bool?
     let profilePhotoIdentityMatchStatus: String
     let profilePhotoIdentityMatchAt: String?
     let profilePhotoIdentityMatchScore: Double?
@@ -25,6 +26,15 @@ struct RidgitsIdentityStatus: Decodable {
 
     var isFullyVerifiedForSubscribe: Bool {
         isIdentityVerified && isPhoneVerified
+    }
+
+    /// True when Stripe ID (+ phone when required) is complete; profile photo is separate.
+    var isStripeIdentityFlowComplete: Bool {
+        guard isIdentityVerified else { return false }
+        if phoneVerificationStatus == "failed" { return false }
+        let phoneRequired = phoneVerificationRequired ?? true
+        if phoneRequired { return isPhoneVerified }
+        return true
     }
 }
 
