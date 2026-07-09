@@ -373,8 +373,11 @@ struct SubscriptionPaywallView: View {
                                 billing: activeBilling,
                                 ultraYearlyVariant: ultraYearlyVariant
                             )
-                            guard success else { return }
                             await ridgitsStore.refreshAccessInBackground()
+                            let subscriptionActive = success
+                                || ridgitsStore.hasPlusMembership
+                                || ridgitsStore.membershipTier.rank >= tier.rank
+                            guard subscriptionActive else { return }
                             if ridgitsStore.isVerifiedForMessaging {
                                 dismiss()
                             } else {

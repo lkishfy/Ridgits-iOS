@@ -40,6 +40,8 @@ enum RidgitsCustomerFacingError {
             return "Re-verify your identity before matching a new profile photo."
         case "PROFILE_PHOTO_IDENTITY_MISMATCH":
             return "Your profile photo must match your verified ID selfie to message."
+        case "INVALID_IAP_SIGNATURE":
+            return "We couldn't verify your App Store receipt yet. Tap Restore purchases to try again."
         default:
             return nil
         }

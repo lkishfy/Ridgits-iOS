@@ -541,13 +541,20 @@ final class RidgitsStore: ObservableObject {
                     purchaseError = "Purchase could not be verified."
                     return false
                 }
-                let linked = await linkTransaction(verification)
-                await transaction.finish()
-                await refreshAccessInBackground()
-                if linked {
-                    RidgitsHaptics.play(.success)
+                var linked = await linkTransaction(verification)
+                if !linked {
+                    await refreshEntitlements()
+                    linked = await linkTransaction(verification)
                 }
-                return linked
+                if linked {
+                    await transaction.finish()
+                    RidgitsHaptics.play(.success)
+                } else {
+                    purchaseError = purchaseError
+                        ?? "Payment received, but Ridgits couldn't activate your plan yet. Tap Restore purchases in a moment to retry."
+                }
+                await refreshAccessInBackground()
+                return linked || hasPlusMembership
             case .userCancelled:
                 return false
             case .pending:
@@ -731,8 +738,10 @@ final class RidgitsStore: ObservableObject {
     private func listenForTransactions() async {
         for await result in Transaction.updates {
             guard case .verified(let transaction) = result else { continue }
-            _ = await linkTransaction(result)
-            await transaction.finish()
+            let linked = await linkTransaction(result)
+            if linked {
+                await transaction.finish()
+            }
             await refreshAccessInBackground()
         }
     }
