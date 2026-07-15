@@ -217,15 +217,12 @@ struct ProfileSettingsView: View {
         defer { isUpdatingVisibility = false }
         do {
             try await RidgitsFirebaseClient.shared.saveUserProfile(profile)
-            let profileCode = authManager.currentUser.flatMap {
-                RidgitsProfileCache.shared.profileCode(for: $0.uid)
-            }
             nearbyPresence.updateEligibility(
                 isSignedIn: authManager.userIsLoggedIn,
                 profileComplete: profile.isCompleteForMatching && profile.visibleInCommunity,
                 hasNearbyAccess: ridgitsStore.hasExtendedNearbyRadius || ridgitsStore.hasWebSubscription,
                 displayName: profile.name,
-                profileCode: profileCode
+                userId: authManager.currentUser?.uid
             )
         } catch {
             profile.visibleInCommunity = !savedValue

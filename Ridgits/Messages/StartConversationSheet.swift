@@ -43,6 +43,7 @@ struct StartConversationSheet: View {
                                 RidgitsProfileTrustBadges(
                                     subscriptionTier: match.subscriptionTier,
                                     profilePhotoVerified: match.isProfilePhotoVerified,
+                                    showPhotoVerified: false,
                                     badgeSize: 16
                                 )
                             }

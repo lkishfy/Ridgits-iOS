@@ -139,7 +139,11 @@ final class RidgitsProfileCache {
     }
 
     private func ensureDirectories() throws {
-        try fileManager.createDirectory(at: profilesDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(
+            at: profilesDirectory,
+            withIntermediateDirectories: true,
+            attributes: [.protectionKey: FileProtectionType.completeUnlessOpen]
+        )
         try fileManager.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
     }
 
@@ -160,7 +164,7 @@ final class RidgitsProfileCache {
     private func writeRecord(_ record: CachedProfileRecord, for uid: String) {
         guard let url = profileRecordURL(for: uid),
               let data = try? JSONEncoder().encode(record) else { return }
-        try? data.write(to: url, options: .atomic)
+        try? data.write(to: url, options: [.atomic, .completeFileProtectionUnlessOpen])
     }
 
     private func hash(_ value: String) -> String {

@@ -141,28 +141,12 @@ final class RidgitsFirebaseClient {
                 answers: progress.answers,
                 currentQuestion: progress.currentQuestion,
                 freePassesRemaining: progress.freePassesRemaining,
-                completed: true,
+                completed: false,
                 archetype: archetype
-            )
-        } else if needsCompletionFlag {
-            try await db.collection("quizProgress").document(uid).setData(
-                [
-                    "completed": true,
-                    "eligibleForMatching": true,
-                    "completedAt": FieldValue.serverTimestamp(),
-                    "questionsAnswered": max(questionsAnswered, QuizCatalog.onboardingSkipThreshold),
-                ],
-                merge: true
             )
         }
 
-        try await db.collection("users").document(uid).setData(
-            [
-                "onboardingCompleted": true,
-                "quizCompletedAt": FieldValue.serverTimestamp(),
-            ],
-            merge: true
-        )
+        try await RidgitsAPIClient.shared.markQuizComplete()
         await syncCompletedQuizBadges(uid: uid)
         RidgitsMatchesCache.shared.clearNationwide(uid: uid)
         return true
@@ -296,11 +280,8 @@ final class RidgitsFirebaseClient {
             "freePassesRemaining": freePassesRemaining,
             "questionsAnswered": personalityAnswered,
             "totalQuestions": QuizCatalog.questions.count,
-            "completed": completed,
-            "eligibleForMatching": completed || personalityAnswered >= QuizCatalog.onboardingSkipThreshold,
             "updatedAt": FieldValue.serverTimestamp(),
             "lastUpdated": ISO8601DateFormatter().string(from: Date()),
-            "completedAt": completed ? FieldValue.serverTimestamp() : NSNull(),
         ]
 
         if let user = Auth.auth().currentUser {
@@ -316,6 +297,7 @@ final class RidgitsFirebaseClient {
 
         try await db.collection("quizProgress").document(uid).setData(payload, merge: true)
         if completed {
+            try await RidgitsAPIClient.shared.markQuizComplete()
             await syncCompletedQuizBadges(uid: uid)
         }
         RidgitsMatchesCache.shared.clearNationwide(uid: uid)
@@ -1288,10 +1270,9 @@ final class RidgitsFirebaseClient {
     func listenCommunityArchetypeDistribution(
         onChange: @escaping ([String: Int]) -> Void
     ) -> ListenerRegistration {
-        db.collection("quizProgress")
-            .whereField("completed", isEqualTo: true)
+        db.collection("platformStats").document("community")
             .addSnapshotListener { snapshot, error in
-                guard error == nil, let snapshot else {
+                guard error == nil, let snapshot, snapshot.exists, let data = snapshot.data() else {
                     Task { @MainActor in
                         onChange(Self.emptyArchetypeDistribution)
                     }
@@ -1299,12 +1280,16 @@ final class RidgitsFirebaseClient {
                 }
 
                 var distribution = Self.emptyArchetypeDistribution
-                for document in snapshot.documents {
-                    guard let archetypeName = Self.normalizedArchetypeName(from: document.data()) else {
-                        continue
-                    }
-                    if distribution.keys.contains(archetypeName) {
-                        distribution[archetypeName, default: 0] += 1
+                if let stored = data["archetypeDistribution"] as? [String: Any] {
+                    for (name, rawCount) in stored {
+                        guard distribution.keys.contains(name) else { continue }
+                        if let count = rawCount as? Int {
+                            distribution[name] = count
+                        } else if let count = rawCount as? Int64 {
+                            distribution[name] = Int(count)
+                        } else if let count = rawCount as? Double {
+                            distribution[name] = Int(count)
+                        }
                     }
                 }
 

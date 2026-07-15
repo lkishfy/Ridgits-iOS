@@ -547,10 +547,11 @@ struct DashboardView: View {
 
     private func refreshNearbyPresence() {
         let displayName = profile?.name ?? authManager.currentUser?.displayName ?? ""
+        let uid = authManager.currentUser?.uid
         nearbyPresence.updateShareListening(
             isSignedIn: authManager.userIsLoggedIn,
             displayName: displayName,
-            profileCode: profileCode
+            userId: uid
         )
         let hasAccess = ridgitsStore.hasExtendedNearbyRadius || ridgitsStore.hasWebSubscription
         nearbyPresence.updateEligibility(
@@ -558,7 +559,7 @@ struct DashboardView: View {
             profileComplete: profile?.isCompleteForMatching ?? false,
             hasNearbyAccess: hasAccess,
             displayName: displayName,
-            profileCode: profileCode
+            userId: uid
         )
     }
 

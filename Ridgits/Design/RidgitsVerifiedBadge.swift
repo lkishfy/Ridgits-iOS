@@ -126,12 +126,13 @@ extension View {
 struct RidgitsProfileTrustBadges: View {
     let subscriptionTier: String?
     let profilePhotoVerified: Bool
+    var showPhotoVerified: Bool = true
     var badgeSize: CGFloat = 16
 
     var body: some View {
         HStack(spacing: 4) {
             RidgitsVerifiedBadge(tier: subscriptionTier, size: badgeSize)
-            if profilePhotoVerified {
+            if showPhotoVerified, profilePhotoVerified {
                 RidgitsPhotoVerifiedBadge(size: badgeSize)
             }
         }

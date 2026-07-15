@@ -1,5 +1,6 @@
 import Foundation
 import FirebaseAuth
+import FirebaseAppCheck
 
 struct RidgitsAccountAccess: Decodable {
     let hasNearbyAccess: Bool
@@ -58,7 +59,12 @@ final class RidgitsAPIClient {
     private init() {}
 
     private var baseURL: URL {
-        for name in ["Secrets", "Secrets.example"] {
+        #if DEBUG
+        let secretNames = ["Secrets", "Secrets.example"]
+        #else
+        let secretNames = ["Secrets"]
+        #endif
+        for name in secretNames {
             if let path = Bundle.main.path(forResource: name, ofType: "plist"),
                let secrets = NSDictionary(contentsOfFile: path) as? [String: Any],
                let urlString = secrets["ridgitsApiBaseURL"] as? String,
@@ -279,6 +285,10 @@ final class RidgitsAPIClient {
         )
     }
 
+    func markQuizComplete() async throws {
+        _ = try await authorizedRequest(path: "/api/quiz/complete", method: "POST", body: [:])
+    }
+
     func fetchMessagingQuota() async throws -> RidgitsMonthlyMessageQuota {
         let data = try await authorizedRequest(path: "/api/messaging/quota", method: "GET", body: nil)
         let quota = data["quota"] as? [String: Any] ?? [:]
@@ -456,6 +466,15 @@ final class RidgitsAPIClient {
         method: String,
         body: [String: Any]?
     ) async throws -> [String: Any] {
+        try await performAuthorizedRequest(path: path, method: method, body: body, forceRefreshAppCheck: false)
+    }
+
+    private func performAuthorizedRequest(
+        path: String,
+        method: String,
+        body: [String: Any]?,
+        forceRefreshAppCheck: Bool
+    ) async throws -> [String: Any] {
         guard let user = Auth.auth().currentUser else {
             throw RidgitsError.notAuthenticated
         }
@@ -467,6 +486,16 @@ final class RidgitsAPIClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 300
 
+        do {
+            let appCheckToken = try await AppCheck.appCheck().token(forcingRefresh: forceRefreshAppCheck)
+            request.setValue(appCheckToken.token, forHTTPHeaderField: "X-Firebase-AppCheck")
+        } catch {
+            print("[App Check] Failed to fetch token for \(method) \(path): \(error.localizedDescription)")
+            #if DEBUG
+            print("[App Check] Register the debug token from Xcode console in Firebase → App Check → iOS → Manage debug tokens")
+            #endif
+        }
+
         if let body {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
@@ -477,6 +506,17 @@ final class RidgitsAPIClient {
         }
 
         let json = (try? JSONSerialization.jsonObject(with: responseData) as? [String: Any]) ?? [:]
+        if http.statusCode == 401,
+           json["code"] as? String == "APP_CHECK_INVALID",
+           !forceRefreshAppCheck {
+            return try await performAuthorizedRequest(
+                path: path,
+                method: method,
+                body: body,
+                forceRefreshAppCheck: true
+            )
+        }
+
         guard (200...299).contains(http.statusCode) else {
             let rawMessage = json["error"] as? String ?? "Request failed (\(http.statusCode))"
             let code = json["code"] as? String

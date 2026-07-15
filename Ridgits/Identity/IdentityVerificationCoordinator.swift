@@ -121,7 +121,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
             }
         }
         session.presentationContextProvider = self
-        session.prefersEphemeralWebBrowserSession = false
+        session.prefersEphemeralWebBrowserSession = true
         authSession = session
         if !session.start() {
             errorMessage = "Could not start verification in the browser."
@@ -133,7 +133,7 @@ final class IdentityVerificationCoordinator: NSObject, ObservableObject {
         isVerifying = true
         defer { isVerifying = false }
 
-        for attempt in 0..<30 {
+        for attempt in 0..<10 {
             if attempt > 0 {
                 try? await Task.sleep(nanoseconds: 1_500_000_000)
             }

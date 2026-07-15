@@ -2,6 +2,7 @@ import Foundation
 import MultipeerConnectivity
 import UIKit
 import UserNotifications
+import CryptoKit
 
 /// Discovers other Ridgits users nearby via Bluetooth/Wi‑Fi (MultipeerConnectivity),
 /// sends match pings, and supports consent-based nearby Ridgit quiz handoff.
@@ -39,7 +40,7 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
     private var pendingInvitationPeer: MCPeerID?
 
     private var displayName = "Ridgits User"
-    private var profileCode: String?
+    private var userId: String?
     private var isAppActive = true
     private var backgroundKeepAliveTask: UIBackgroundTaskIdentifier = .invalid
 
@@ -64,18 +65,18 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
 
     // MARK: - Public API (matches presence)
 
-    func updateEligibility(isSignedIn: Bool, profileComplete: Bool, hasNearbyAccess: Bool, displayName: String, profileCode: String?) {
+    func updateEligibility(isSignedIn: Bool, profileComplete: Bool, hasNearbyAccess: Bool, displayName: String, userId: String?) {
         wantsMatchingAlerts = isSignedIn && profileComplete && hasNearbyAccess
         self.displayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.profileCode = profileCode
+        self.userId = userId
         syncSessionLifecycle()
     }
 
     /// Keeps MCP available for incoming Ridgit shares for any signed-in user.
-    func updateShareListening(isSignedIn: Bool, displayName: String, profileCode: String?) {
+    func updateShareListening(isSignedIn: Bool, displayName: String, userId: String?) {
         wantsRidgitShareListening = isSignedIn
         self.displayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.profileCode = profileCode
+        self.userId = userId
         syncSessionLifecycle()
     }
 
@@ -222,7 +223,7 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
         return
         #endif
 
-        let name = displayName.isEmpty ? "Ridgits User" : displayName
+        let name = Self.opaquePeerDisplayName(for: userId)
         if isActive, peerID?.displayName != name {
             stop()
         }
@@ -231,10 +232,7 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
         let peer = MCPeerID(displayName: name)
         peerID = peer
 
-        var info = ["app": "ridgits"]
-        if let profileCode, !profileCode.isEmpty {
-            info["code"] = profileCode
-        }
+        let info = ["app": "ridgits"]
 
         let advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: info, serviceType: Self.serviceType)
         advertiser.delegate = self
@@ -315,9 +313,16 @@ final class RidgitsNearbyPresenceService: NSObject, ObservableObject {
             RidgitNearbyPeer(
                 id: key,
                 displayName: key,
-                profileCode: peerDiscoveryInfo[key]?["code"]
+                profileCode: nil
             )
         }
+    }
+
+    private static func opaquePeerDisplayName(for uid: String?) -> String {
+        guard let uid, !uid.isEmpty else { return "Ridgits-User" }
+        let digest = SHA256.hash(data: Data(uid.utf8))
+        let prefix = digest.prefix(4).map { String(format: "%02x", $0) }.joined()
+        return "Ridgits-\(prefix)"
     }
 
     private func notifyNearbyPerson(named name: String, key: String) {

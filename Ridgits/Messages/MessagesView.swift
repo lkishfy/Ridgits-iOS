@@ -1414,6 +1414,7 @@ private struct PokeInboxRow: View {
                             RidgitsProfileTrustBadges(
                                 subscriptionTier: subscriptionTier,
                                 profilePhotoVerified: profilePhotoVerified,
+                                showPhotoVerified: false,
                                 badgeSize: 16
                             )
                             Spacer(minLength: 0)
@@ -1509,6 +1510,7 @@ private struct SentPokeInboxRow: View {
                             RidgitsProfileTrustBadges(
                                 subscriptionTier: subscriptionTier,
                                 profilePhotoVerified: profilePhotoVerified,
+                                showPhotoVerified: false,
                                 badgeSize: 16
                             )
                             Spacer(minLength: 0)
@@ -1628,6 +1630,7 @@ struct DMConversationRow: View {
                 RidgitsProfileTrustBadges(
                     subscriptionTier: conversation.otherUserSubscriptionTier,
                     profilePhotoVerified: conversation.otherUserProfilePhotoVerified,
+                    showPhotoVerified: false,
                     badgeSize: 16
                 )
 
@@ -1836,6 +1839,7 @@ struct ConversationDetailView: View {
                         RidgitsProfileTrustBadges(
                             subscriptionTier: conversation.otherUserSubscriptionTier,
                             profilePhotoVerified: conversation.otherUserProfilePhotoVerified,
+                            showPhotoVerified: false,
                             badgeSize: 16
                         )
                     }

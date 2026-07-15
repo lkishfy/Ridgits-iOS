@@ -10,6 +10,7 @@ final class RidgitsDeepLinkRouter: ObservableObject {
 
     func handle(_ url: URL) -> Bool {
         if RidgitsAppLinks.isIdentityCompleteURL(url) {
+            guard IdentityVerificationCoordinator.shared.isVerifying else { return false }
             identityReturnReceived = true
             NotificationCenter.default.post(name: RidgitsAppLinks.identityVerificationCompleteNotification, object: nil)
             return true
