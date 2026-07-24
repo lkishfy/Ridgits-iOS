@@ -91,6 +91,7 @@ struct MatchProfileView: View {
                 RidgitsProfileTrustBadges(
                     subscriptionTier: match.subscriptionTier,
                     profilePhotoVerified: match.isProfilePhotoVerified || (profile?.profilePhotoVerified == true),
+                    showPhotoVerified: false,
                     badgeSize: 18
                 )
                 Spacer(minLength: 0)

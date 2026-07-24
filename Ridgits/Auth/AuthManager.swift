@@ -21,6 +21,8 @@ final class AuthManager: ObservableObject {
         currentUser?.isEmailVerified ?? false
     }
 
+    /// Password accounts that haven't clicked the verification link. ContentView still
+    /// skips this gate when `ridgitsStore.skipsOnboarding` (App Review / QA bypass).
     var requiresEmailVerification: Bool {
         guard let user = currentUser else { return false }
         let isPasswordUser = user.providerData.contains { $0.providerID == EmailAuthProviderID }

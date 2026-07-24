@@ -179,14 +179,56 @@ If you keep Stripe on the web:
 
 ---
 
-## 9. App Store review notes
+## 9. App Store metadata (Guideline 3.1.2 — subscriptions)
 
-Include in **Review Notes**:
+Apple requires a **functional Terms of Use (EULA) link in App Store metadata** for auto-renewable subscriptions, plus Privacy Policy and in-app disclosure.
 
-- Sandbox tester Apple ID credentials
-- That memberships are upgrade-only; downgrades via Apple Subscriptions settings
-- Ridgit quizzes are **in-app only** (`ridgits://ridgit/{id}` deep links)
-- Nearby discovery uses location + optional Bluetooth (MultipeerConnectivity) for proximity alerts with nearby access
+### 9.1 App Store Connect fields
+
+| Field | Value |
+|-------|-------|
+| **Privacy Policy URL** (App Information) | `https://ridgits.com/privacy-policy` |
+| **Terms of Use (EULA)** | Custom EULA URL **or** link in App Description (below) |
+
+**Recommended (custom EULA):** App Store Connect → your app → **App Information** → **License Agreement** → choose **Custom** and paste the full text from [ridgits.com/terms-conditions](https://ridgits.com/terms-conditions), **or** keep Apple’s standard EULA and add the Terms link to the description.
+
+**Required if using Apple’s standard EULA — add this to the end of the App Description** (every localization):
+
+```text
+Terms of Use (EULA): https://ridgits.com/terms-conditions
+Privacy Policy: https://ridgits.com/privacy-policy
+```
+
+### 9.2 In-app (already implemented)
+
+Subscription paywalls show:
+
+- Subscription title (Ridgits+ / Premium / Ultra)
+- Length (yearly) and price from StoreKit
+- Functional links to Terms of Use and Privacy Policy
+
+### 9.3 App Review Information → Notes
+
+Paste for future submissions (and reply to Guideline 3.1.2 with a screen recording of the paywall showing these links):
+
+```text
+Subscriptions (Guideline 3.1.2):
+- Terms of Use (EULA): https://ridgits.com/terms-conditions (also linked in App Description / EULA field and on the in-app subscription paywall)
+- Privacy Policy: https://ridgits.com/privacy-policy (Privacy Policy field + in-app paywall)
+- Auto-renewable plans: Ridgits+ (Plus), Premium, Ultra — billed yearly; prices shown on the paywall from App Store Connect
+- Manage/cancel: Settings → Apple ID → Subscriptions
+
+Demo login (Sign In with email — not Sign Up):
+- Email: support@trie.dev
+- Password: [set in Firebase Auth + App Store Connect; must match]
+- Account must exist in Firebase (ridgits-24f2d) with email/password. Mark email verified in Console if possible.
+- RIDGITS_BYPASS_EMAILS on ridgits-api includes this address (Premium + skip onboarding/identity/email-verify gate).
+
+Sandbox tester: [credentials]
+Memberships are upgrade-only in-app; downgrades via Apple Subscriptions settings.
+Ridgit quizzes are in-app only (ridgits://ridgit/{id}).
+Nearby discovery uses location + optional Bluetooth (MultipeerConnectivity) for proximity alerts with nearby access.
+```
 
 ---
 

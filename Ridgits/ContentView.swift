@@ -32,7 +32,9 @@ struct ContentView: View {
                 ReferralWelcomeView {
                     needsReferralWelcome = false
                 }
-            } else if authManager.requiresEmailVerification {
+            } else if authManager.requiresEmailVerification && !ridgitsStore.skipsOnboarding {
+                // App Review / QA (`RIDGITS_BYPASS_EMAILS`) skip this gate so reviewers
+                // aren't stuck if the demo account isn't marked email-verified in Firebase.
                 EmailVerificationPromptView()
             } else if needsBirthYear {
                 BirthYearPromptView {

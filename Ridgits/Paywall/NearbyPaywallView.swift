@@ -101,6 +101,14 @@ struct NearbyPaywallView: View {
                     Text("Payment is processed by Apple. Already subscribed on ridgits.com? Sign in with the same account — your access carries over.")
                         .font(RidgitsTypography.caption())
                         .foregroundStyle(RidgitsColors.textMuted)
+
+                    HStack(spacing: 16) {
+                        Link("Terms of Use (EULA)", destination: RidgitsAppLinks.terms)
+                        Link("Privacy Policy", destination: RidgitsAppLinks.privacy)
+                    }
+                    .font(RidgitsTypography.caption(12))
+                    .foregroundStyle(RidgitsColors.textSecondary)
+                    .frame(maxWidth: .infinity)
                 }
                 .padding(20)
             }

@@ -972,6 +972,7 @@ struct MatchesView: View {
                     RidgitsProfileTrustBadges(
                         subscriptionTier: match.subscriptionTier,
                         profilePhotoVerified: match.isProfilePhotoVerified,
+                        showPhotoVerified: false,
                         badgeSize: 16
                     )
                 }
@@ -1126,6 +1127,7 @@ private struct MatchCard: View {
                                 RidgitsProfileTrustBadges(
                                     subscriptionTier: match.subscriptionTier,
                                     profilePhotoVerified: match.isProfilePhotoVerified,
+                                    showPhotoVerified: false,
                                     badgeSize: 16
                                 )
                             }

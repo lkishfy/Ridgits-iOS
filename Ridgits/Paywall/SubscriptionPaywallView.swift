@@ -83,6 +83,8 @@ struct SubscriptionPaywallView: View {
                     .foregroundStyle(RidgitsColors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .disabled(ridgitsStore.isRestoring)
+
+                    subscriptionLegalLinks
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, showsDragIndicator ? 0 : 12)
@@ -282,17 +284,26 @@ struct SubscriptionPaywallView: View {
                                 .font(RidgitsTypography.headline(18))
                                 .foregroundStyle(RidgitsColors.textHeadline)
                         }
-                        HStack(alignment: .firstTextBaseline, spacing: 2) {
-                            Text(displayPrice)
-                                .font(RidgitsTypography.headline(22))
-                            Text(priceSuffix)
-                                .font(RidgitsTypography.caption(12))
-                                .foregroundStyle(RidgitsColors.textSecondary)
-                        }
                         if activeBilling == .yearly, let yearlyTotal, usesYearlyMonthlyEquivalent {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                Text(displayPrice)
+                                    .font(RidgitsTypography.caption(12))
+                                    .foregroundStyle(RidgitsColors.textSecondary)
+                                Text("/month")
+                                    .font(RidgitsTypography.caption(11))
+                                    .foregroundStyle(RidgitsColors.textMuted)
+                            }
                             Text("Billed \(yearlyTotal)/year")
-                                .font(RidgitsTypography.caption(11))
-                                .foregroundStyle(RidgitsColors.textMuted)
+                                .font(RidgitsTypography.headline(22))
+                                .foregroundStyle(RidgitsColors.textHeadline)
+                        } else {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                Text(displayPrice)
+                                    .font(RidgitsTypography.headline(22))
+                                Text(priceSuffix)
+                                    .font(RidgitsTypography.caption(12))
+                                    .foregroundStyle(RidgitsColors.textSecondary)
+                            }
                         }
                     }
                     Spacer()
@@ -381,6 +392,25 @@ struct SubscriptionPaywallView: View {
                     .stroke(isCurrent ? RidgitsColors.ctaBlack : RidgitsColors.dashboardBorder, lineWidth: isCurrent ? 2 : 1)
             )
         }
+    }
+
+    private var subscriptionLegalLinks: some View {
+        VStack(spacing: 8) {
+            Text("Subscriptions auto-renew unless canceled at least 24 hours before the end of the current period. Manage or cancel in your Apple ID subscription settings.")
+                .font(RidgitsTypography.caption(11))
+                .foregroundStyle(RidgitsColors.textMuted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 16) {
+                Link("Terms of Use (EULA)", destination: RidgitsAppLinks.terms)
+                Link("Privacy Policy", destination: RidgitsAppLinks.privacy)
+            }
+            .font(RidgitsTypography.caption(12))
+            .foregroundStyle(RidgitsColors.textSecondary)
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.top, 4)
     }
 
     private func buttonTitle(for tier: RidgitsSubscriptionTier) -> String {
